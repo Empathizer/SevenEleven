@@ -12,9 +12,18 @@ export interface User {
   password: string
   role: UserRole
   sellerStatus?: SellerStatus
+  emailVerified?: boolean
   storeName?: string
   storeDescription?: string
+  idType?: string
+  idNumber?: string
+  idImage?: string
+  address?: string
+  invitationCode?: string
   avatar?: string
+  walletBalance?: number
+  totalEarnings?: number
+  totalWithdrawn?: number
   createdAt: string
 }
 
@@ -83,6 +92,18 @@ export interface Banner {
   active: boolean
 }
 
+export type TransactionType = "deposit" | "earning" | "withdrawal" | "adjustment"
+
+export interface WalletTransaction {
+  id: string
+  sellerId: string
+  type: TransactionType
+  amount: number
+  note: string
+  createdBy: string
+  createdAt: string
+}
+
 // ---- Initial Data ----
 
 const categories: Category[] = [
@@ -96,12 +117,12 @@ const categories: Category[] = [
 ]
 
 const users: User[] = [
-  { id: "user-admin", name: "Admin", email: "admin@seveneleven.com", password: "admin123", role: "admin", createdAt: "2025-01-01T00:00:00Z" },
-  { id: "user-seller-1", name: "StyleHub Store", email: "seller@seveneleven.com", password: "seller123", role: "seller", sellerStatus: "approved", storeName: "StyleHub", storeDescription: "Premium fashion and accessories", createdAt: "2025-01-05T00:00:00Z" },
-  { id: "user-seller-2", name: "GlamGlow Beauty", email: "glamglow@seveneleven.com", password: "seller123", role: "seller", sellerStatus: "approved", storeName: "GlamGlow Beauty", storeDescription: "Your one-stop beauty shop", createdAt: "2025-01-10T00:00:00Z" },
-  { id: "user-seller-3", name: "TechWear Co", email: "techwear@seveneleven.com", password: "seller123", role: "seller", sellerStatus: "pending", storeName: "TechWear Co", storeDescription: "Modern tech accessories", createdAt: "2025-02-01T00:00:00Z" },
-  { id: "user-cust-1", name: "Sarah Johnson", email: "customer@seveneleven.com", password: "customer123", role: "customer", createdAt: "2025-01-15T00:00:00Z" },
-  { id: "user-cust-2", name: "Mike Wilson", email: "mike@seveneleven.com", password: "customer123", role: "customer", createdAt: "2025-01-20T00:00:00Z" },
+  { id: "user-admin", name: "Admin", email: "admin@seveneleven.com", password: "admin123", role: "admin", emailVerified: true, createdAt: "2025-01-01T00:00:00Z" },
+  { id: "user-seller-1", name: "StyleHub Store", email: "seller@seveneleven.com", password: "seller123", role: "seller", sellerStatus: "approved", emailVerified: true, storeName: "StyleHub", storeDescription: "Premium fashion and accessories", idType: "CNIC", idNumber: "12345-1234567-1", idImage: "https://via.placeholder.com/400", address: "123 Fashion Street, New York, NY 10001", invitationCode: "STYLE2025", walletBalance: 1250.50, totalEarnings: 3500.00, totalWithdrawn: 2249.50, createdAt: "2025-01-05T00:00:00Z" },
+  { id: "user-seller-2", name: "GlamGlow Beauty", email: "glamglow@seveneleven.com", password: "seller123", role: "seller", sellerStatus: "approved", emailVerified: true, storeName: "GlamGlow Beauty", storeDescription: "Your one-stop beauty shop", idType: "Passport", idNumber: "AB1234567", idImage: "https://via.placeholder.com/400", address: "456 Beauty Ave, Los Angeles, CA 90001", invitationCode: "GLAM2025", walletBalance: 890.25, totalEarnings: 1890.25, totalWithdrawn: 1000.00, createdAt: "2025-01-10T00:00:00Z" },
+  { id: "user-seller-3", name: "TechWear Co", email: "techwear@seveneleven.com", password: "seller123", role: "seller", sellerStatus: "pending", emailVerified: false, storeName: "TechWear Co", storeDescription: "Modern tech accessories", idType: "Driving License", idNumber: "DL-987654321", idImage: "https://via.placeholder.com/400", address: "789 Tech Boulevard, San Francisco, CA 94102", invitationCode: "TECH2025", walletBalance: 0, totalEarnings: 0, totalWithdrawn: 0, createdAt: "2025-02-01T00:00:00Z" },
+  { id: "user-cust-1", name: "Sarah Johnson", email: "customer@seveneleven.com", password: "customer123", role: "customer", emailVerified: true, createdAt: "2025-01-15T00:00:00Z" },
+  { id: "user-cust-2", name: "Mike Wilson", email: "mike@seveneleven.com", password: "customer123", role: "customer", emailVerified: true, createdAt: "2025-01-20T00:00:00Z" },
 ]
 
 const products: Product[] = [
@@ -146,10 +167,23 @@ class Store {
   private banners: Banner[] = [...banners]
   private carts: Map<string, CartItem[]> = new Map()
   private wishlists: Map<string, WishlistItem[]> = new Map()
+  private transactions: WalletTransaction[] = []
   private currentUserId: string | null = null
 
   constructor() {
     this.updateCategoryCounts()
+    this.initializeTransactions()
+  }
+
+  private initializeTransactions() {
+    this.transactions = [
+      { id: "txn-1", sellerId: "user-seller-1", type: "deposit", amount: 500, note: "Initial deposit", createdBy: "user-admin", createdAt: "2025-01-06T00:00:00Z" },
+      { id: "txn-2", sellerId: "user-seller-1", type: "earning", amount: 3000, note: "Sales earnings", createdBy: "system", createdAt: "2025-02-01T00:00:00Z" },
+      { id: "txn-3", sellerId: "user-seller-1", type: "adjustment", amount: -2249.50, note: "Withdrawal processed", createdBy: "user-admin", createdAt: "2025-02-10T00:00:00Z" },
+      { id: "txn-4", sellerId: "user-seller-2", type: "deposit", amount: 300, note: "Welcome bonus", createdBy: "user-admin", createdAt: "2025-01-11T00:00:00Z" },
+      { id: "txn-5", sellerId: "user-seller-2", type: "earning", amount: 1590.25, note: "Sales earnings", createdBy: "system", createdAt: "2025-02-05T00:00:00Z" },
+      { id: "txn-6", sellerId: "user-seller-2", type: "adjustment", amount: -1000, note: "Withdrawal to bank account", createdBy: "user-admin", createdAt: "2025-02-15T00:00:00Z" },
+    ]
   }
 
   private updateCategoryCounts() {
@@ -170,7 +204,7 @@ class Store {
     return user || null
   }
 
-  register(data: { name: string; email: string; password: string; role: UserRole; storeName?: string; storeDescription?: string }): User | null {
+  register(data: { name: string; email: string; password: string; role: UserRole; storeName?: string; storeDescription?: string; idType?: string; idNumber?: string; idImage?: string; address?: string; invitationCode?: string }): User | null {
     if (this.users.find(u => u.email === data.email)) return null
     const user: User = {
       id: `user-${Date.now()}`,
@@ -179,8 +213,17 @@ class Store {
       password: data.password,
       role: data.role,
       sellerStatus: data.role === "seller" ? "pending" : undefined,
+      emailVerified: data.role === "customer" ? true : false,
       storeName: data.storeName,
       storeDescription: data.storeDescription,
+      idType: data.idType,
+      idNumber: data.idNumber,
+      idImage: data.idImage,
+      address: data.address,
+      invitationCode: data.invitationCode,
+      walletBalance: data.role === "seller" ? 0 : undefined,
+      totalEarnings: data.role === "seller" ? 0 : undefined,
+      totalWithdrawn: data.role === "seller" ? 0 : undefined,
       createdAt: new Date().toISOString(),
     }
     this.users.push(user)
@@ -203,7 +246,23 @@ class Store {
   }
   deleteUser(id: string) { this.users = this.users.filter(u => u.id !== id) }
   getPendingSellers(): User[] { return this.users.filter(u => u.role === "seller" && u.sellerStatus === "pending") }
-  approveSeller(id: string) { return this.updateUser(id, { sellerStatus: "approved" }) }
+  approveSeller(id: string) { 
+    const user = this.updateUser(id, { sellerStatus: "approved", emailVerified: true })
+    if (user) {
+      // Send email notification
+      if (typeof window !== 'undefined') {
+        // Client-side: Import dynamically to avoid SSR issues
+        import('./email').then(({ sendSellerApprovalEmail }) => {
+          sendSellerApprovalEmail({
+            email: user.email,
+            name: user.name,
+            storeName: user.storeName || 'Your Store'
+          })
+        })
+      }
+    }
+    return user
+  }
   rejectSeller(id: string) { return this.updateUser(id, { sellerStatus: "rejected" }) }
 
   // Categories
@@ -344,6 +403,81 @@ class Store {
     const totalProducts = sellerProducts.length
     const topProducts = sellerProducts.sort((a, b) => b.sold - a.sold).slice(0, 5)
     return { totalSales, totalOrders, totalProducts, topProducts }
+  }
+
+  // Wallet & Transactions
+  getSellerWallet(sellerId: string) {
+    const seller = this.users.find(u => u.id === sellerId && u.role === "seller")
+    if (!seller) return null
+    return {
+      walletBalance: seller.walletBalance || 0,
+      totalEarnings: seller.totalEarnings || 0,
+      totalWithdrawn: seller.totalWithdrawn || 0,
+    }
+  }
+
+  getTransactions(sellerId: string): WalletTransaction[] {
+    return this.transactions.filter(t => t.sellerId === sellerId).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  }
+
+  addDeposit(sellerId: string, amount: number, note: string, adminId: string): WalletTransaction | null {
+    const seller = this.users.find(u => u.id === sellerId && u.role === "seller")
+    if (!seller || amount <= 0) return null
+    
+    seller.walletBalance = (seller.walletBalance || 0) + amount
+    seller.totalEarnings = (seller.totalEarnings || 0) + amount
+    
+    const transaction: WalletTransaction = {
+      id: `txn-${Date.now()}`,
+      sellerId,
+      type: "deposit",
+      amount,
+      note,
+      createdBy: adminId,
+      createdAt: new Date().toISOString(),
+    }
+    this.transactions.push(transaction)
+    return transaction
+  }
+
+  deductAmount(sellerId: string, amount: number, note: string, adminId: string): WalletTransaction | null {
+    const seller = this.users.find(u => u.id === sellerId && u.role === "seller")
+    if (!seller || amount <= 0 || (seller.walletBalance || 0) < amount) return null
+    
+    seller.walletBalance = (seller.walletBalance || 0) - amount
+    seller.totalWithdrawn = (seller.totalWithdrawn || 0) + amount
+    
+    const transaction: WalletTransaction = {
+      id: `txn-${Date.now()}`,
+      sellerId,
+      type: "adjustment",
+      amount: -amount,
+      note,
+      createdBy: adminId,
+      createdAt: new Date().toISOString(),
+    }
+    this.transactions.push(transaction)
+    return transaction
+  }
+
+  addEarning(sellerId: string, amount: number, note: string): WalletTransaction | null {
+    const seller = this.users.find(u => u.id === sellerId && u.role === "seller")
+    if (!seller || amount <= 0) return null
+    
+    seller.walletBalance = (seller.walletBalance || 0) + amount
+    seller.totalEarnings = (seller.totalEarnings || 0) + amount
+    
+    const transaction: WalletTransaction = {
+      id: `txn-${Date.now()}`,
+      sellerId,
+      type: "earning",
+      amount,
+      note,
+      createdBy: "system",
+      createdAt: new Date().toISOString(),
+    }
+    this.transactions.push(transaction)
+    return transaction
   }
 }
 

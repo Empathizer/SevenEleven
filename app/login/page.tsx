@@ -5,7 +5,7 @@ import React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Package, Eye, EyeOff } from "lucide-react"
+import { Package, Eye, EyeOff, User, Store as StoreIcon, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -27,7 +27,7 @@ export default function LoginPage() {
     const result = login(email, password)
     if (result.success) {
       toast("Login successful!")
-      const store = getStore() // Used the declared getStore variable
+      const store = getStore()
       const loggedInUser = store.getCurrentUser()
       if (loggedInUser?.role === "admin") {
         router.push("/admin")
@@ -38,6 +38,24 @@ export default function LoginPage() {
       }
     } else {
       setError(result.error || "Login failed")
+    }
+  }
+
+  const quickLogin = (demoEmail: string, demoPassword: string) => {
+    setEmail(demoEmail)
+    setPassword(demoPassword)
+    const result = login(demoEmail, demoPassword)
+    if (result.success) {
+      toast("Login successful!")
+      const store = getStore()
+      const loggedInUser = store.getCurrentUser()
+      if (loggedInUser?.role === "admin") {
+        router.push("/admin")
+      } else if (loggedInUser?.role === "seller") {
+        router.push("/seller")
+      } else {
+        router.push("/")
+      }
     }
   }
 
@@ -83,12 +101,45 @@ export default function LoginPage() {
           </p>
 
           {/* Demo credentials */}
-          <div className="mt-6 rounded-lg bg-muted p-4">
-            <p className="mb-2 text-xs font-semibold text-foreground">Demo Accounts:</p>
-            <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-              <p><strong>Admin:</strong> admin@seveneleven.com / admin123</p>
-              <p><strong>Seller:</strong> seller@seveneleven.com / seller123</p>
-              <p><strong>Customer:</strong> customer@seveneleven.com / customer123</p>
+          <div className="mt-6 space-y-3">
+            <p className="text-center text-xs font-semibold text-muted-foreground">Quick Demo Login</p>
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => quickLogin("admin@seveneleven.com", "admin123")}
+                className="flex flex-col h-auto py-3 gap-1"
+              >
+                <ShieldCheck className="h-5 w-5 text-chart-1" />
+                <span className="text-xs font-semibold">Admin</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => quickLogin("seller@seveneleven.com", "seller123")}
+                className="flex flex-col h-auto py-3 gap-1"
+              >
+                <StoreIcon className="h-5 w-5 text-chart-3" />
+                <span className="text-xs font-semibold">Seller</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => quickLogin("customer@seveneleven.com", "customer123")}
+                className="flex flex-col h-auto py-3 gap-1"
+              >
+                <User className="h-5 w-5 text-chart-4" />
+                <span className="text-xs font-semibold">Customer</span>
+              </Button>
+            </div>
+            <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
+              <p className="font-semibold mb-1">Demo Credentials:</p>
+              <p>👨‍💼 Admin: admin@seveneleven.com / admin123</p>
+              <p>🏪 Seller: seller@seveneleven.com / seller123</p>
+              <p>🛒 Customer: customer@seveneleven.com / customer123</p>
             </div>
           </div>
         </div>

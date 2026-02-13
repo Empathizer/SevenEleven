@@ -1,6 +1,6 @@
 "use client"
 
-import { DollarSign, ShoppingCart, Package, TrendingUp } from "lucide-react"
+import { DollarSign, ShoppingCart, Package, TrendingUp, Wallet } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/lib/auth-context"
 import { getStore } from "@/lib/store"
@@ -11,8 +11,10 @@ export default function SellerDashboard() {
 
   if (!user) return null
   const stats = store.getSellerStats(user.id)
+  const wallet = store.getSellerWallet(user.id)
 
   const statCards = [
+    { label: "Wallet Balance", value: `$${(wallet?.walletBalance || 0).toFixed(2)}`, icon: Wallet, color: "text-primary" },
     { label: "Total Sales", value: `$${stats.totalSales.toFixed(2)}`, icon: DollarSign, color: "text-chart-1" },
     { label: "Total Orders", value: stats.totalOrders, icon: ShoppingCart, color: "text-chart-2" },
     { label: "Total Products", value: stats.totalProducts, icon: Package, color: "text-chart-3" },
@@ -23,7 +25,7 @@ export default function SellerDashboard() {
       <h1 className="text-2xl font-bold text-foreground">Seller Dashboard</h1>
       <p className="mt-1 text-sm text-muted-foreground">Welcome back, {user.storeName || user.name}!</p>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat) => (
           <Card key={stat.label} className="bg-card">
             <CardContent className="p-5">

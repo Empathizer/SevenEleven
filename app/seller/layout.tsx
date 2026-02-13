@@ -6,7 +6,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { useEffect } from "react"
-import { LayoutDashboard, Package, ShoppingCart, BarChart3, Store, LogOut, ChevronLeft, Menu, Plus } from "lucide-react"
+import { LayoutDashboard, Package, ShoppingCart, BarChart3, Store, LogOut, ChevronLeft, Menu, Plus, Wallet } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
@@ -16,6 +16,7 @@ const navItems = [
   { href: "/seller/products", label: "Products", icon: Package },
   { href: "/seller/products/new", label: "Add Product", icon: Plus },
   { href: "/seller/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/seller/wallet", label: "Wallet", icon: Wallet },
   { href: "/seller/store", label: "Store Profile", icon: Store },
 ]
 

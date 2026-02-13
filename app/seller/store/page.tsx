@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { ShieldCheck, ShieldAlert } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { getStore } from "@/lib/store"
 import { toast } from "sonner"
@@ -30,8 +32,30 @@ export default function SellerStorePage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-foreground">Store Profile</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Manage your store information.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Store Profile</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Manage your store information.</p>
+        </div>
+        {user.emailVerified ? (
+          <Badge className="bg-chart-4 text-primary-foreground">
+            <ShieldCheck className="mr-1 h-3 w-3" /> Verified
+          </Badge>
+        ) : (
+          <Badge variant="destructive">
+            <ShieldAlert className="mr-1 h-3 w-3" /> Unverified
+          </Badge>
+        )}
+      </div>
+
+      {!user.emailVerified && (
+        <div className="mt-4 rounded-lg bg-destructive/10 border border-destructive/20 p-4">
+          <p className="text-sm text-destructive font-semibold">⚠️ Account Not Verified</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Your seller account is pending admin approval. You will receive an email notification once verified.
+          </p>
+        </div>
+      )}
 
       <form onSubmit={handleSave} className="mt-6 max-w-2xl">
         <Card className="bg-card">
@@ -54,7 +78,18 @@ export default function SellerStorePage() {
               </div>
               <div className="flex flex-col gap-2">
                 <Label>Email</Label>
-                <Input value={user.email} disabled className="bg-muted opacity-60" />
+                <div className="flex items-center gap-2">
+                  <Input value={user.email} disabled className="bg-muted opacity-60" />
+                  {user.emailVerified ? (
+                    <Badge className="bg-chart-4 text-primary-foreground shrink-0">
+                      <ShieldCheck className="mr-1 h-3 w-3" /> Verified
+                    </Badge>
+                  ) : (
+                    <Badge variant="destructive" className="shrink-0">
+                      <ShieldAlert className="mr-1 h-3 w-3" /> Unverified
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
           </CardContent>
