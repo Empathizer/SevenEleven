@@ -34,7 +34,7 @@ export function StoreHeader() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5 text-xs">
           <span>Free shipping on orders over $50</span>
           <div className="hidden items-center gap-4 md:flex">
-            <Link href="/seller/register" className="hover:underline">Sell on SevenEleven</Link>
+            <Link href="/seller/register" className="hover:underline">Sell on EsellerStore</Link>
             <Link href="/help" className="hover:underline">Help Center</Link>
           </div>
         </div>
@@ -68,7 +68,7 @@ export function StoreHeader() {
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
             <Package className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="hidden text-xl font-bold text-foreground sm:block">SevenEleven</span>
+          <span className="hidden text-xl font-bold text-foreground sm:block">EsellerStore</span>
         </Link>
 
         {/* Search */}

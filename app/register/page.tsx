@@ -102,7 +102,7 @@ export default function RegisterPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
                 <Package className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-2xl font-bold text-foreground">SevenEleven</span>
+              <span className="text-2xl font-bold text-foreground">EsellerStore</span>
             </Link>
             <p className="mt-2 text-sm text-muted-foreground">Create your account</p>
           </div>
@@ -152,7 +152,7 @@ export default function RegisterPage() {
                     <Select value={idType} onValueChange={setIdType}>
                       <SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger>
                       <SelectContent className="bg-card">
-                        <SelectItem value="CNIC">CNIC</SelectItem>
+                        <SelectItem value="CNIC">Natinal ID</SelectItem>
                         <SelectItem value="Passport">Passport</SelectItem>
                         <SelectItem value="Driving License">Driving License</SelectItem>
                       </SelectContent>
@@ -160,7 +160,7 @@ export default function RegisterPage() {
                   </div>
                   <div className="flex flex-col gap-2">
                     <Label>ID Number</Label>
-                    <Input value={idNumber} onChange={e => setIdNumber(e.target.value)} placeholder="12345-1234567-1" required className="bg-muted" />
+                    <Input value={idNumber} onChange={e => setIdNumber(e.target.value)} placeholder="e.g., 123-45-6789" required className="bg-muted" autoComplete="off" />
                   </div>
                 </div>
 

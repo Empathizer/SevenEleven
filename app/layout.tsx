@@ -7,7 +7,7 @@ import { Providers } from "@/components/providers"
 const _inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "SevenEleven - Your Multi-Vendor Marketplace",
+  title: "EsellerStore - Your Multi-Vendor Marketplace",
   description: "Shop millions of products from trusted sellers. Fashion, beauty, electronics, and more at amazing prices.",
 }
 

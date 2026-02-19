@@ -11,7 +11,7 @@ export function StoreFooter() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                 <Package className="h-4 w-4 text-primary-foreground" />
               </div>
-              <span className="text-lg font-bold text-foreground">SevenEleven</span>
+              <span className="text-lg font-bold text-foreground">EsellerStore</span>
             </Link>
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
               Your trusted multi-vendor marketplace. Shop millions of products from thousands of sellers worldwide.
@@ -39,7 +39,7 @@ export function StoreFooter() {
           </div>
 
           <div>
-            <h3 className="mb-3 text-sm font-semibold text-foreground">Sell on SevenEleven</h3>
+            <h3 className="mb-3 text-sm font-semibold text-foreground">Sell on EsellerStore</h3>
             <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
               <li><Link href="/seller/register" className="hover:text-primary">Start Selling</Link></li>
               <li><Link href="/seller" className="hover:text-primary">Seller Center</Link></li>

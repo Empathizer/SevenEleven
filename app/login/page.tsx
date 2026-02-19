@@ -68,7 +68,7 @@ export default function LoginPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
                 <Package className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-2xl font-bold text-foreground">SevenEleven</span>
+              <span className="text-2xl font-bold text-foreground">EsellerStore</span>
             </Link>
             <p className="mt-2 text-sm text-muted-foreground">Sign in to your account</p>
           </div>
