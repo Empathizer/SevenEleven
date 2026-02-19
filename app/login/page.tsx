@@ -101,7 +101,7 @@ export default function LoginPage() {
           </p>
 
           {/* Demo credentials */}
-          <div className="mt-6 space-y-3">
+          <div className="mt-6 space-y-3 hidden md:block">
             <p className="text-center text-xs font-semibold text-muted-foreground">Quick Demo Login</p>
             <div className="grid grid-cols-3 gap-2">
               <Button
