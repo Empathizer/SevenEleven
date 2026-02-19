@@ -43,7 +43,7 @@ export function StoreFooter() {
             <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
               <li><Link href="/seller/register" className="hover:text-primary">Start Selling</Link></li>
               <li><Link href="/seller" className="hover:text-primary">Seller Center</Link></li>
-              <li><Link href="/policies" className="hover:text-primary">Seller Policies</Link></li>
+              <li><Link href="/seller-policies" className="hover:text-primary">Seller Policies</Link></li>
             </ul>
           </div>
         </div>

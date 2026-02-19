@@ -246,7 +246,8 @@ export default function SellerRegisterPage() {
             <div className="flex items-center gap-2">
               <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(checked) => setTermsAccepted(checked as boolean)} />
               <label htmlFor="terms" className="text-sm text-muted-foreground cursor-pointer">
-                I agree to the terms of service and seller policies
+                I agree to the terms of service and{' '}
+                <Link href="/seller-policies" className="text-primary hover:underline" target="_blank">seller policies</Link>
               </label>
             </div>
 
