@@ -24,44 +24,6 @@ export default function HomePage() {
           <HeroBanner />
         </section>
 
-        {/* Demo Credentials Banner */}
-        <section className="mx-auto max-w-7xl px-4 py-4">
-          <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-6">
-            <div className="flex flex-col items-center gap-4 md:flex-row md:justify-between">
-              <div>
-                <h3 className="text-lg font-bold text-foreground">🎯 Demo Platform - Test All Features</h3>
-                <p className="mt-1 text-sm text-muted-foreground">Login with demo accounts to explore admin, seller, and customer dashboards</p>
-              </div>
-              <Link href="/login" className="shrink-0 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
-                View Demo Logins
-              </Link>
-            </div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <div className="flex items-center gap-3 rounded-lg bg-card p-3 border border-border">
-                <AdminIcon className="h-8 w-8 text-chart-1" />
-                <div>
-                  <p className="text-xs font-semibold text-foreground">Admin Dashboard</p>
-                  <p className="text-xs text-muted-foreground">admin@seveneleven.com</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 rounded-lg bg-card p-3 border border-border">
-                <StoreIcon className="h-8 w-8 text-chart-3" />
-                <div>
-                  <p className="text-xs font-semibold text-foreground">Seller Dashboard</p>
-                  <p className="text-xs text-muted-foreground">seller@seveneleven.com</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 rounded-lg bg-card p-3 border border-border">
-                <User className="h-8 w-8 text-chart-4" />
-                <div>
-                  <p className="text-xs font-semibold text-foreground">Customer Account</p>
-                  <p className="text-xs text-muted-foreground">customer@seveneleven.com</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Trust badges */}
         <section className="border-y border-border bg-card">
           <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-4 py-5 md:grid-cols-4">

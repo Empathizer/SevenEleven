@@ -100,50 +100,5 @@ export default function LoginPage() {
             {"Don't have an account? "}<Link href="/register" className="font-medium text-primary hover:underline">Register</Link>
           </p>
 
-          {/* Demo credentials */}
-          <div className="mt-6 space-y-3 hidden md:block">
-            <p className="text-center text-xs font-semibold text-muted-foreground">Quick Demo Login</p>
-            <div className="grid grid-cols-3 gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => quickLogin("admin@esellerstore.com", "admin123")}
-                className="flex flex-col h-auto py-3 gap-1"
-              >
-                <ShieldCheck className="h-5 w-5 text-chart-1" />
-                <span className="text-xs font-semibold">Admin</span>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => quickLogin("seller@esellerstore.com", "seller123")}
-                className="flex flex-col h-auto py-3 gap-1"
-              >
-                <StoreIcon className="h-5 w-5 text-chart-3" />
-                <span className="text-xs font-semibold">Seller</span>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => quickLogin("customer@esellerstore.com", "customer123")}
-                className="flex flex-col h-auto py-3 gap-1"
-              >
-                <User className="h-5 w-5 text-chart-4" />
-                <span className="text-xs font-semibold">Customer</span>
-              </Button>
-            </div>
-            <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
-              <p className="font-semibold mb-1">Demo Credentials:</p>
-              <p>👨‍💼 Admin: admin@esellerstore.com / admin123</p>
-              <p>🏪 Seller: seller@esellerstore.com / seller123</p>
-              <p>🛒 Customer: customer@esellerstore.com / customer123</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   )
 }
