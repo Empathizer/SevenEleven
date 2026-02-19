@@ -108,7 +108,7 @@ export default function LoginPage() {
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => quickLogin("admin@seveneleven.com", "admin123")}
+                onClick={() => quickLogin("admin@esellerstore.com", "admin123")}
                 className="flex flex-col h-auto py-3 gap-1"
               >
                 <ShieldCheck className="h-5 w-5 text-chart-1" />
@@ -118,7 +118,7 @@ export default function LoginPage() {
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => quickLogin("seller@seveneleven.com", "seller123")}
+                onClick={() => quickLogin("seller@esellerstore.com", "seller123")}
                 className="flex flex-col h-auto py-3 gap-1"
               >
                 <StoreIcon className="h-5 w-5 text-chart-3" />
@@ -128,7 +128,7 @@ export default function LoginPage() {
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => quickLogin("customer@seveneleven.com", "customer123")}
+                onClick={() => quickLogin("customer@esellerstore.com", "customer123")}
                 className="flex flex-col h-auto py-3 gap-1"
               >
                 <User className="h-5 w-5 text-chart-4" />
@@ -137,9 +137,9 @@ export default function LoginPage() {
             </div>
             <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
               <p className="font-semibold mb-1">Demo Credentials:</p>
-              <p>👨‍💼 Admin: admin@seveneleven.com / admin123</p>
-              <p>🏪 Seller: seller@seveneleven.com / seller123</p>
-              <p>🛒 Customer: customer@seveneleven.com / customer123</p>
+              <p>👨‍💼 Admin: admin@esellerstore.com / admin123</p>
+              <p>🏪 Seller: seller@esellerstore.com / seller123</p>
+              <p>🛒 Customer: customer@esellerstore.com / customer123</p>
             </div>
           </div>
         </div>

@@ -41,7 +41,7 @@ export async function sendSellerApprovalEmail(seller: {
 }) {
   const emailData: EmailData = {
     to: seller.email,
-    subject: '🎉 Your SevenEleven Seller Account Has Been Approved!',
+    subject: '🎉 Your EsellerStore Seller Account Has Been Approved!',
     html: `
       <!DOCTYPE html>
       <html>
@@ -62,7 +62,7 @@ export async function sendSellerApprovalEmail(seller: {
           </div>
           <div class="content">
             <h2>Dear ${seller.name},</h2>
-            <p>Great news! Your seller account on <strong>SevenEleven</strong> has been approved.</p>
+            <p>Great news! Your seller account on <strong>EsellerStore</strong> has been approved.</p>
             
             <h3>📦 Store Details:</h3>
             <ul>
@@ -84,13 +84,13 @@ export async function sendSellerApprovalEmail(seller: {
             </div>
             
             <p><strong>Need Help?</strong><br>
-            Visit our Help Center or contact support@seveneleven.com</p>
+            Visit our Help Center or contact support@esellerstore.com</p>
             
             <p>Best regards,<br>
-            <strong>The SevenEleven Team</strong></p>
+            <strong>The EsellerStore Team</strong></p>
           </div>
           <div class="footer">
-            <p>© 2025 SevenEleven. All rights reserved.</p>
+            <p>© 2025 EsellerStore. All rights reserved.</p>
             <p>This is an automated email. Please do not reply.</p>
           </div>
         </div>
@@ -114,7 +114,7 @@ export async function sendSellerApprovalEmail(seller: {
  *   try {
  *     await sgMail.send({
  *       to: data.to,
- *       from: 'noreply@seveneleven.com',
+ *       from: 'noreply@esellerstore.com',
  *       subject: data.subject,
  *       html: data.html
  *     })
