@@ -10,36 +10,108 @@ export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const action = searchParams.get('action');
   const id = searchParams.get('id');
-  
-  const controller = await import('@/server/controllers/adminController');
-  
-  const mockReq = { user, params: { id, sellerId: searchParams.get('sellerId') }, query: Object.fromEntries(searchParams) };
-  const mockRes = {
-    status: (code) => ({
-      json: (data) => Response.json(data, { status: code })
-    }),
-    json: (data) => Response.json(data)
-  };
+  const sellerId = searchParams.get('sellerId');
 
   try {
-    if (action === 'dashboard') return await controller.getDashboard(mockReq, mockRes);
+    if (action === 'dashboard') {
+      const User = (await import('@/server/models/User')).default;
+      const Order = (await import('@/server/models/Order')).default;
+      const Product = (await import('@/server/models/Product')).default;
+      
+      const totalUsers = await User.countDocuments({ role: 'customer' });
+      const totalSellers = await User.countDocuments({ role: 'seller' });
+      const totalOrders = await Order.countDocuments();
+      const totalProducts = await Product.countDocuments();
+      const totalRevenue = await Order.aggregate([{ $group: { _id: null, total: { $sum: '$totalAmount' } } }]);
+      
+      return Response.json({
+        success: true,
+        data: {
+          totalUsers,
+          totalSellers,
+          totalOrders,
+          totalProducts,
+          totalRevenue: totalRevenue[0]?.total || 0
+        }
+      });
+    }
+    
     if (action === 'users') {
+      const User = (await import('@/server/models/User')).default;
       if (id) {
-        const User = (await import('@/server/models/User')).default;
         const user = await User.findById(id).select('-password');
         if (!user) return Response.json({ success: false, message: 'User not found' }, { status: 404 });
         return Response.json({ success: true, user });
       }
-      return await controller.getUsers(mockReq, mockRes);
+      const users = await User.find({ role: 'customer' }).select('-password').sort({ createdAt: -1 });
+      return Response.json({ success: true, users });
     }
-    if (action === 'sellers') return await controller.getSellers(mockReq, mockRes);
-    if (action === 'products') return await controller.getAllProducts(mockReq, mockRes);
-    if (action === 'categories') return await controller.getCategories(mockReq, mockRes);
-    if (action === 'orders') return await controller.getAllOrders(mockReq, mockRes);
-    if (action === 'banners') return await controller.getBanners(mockReq, mockRes);
-    if (action === 'wallet') return await controller.getSellerWallet(mockReq, mockRes);
-    if (action === 'transactions') return await controller.getSellerTransactions(mockReq, mockRes);
-    if (action === 'stats') return await controller.getSellerStats(mockReq, mockRes);
+    
+    if (action === 'sellers') {
+      const User = (await import('@/server/models/User')).default;
+      const Seller = (await import('@/server/models/Seller')).default;
+      const sellers = await User.find({ role: 'seller' }).populate('sellerProfile').select('-password').sort({ createdAt: -1 });
+      return Response.json({ success: true, sellers });
+    }
+    
+    if (action === 'products') {
+      const Product = (await import('@/server/models/Product')).default;
+      const products = await Product.find().populate('sellerId', 'name').sort({ createdAt: -1 });
+      return Response.json({ success: true, products });
+    }
+    
+    if (action === 'categories') {
+      const Category = (await import('@/server/models/Category')).default;
+      const categories = await Category.find().sort({ createdAt: -1 });
+      return Response.json({ success: true, categories });
+    }
+    
+    if (action === 'orders') {
+      const Order = (await import('@/server/models/Order')).default;
+      const orders = await Order.find().populate('userId', 'name email').sort({ createdAt: -1 });
+      return Response.json({ success: true, orders });
+    }
+    
+    if (action === 'banners') {
+      const Banner = (await import('@/server/models/Banner')).default;
+      const banners = await Banner.find().sort({ createdAt: -1 });
+      return Response.json({ success: true, banners });
+    }
+    
+    if (action === 'wallet' && sellerId) {
+      const User = (await import('@/server/models/User')).default;
+      const seller = await User.findById(sellerId).select('walletBalance pendingBalance');
+      if (!seller) return Response.json({ success: false, message: 'Seller not found' }, { status: 404 });
+      return Response.json({ success: true, wallet: seller });
+    }
+    
+    if (action === 'transactions' && sellerId) {
+      const WalletTransaction = (await import('@/server/models/WalletTransaction')).default;
+      const transactions = await WalletTransaction.find({ sellerId }).sort({ createdAt: -1 });
+      return Response.json({ success: true, transactions });
+    }
+    
+    if (action === 'stats' && sellerId) {
+      const Order = (await import('@/server/models/Order')).default;
+      const Product = (await import('@/server/models/Product')).default;
+      
+      const totalOrders = await Order.countDocuments({ 'items.sellerId': sellerId });
+      const totalProducts = await Product.countDocuments({ sellerId });
+      const totalRevenue = await Order.aggregate([
+        { $unwind: '$items' },
+        { $match: { 'items.sellerId': sellerId } },
+        { $group: { _id: null, total: { $sum: '$items.price' } } }
+      ]);
+      
+      return Response.json({
+        success: true,
+        stats: {
+          totalOrders,
+          totalProducts,
+          totalRevenue: totalRevenue[0]?.total || 0
+        }
+      });
+    }
     
     return Response.json({ success: false, message: 'Invalid action' }, { status: 400 });
   } catch (error) {
@@ -56,26 +128,58 @@ export async function POST(req) {
   const body = await req.json();
   const { searchParams } = new URL(req.url);
   const action = searchParams.get('action');
-  
-  const controller = await import('@/server/controllers/adminController');
-  
-  const mockReq = { user, body, params: { sellerId: body.sellerId, userId: body.userId, id: body.id } };
-  const mockRes = {
-    status: (code) => ({
-      json: (data) => Response.json(data, { status: code })
-    }),
-    json: (data) => Response.json(data),
-    cookie: (name, value, options) => {
-      const { cookies } = require('next/headers');
-      cookies().set(name, value, options);
-    }
-  };
 
   try {
-    if (action === 'category') return await controller.createCategory(mockReq, mockRes);
-    if (action === 'banner') return await controller.createBanner(mockReq, mockRes);
-    if (action === 'deposit') return await controller.addDeposit(mockReq, mockRes);
-    if (action === 'deduct') return await controller.deductAmount(mockReq, mockRes);
+    if (action === 'category') {
+      const Category = (await import('@/server/models/Category')).default;
+      const category = await Category.create(body);
+      return Response.json({ success: true, category });
+    }
+    
+    if (action === 'banner') {
+      const Banner = (await import('@/server/models/Banner')).default;
+      const banner = await Banner.create(body);
+      return Response.json({ success: true, banner });
+    }
+    
+    if (action === 'deposit') {
+      const User = (await import('@/server/models/User')).default;
+      const WalletTransaction = (await import('@/server/models/WalletTransaction')).default;
+      
+      await User.findByIdAndUpdate(body.sellerId, {
+        $inc: { walletBalance: body.amount }
+      });
+      
+      await WalletTransaction.create({
+        sellerId: body.sellerId,
+        type: 'deposit',
+        amount: body.amount,
+        note: body.description || 'Admin deposit',
+        createdBy: 'admin'
+      });
+      
+      return Response.json({ success: true, message: 'Deposit added successfully' });
+    }
+    
+    if (action === 'deduct') {
+      const User = (await import('@/server/models/User')).default;
+      const WalletTransaction = (await import('@/server/models/WalletTransaction')).default;
+      
+      await User.findByIdAndUpdate(body.sellerId, {
+        $inc: { walletBalance: -body.amount }
+      });
+      
+      await WalletTransaction.create({
+        sellerId: body.sellerId,
+        type: 'adjustment',
+        amount: body.amount,
+        note: body.description || 'Admin deduction',
+        createdBy: 'admin'
+      });
+      
+      return Response.json({ success: true, message: 'Amount deducted successfully' });
+    }
+    
     if (action === 'message') {
       const Message = (await import('@/server/models/Message')).default;
       const message = await Message.create({
@@ -85,6 +189,7 @@ export async function POST(req) {
       });
       return Response.json({ success: true, message });
     }
+    
     if (action === 'login-as') {
       const User = (await import('@/server/models/User')).default;
       const jwt = (await import('jsonwebtoken')).default;
@@ -104,6 +209,7 @@ export async function POST(req) {
       
       return Response.json({ success: true, user: targetUser });
     }
+    
     if (action === 'virtual-order') {
       const Order = (await import('@/server/models/Order')).default;
       const Product = (await import('@/server/models/Product')).default;
@@ -142,6 +248,7 @@ export async function POST(req) {
       
       return Response.json({ success: true, order });
     }
+    
     if (action === 'virtual-seller') {
       const User = (await import('@/server/models/User')).default;
       const Seller = (await import('@/server/models/Seller')).default;
@@ -193,32 +300,44 @@ export async function PUT(req) {
   const body = await req.json();
   const { searchParams } = new URL(req.url);
   const action = searchParams.get('action');
-  
-  const controller = await import('@/server/controllers/adminController');
-  
-  const mockReq = { user, body, params: { id: body.id, sellerId: body.sellerId } };
-  const mockRes = {
-    status: (code) => ({
-      json: (data) => Response.json(data, { status: code })
-    }),
-    json: (data) => Response.json(data)
-  };
 
   try {
-    if (action === 'approve-seller') return await controller.approveSeller(mockReq, mockRes);
-    if (action === 'reject-seller') return await controller.rejectSeller(mockReq, mockRes);
-    if (action === 'category') return await controller.updateCategory(mockReq, mockRes);
-    if (action === 'banner') return await controller.updateBanner(mockReq, mockRes);
+    if (action === 'approve-seller') {
+      const Seller = (await import('@/server/models/Seller')).default;
+      await Seller.findByIdAndUpdate(body.sellerId, { status: 'approved' });
+      return Response.json({ success: true, message: 'Seller approved successfully' });
+    }
+    
+    if (action === 'reject-seller') {
+      const Seller = (await import('@/server/models/Seller')).default;
+      await Seller.findByIdAndUpdate(body.sellerId, { status: 'rejected' });
+      return Response.json({ success: true, message: 'Seller rejected successfully' });
+    }
+    
+    if (action === 'category') {
+      const Category = (await import('@/server/models/Category')).default;
+      const category = await Category.findByIdAndUpdate(body.id, body, { new: true });
+      return Response.json({ success: true, category });
+    }
+    
+    if (action === 'banner') {
+      const Banner = (await import('@/server/models/Banner')).default;
+      const banner = await Banner.findByIdAndUpdate(body.id, body, { new: true });
+      return Response.json({ success: true, banner });
+    }
+    
     if (action === 'user') {
       const User = (await import('@/server/models/User')).default;
       const updatedUser = await User.findByIdAndUpdate(body.id, body, { new: true }).select('-password');
       return Response.json({ success: true, user: updatedUser });
     }
+    
     if (action === 'restore-user') {
       const User = (await import('@/server/models/User')).default;
       await User.findByIdAndUpdate(body.id, { status: 'active' });
       return Response.json({ success: true, message: 'User restored' });
     }
+    
     if (action === 'invitation') {
       const Seller = (await import('@/server/models/Seller')).default;
       await Seller.findByIdAndUpdate(body.id, { invitationCode: body.invitationCode });
@@ -240,26 +359,32 @@ export async function DELETE(req) {
   const { searchParams } = new URL(req.url);
   const action = searchParams.get('action');
   const id = searchParams.get('id');
-  
-  const controller = await import('@/server/controllers/adminController');
-  
-  const mockReq = { user, params: { id } };
-  const mockRes = {
-    status: (code) => ({
-      json: (data) => Response.json(data, { status: code })
-    }),
-    json: (data) => Response.json(data)
-  };
 
   try {
-    if (action === 'product') return await controller.deleteProduct(mockReq, mockRes);
-    if (action === 'category') return await controller.deleteCategory(mockReq, mockRes);
-    if (action === 'banner') return await controller.deleteBanner(mockReq, mockRes);
+    if (action === 'product') {
+      const Product = (await import('@/server/models/Product')).default;
+      await Product.findByIdAndDelete(id);
+      return Response.json({ success: true, message: 'Product deleted successfully' });
+    }
+    
+    if (action === 'category') {
+      const Category = (await import('@/server/models/Category')).default;
+      await Category.findByIdAndDelete(id);
+      return Response.json({ success: true, message: 'Category deleted successfully' });
+    }
+    
+    if (action === 'banner') {
+      const Banner = (await import('@/server/models/Banner')).default;
+      await Banner.findByIdAndDelete(id);
+      return Response.json({ success: true, message: 'Banner deleted successfully' });
+    }
+    
     if (action === 'user') {
       const User = (await import('@/server/models/User')).default;
       await User.findByIdAndUpdate(id, { status: 'blocked' });
       return Response.json({ success: true, message: 'User blocked' });
     }
+    
     if (action === 'order') {
       const Order = (await import('@/server/models/Order')).default;
       await Order.findByIdAndDelete(id);
