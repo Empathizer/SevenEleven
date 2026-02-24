@@ -11,7 +11,7 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([])
 
   const loadProducts = () => {
-    fetch("/api/admin/products", { credentials: "include" })
+    fetch("http://localhost:5000/api/admin/products", { credentials: "include" })
       .then(r => r.json())
       .then(data => setProducts(data.data || []))
   }

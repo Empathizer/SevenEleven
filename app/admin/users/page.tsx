@@ -11,7 +11,7 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<any[]>([])
 
   const loadUsers = () => {
-    fetch("/api/admin/users", { credentials: "include" })
+    fetch("http://localhost:5000/api/admin/users", { credentials: "include" })
       .then(r => r.json())
       .then(data => setUsers(data.data || []))
   }

@@ -22,7 +22,7 @@ function ProductsContent() {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/products/categories").then(r => r.json()),
+      fetch("http://localhost:5000/api/products/categories").then(r => r.json()),
       fetch(`/api/products?category=${categorySlug}&search=${searchQuery}`).then(r => r.json())
     ]).then(([cats, prods]) => {
       setCategories(cats.data || [])

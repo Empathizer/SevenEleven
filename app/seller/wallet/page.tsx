@@ -18,10 +18,10 @@ export default function SellerWalletPage() {
       router.push("/login")
       return
     }
-    fetch("/api/seller/wallet", { credentials: "include" })
+    fetch("http://localhost:5000/api/seller/wallet", { credentials: "include" })
       .then(r => r.json())
       .then(data => setWallet(data.data))
-    fetch("/api/seller/transactions", { credentials: "include" })
+    fetch("http://localhost:5000/api/seller/transactions", { credentials: "include" })
       .then(r => r.json())
       .then(data => setTransactions(data.data || []))
   }, [user, router])

@@ -16,6 +16,7 @@ const advancedSellerRoutes = require('./routes/advancedSeller');
 const advancedOrderRoutes = require('./routes/advancedOrders');
 const withdrawalRoutes = require('./routes/withdrawals');
 const messageRoutes = require('./routes/messages');
+const bannerRoutes = require('./routes/banners');
 
 const app = express();
 
@@ -56,6 +57,7 @@ app.use('/api/admin/sellers', advancedSellerRoutes);
 app.use('/api/admin/orders', advancedOrderRoutes);
 app.use('/api/withdrawals', withdrawalRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/banners', bannerRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
