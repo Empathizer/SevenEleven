@@ -15,13 +15,13 @@ export default function HomePage() {
 
   useEffect(() => {
     Promise.all([
-      fetch("http://localhost:5000/api/products/categories").then(r => r.json()),
-      fetch("http://localhost:5000/api/products?featured=true").then(r => r.json()),
-      fetch("http://localhost:5000/api/products").then(r => r.json())
+      fetch("/api/products/categories").then(r => r.json()),
+      fetch("/api/products?featured=true").then(r => r.json()),
+      fetch("/api/products").then(r => r.json())
     ]).then(([cats, featured, all]) => {
-      setCategories(cats.data || [])
-      setFeaturedProducts(featured.data || [])
-      setAllProducts(all.data || [])
+      setCategories(cats.categories || [])
+      setFeaturedProducts(featured.products || [])
+      setAllProducts(all.products || [])
     })
   }, [])
 

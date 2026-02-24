@@ -65,6 +65,7 @@ const productSchema = new mongoose.Schema({
   timestamps: true
 });
 
-productSchema.index({ name: 'text', description: 'text' });
+// Text index removed - causing timeout issues
+// productSchema.index({ name: 'text', description: 'text' });
 
-module.exports = mongoose.model('Product', productSchema);
+module.exports = mongoose.models.Product || mongoose.model('Product', productSchema);

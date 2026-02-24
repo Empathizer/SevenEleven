@@ -1,25 +1,18 @@
-import { cookies } from "next/headers";
+import { requireAuth } from '@/lib/api-helper';
+import connectDB from '@/lib/db';
 
-export async function GET() {
-  const token = cookies().get("token")?.value;
-  
-  const res = await fetch("http://localhost:5000/api/messages", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  const data = await res.json();
-  return Response.json(data);
-}
+export async function GET(req) {
+  await connectDB();
+  const { error, user } = await requireAuth(req);
+  if (error) return error;
 
-export async function PUT(req) {
-  const token = cookies().get("token")?.value;
-  const body = await req.json();
-  const { id } = body;
-  
-  const res = await fetch(`http://localhost:5000/api/messages/${id}/read`, {
-    method: "PUT",
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  
-  const data = await res.json();
-  return Response.json(data);
+  try {
+    const Message = (await import('@/server/models/Message')).default;
+    const messages = await Message.find({ receiverId: user.id })
+      .populate('senderId', 'name email')
+      .sort('-createdAt');
+    return Response.json({ success: true, messages });
+  } catch (error) {
+    return Response.json({ success: false, message: error.message }, { status: 500 });
+  }
 }

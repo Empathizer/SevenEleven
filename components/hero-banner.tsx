@@ -10,7 +10,7 @@ export function HeroBanner() {
   const [current, setCurrent] = useState(0)
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/banners")
+    fetch("/api/banners")
       .then(r => r.json())
       .then(data => setBanners(data.data || []))
   }, [])

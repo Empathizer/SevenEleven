@@ -33,7 +33,7 @@ export default function SellerWalletPage() {
       <h1 className="text-2xl font-bold text-foreground">Wallet</h1>
       <p className="mt-1 text-sm text-muted-foreground">Manage your earnings and balance</p>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
+      <div className="mt-6 grid gap-4 md:grid-cols-4">
         <Card className="bg-card">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -41,6 +41,16 @@ export default function SellerWalletPage() {
             </div>
             <p className="mt-4 text-3xl font-bold text-foreground">${wallet.walletBalance.toFixed(2)}</p>
             <p className="text-sm text-muted-foreground">Available Balance</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <DollarSign className="h-8 w-8 text-yellow-500" />
+            </div>
+            <p className="mt-4 text-3xl font-bold text-foreground">${(wallet.pendingBalance || 0).toFixed(2)}</p>
+            <p className="text-sm text-muted-foreground">Pending Balance</p>
           </CardContent>
         </Card>
 

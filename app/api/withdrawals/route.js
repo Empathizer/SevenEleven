@@ -1,46 +1,56 @@
-import { cookies } from "next/headers";
-
-export async function GET() {
-  const token = cookies().get("token")?.value;
-  
-  const res = await fetch("http://localhost:5000/api/withdrawals", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  const data = await res.json();
-  return Response.json(data);
-}
+import { requireAuth } from '@/lib/api-helper';
+import connectDB from '@/lib/db';
 
 export async function POST(req) {
-  const token = cookies().get("token")?.value;
-  const body = await req.json();
-  
-  const res = await fetch("http://localhost:5000/api/withdrawals", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(body)
-  });
-  
-  const data = await res.json();
-  return Response.json(data);
+  await connectDB();
+  const { error, user } = await requireAuth(req, 'seller');
+  if (error) return error;
+
+  try {
+    const body = await req.json();
+    const Seller = (await import('@/server/models/Seller')).default;
+    const WithdrawalRequest = (await import('@/server/models/WithdrawalRequest')).default;
+    
+    const seller = await Seller.findOne({ userId: user._id });
+    if (!seller) {
+      return Response.json({ success: false, message: 'Seller not found' }, { status: 404 });
+    }
+
+    if (seller.walletBalance < body.amount) {
+      return Response.json({ success: false, message: 'Insufficient balance' }, { status: 400 });
+    }
+
+    const withdrawal = await WithdrawalRequest.create({
+      sellerId: seller._id,
+      amount: body.amount
+    });
+
+    return Response.json({ success: true, data: withdrawal }, { status: 201 });
+  } catch (error) {
+    return Response.json({ success: false, message: error.message }, { status: 500 });
+  }
 }
 
-export async function PUT(req) {
-  const token = cookies().get("token")?.value;
-  const body = await req.json();
-  const { id, ...updateData } = body;
-  
-  const res = await fetch(`http://localhost:5000/api/withdrawals/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(updateData)
-  });
-  
-  const data = await res.json();
-  return Response.json(data);
+export async function GET(req) {
+  await connectDB();
+  const { error } = await requireAuth(req, 'admin');
+  if (error) return error;
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const status = searchParams.get('status');
+    const WithdrawalRequest = (await import('@/server/models/WithdrawalRequest')).default;
+    const filter = status ? { status } : {};
+
+    const requests = await WithdrawalRequest.find(filter)
+      .populate({
+        path: 'sellerId',
+        populate: { path: 'userId', select: 'name email' }
+      })
+      .sort('-createdAt');
+
+    return Response.json({ success: true, data: requests });
+  } catch (error) {
+    return Response.json({ success: false, message: error.message }, { status: 500 });
+  }
 }

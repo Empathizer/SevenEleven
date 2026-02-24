@@ -1,66 +1,114 @@
-import { cookies } from "next/headers";
+import connectDB from '@/lib/db';
+import { requireAuth } from '@/lib/auth';
 
 export async function GET(req) {
-  const token = cookies().get("token")?.value;
-  const { searchParams } = new URL(req.url);
-  const endpoint = searchParams.get("endpoint") || "profile";
+  await connectDB();
   
-  const res = await fetch(`http://localhost:5000/api/seller/${endpoint}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  const data = await res.json();
-  return Response.json(data);
+  const { error, user } = await requireAuth(req, 'seller');
+  if (error) return error;
+  
+  const { searchParams } = new URL(req.url);
+  const action = searchParams.get('action');
+  
+  const controller = await import('@/server/controllers/sellerController');
+  
+  const mockReq = { user, query: Object.fromEntries(searchParams) };
+  const mockRes = {
+    status: (code) => ({
+      json: (data) => Response.json(data, { status: code })
+    }),
+    json: (data) => Response.json(data)
+  };
+
+  try {
+    if (action === 'profile') return await controller.getProfile(mockReq, mockRes);
+    if (action === 'products') return await controller.getProducts(mockReq, mockRes);
+    if (action === 'orders') return await controller.getOrders(mockReq, mockRes);
+    if (action === 'wallet') return await controller.getWallet(mockReq, mockRes);
+    if (action === 'transactions') return await controller.getTransactions(mockReq, mockRes);
+    
+    return Response.json({ success: false, message: 'Invalid action' }, { status: 400 });
+  } catch (error) {
+    return Response.json({ success: false, message: error.message }, { status: 500 });
+  }
 }
 
 export async function POST(req) {
-  const token = cookies().get("token")?.value;
+  await connectDB();
+  
+  const { error, user } = await requireAuth(req, 'seller');
+  if (error) return error;
+  
   const body = await req.json();
-  const endpoint = body._endpoint || "products";
-  delete body._endpoint;
+  const { createProduct } = await import('@/server/controllers/sellerController');
   
-  const res = await fetch(`http://localhost:5000/api/seller/${endpoint}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(body)
-  });
-  
-  const data = await res.json();
-  return Response.json(data);
+  const mockReq = { user, body };
+  const mockRes = {
+    status: (code) => ({
+      json: (data) => Response.json(data, { status: code })
+    }),
+    json: (data) => Response.json(data)
+  };
+
+  try {
+    return await createProduct(mockReq, mockRes);
+  } catch (error) {
+    return Response.json({ success: false, message: error.message }, { status: 500 });
+  }
 }
 
 export async function PUT(req) {
-  const token = cookies().get("token")?.value;
+  await connectDB();
+  
+  const { error, user } = await requireAuth(req, 'seller');
+  if (error) return error;
+  
   const body = await req.json();
-  const { id, _endpoint, ...updateData } = body;
-  const endpoint = _endpoint || "profile";
-  const url = id ? `http://localhost:5000/api/seller/${endpoint}/${id}` : `http://localhost:5000/api/seller/${endpoint}`;
+  const { searchParams } = new URL(req.url);
+  const action = searchParams.get('action');
   
-  const res = await fetch(url, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(updateData)
-  });
+  const controller = await import('@/server/controllers/sellerController');
   
-  const data = await res.json();
-  return Response.json(data);
+  const mockReq = { user, body, params: { id: body.id } };
+  const mockRes = {
+    status: (code) => ({
+      json: (data) => Response.json(data, { status: code })
+    }),
+    json: (data) => Response.json(data)
+  };
+
+  try {
+    if (action === 'profile') return await controller.updateProfile(mockReq, mockRes);
+    if (action === 'product') return await controller.updateProduct(mockReq, mockRes);
+    
+    return Response.json({ success: false, message: 'Invalid action' }, { status: 400 });
+  } catch (error) {
+    return Response.json({ success: false, message: error.message }, { status: 500 });
+  }
 }
 
 export async function DELETE(req) {
-  const token = cookies().get("token")?.value;
+  await connectDB();
+  
+  const { error, user } = await requireAuth(req, 'seller');
+  if (error) return error;
+  
   const { searchParams } = new URL(req.url);
-  const id = searchParams.get("id");
+  const id = searchParams.get('id');
   
-  const res = await fetch(`http://localhost:5000/api/seller/products/${id}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const { deleteProduct } = await import('@/server/controllers/sellerController');
   
-  const data = await res.json();
-  return Response.json(data);
+  const mockReq = { user, params: { id } };
+  const mockRes = {
+    status: (code) => ({
+      json: (data) => Response.json(data, { status: code })
+    }),
+    json: (data) => Response.json(data)
+  };
+
+  try {
+    return await deleteProduct(mockReq, mockRes);
+  } catch (error) {
+    return Response.json({ success: false, message: error.message }, { status: 500 });
+  }
 }

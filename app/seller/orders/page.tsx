@@ -19,17 +19,17 @@ export default function SellerOrdersPage() {
 
   const loadOrders = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/seller/orders`, { credentials: 'include' })
+      const res = await fetch('http://localhost:5000/api/orders', { credentials: 'include' })
       if (res.ok) {
         const data = await res.json()
-        if (data.success) setOrders(data.data || [])
+        if (data.success) setOrders(data.orders || [])
       }
     } catch (e) {}
   }
 
   const updateStatus = async (orderId: string, status: string) => {
     try {
-      const res = await fetch(`${API_URL}/api/orders/${orderId}/status`, {
+      const res = await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
