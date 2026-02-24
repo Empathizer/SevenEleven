@@ -26,16 +26,24 @@ export default function LoginPage() {
     setError("")
     const result = await login(email, password)
     if (result.success) {
-      toast("Login successful!")
-      const store = getStore()
-      const loggedInUser = store.getCurrentUser()
-      if (loggedInUser?.role === "admin") {
-        router.push("/admin")
-      } else if (loggedInUser?.role === "seller") {
-        router.push("/seller")
-      } else {
-        router.push("/")
+      toast.success("Login successful!")
+      // Fetch user data to determine role
+      const res = await fetch('/api/auth/me', { credentials: 'include' })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success && data.data) {
+          const userRole = data.data.role
+          if (userRole === "admin") {
+            router.push("/admin")
+          } else if (userRole === "seller") {
+            router.push("/seller")
+          } else {
+            router.push("/")
+          }
+          return
+        }
       }
+      router.push("/")
     } else {
       setError(result.error || "Login failed")
     }
@@ -46,16 +54,23 @@ export default function LoginPage() {
     setPassword(demoPassword)
     const result = await login(demoEmail, demoPassword)
     if (result.success) {
-      toast("Login successful!")
-      const store = getStore()
-      const loggedInUser = store.getCurrentUser()
-      if (loggedInUser?.role === "admin") {
-        router.push("/admin")
-      } else if (loggedInUser?.role === "seller") {
-        router.push("/seller")
-      } else {
-        router.push("/")
+      toast.success("Login successful!")
+      const res = await fetch('/api/auth/me', { credentials: 'include' })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success && data.data) {
+          const userRole = data.data.role
+          if (userRole === "admin") {
+            router.push("/admin")
+          } else if (userRole === "seller") {
+            router.push("/seller")
+          } else {
+            router.push("/")
+          }
+          return
+        }
       }
+      router.push("/")
     }
   }
 
