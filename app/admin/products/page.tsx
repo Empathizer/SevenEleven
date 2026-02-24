@@ -34,8 +34,15 @@ export default function AdminProductsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-foreground">Manage Products</h1>
-      <p className="mt-1 text-sm text-muted-foreground">View and manage all products on the platform.</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Manage Products</h1>
+          <p className="mt-1 text-sm text-muted-foreground">View and manage all products on the platform.</p>
+        </div>
+        <Link href="/admin/products/new">
+          <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Add Product</Button>
+        </Link>
+      </div>
 
       <div className="mt-6 overflow-hidden rounded-xl border border-border bg-card">
         <Table>
