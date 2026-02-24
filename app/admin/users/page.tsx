@@ -11,7 +11,7 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<any[]>([])
 
   const loadUsers = () => {
-    fetch("http://localhost:5000/api/admin/users", { credentials: "include" })
+    fetch("/api/admin/users", { credentials: "include" })
       .then(r => r.json())
       .then(data => setUsers(data.data || []))
   }
@@ -20,7 +20,7 @@ export default function AdminUsersPage() {
 
   const handleDelete = async (id: string, email: string) => {
     if (email.includes("admin@")) { toast("Cannot delete admin"); return }
-    const res = await fetch(`http://localhost:5000/api/admin/users/${id}`, {
+    const res = await fetch(`/api/admin/users/${id}`, {
       method: "DELETE",
       credentials: "include"
     })

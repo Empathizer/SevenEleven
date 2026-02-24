@@ -5,7 +5,7 @@ import { DollarSign, ShoppingCart, Users, Package, Store, Clock } from "lucide-r
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({ totalSales: 0, totalOrders: 0, totalProducts: 0, totalSellers: 0, totalUsers: 0, pendingSellers: 0 })

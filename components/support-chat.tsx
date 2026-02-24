@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { MessageCircle, Send } from "lucide-react"
 import { toast } from "sonner"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
 export function SupportChat({ userId }: { userId: string }) {
   const [open, setOpen] = useState(false)

@@ -19,11 +19,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [quantity, setQuantity] = useState(1)
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/products/${id}`).then(r => r.json()).then(data => {
+    fetch(`/api/products/${id}`).then(r => r.json()).then(data => {
       const prod = data.data
       setProduct(prod)
       if (prod?.categoryId?._id) {
-        fetch(`http://localhost:5000/api/products?category=${prod.categoryId.slug}`).then(r => r.json()).then(related => {
+        fetch(`/api/products?category=${prod.categoryId.slug}`).then(r => r.json()).then(related => {
           setRelatedProducts((related.data || []).filter((p: any) => p._id !== id).slice(0, 5))
         })
       }

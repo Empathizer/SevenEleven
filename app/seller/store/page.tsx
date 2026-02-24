@@ -22,7 +22,7 @@ export default function SellerStorePage() {
 
   useEffect(() => {
     if (user) {
-      fetch("http://localhost:5000/api/seller/profile", { credentials: "include" })
+      fetch("/api/seller/profile", { credentials: "include" })
         .then(r => r.json())
         .then(data => {
           setSeller(data.data)
@@ -37,7 +37,7 @@ export default function SellerStorePage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    const res = await fetch("http://localhost:5000/api/seller/profile", {
+    const res = await fetch("/api/seller/profile", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

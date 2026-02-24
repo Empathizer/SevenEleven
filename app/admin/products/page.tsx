@@ -11,7 +11,7 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([])
 
   const loadProducts = () => {
-    fetch("http://localhost:5000/api/admin/products", { credentials: "include" })
+    fetch("/api/admin/products", { credentials: "include" })
       .then(r => r.json())
       .then(data => setProducts(data.data || []))
   }
@@ -19,7 +19,7 @@ export default function AdminProductsPage() {
   useEffect(() => { loadProducts() }, [])
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(`http://localhost:5000/api/admin/products/${id}`, {
+    const res = await fetch(`/api/admin/products/${id}`, {
       method: "DELETE",
       credentials: "include"
     })

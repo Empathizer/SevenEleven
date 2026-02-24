@@ -16,7 +16,7 @@ export default function WishlistPage() {
   useEffect(() => {
     if (wishlist.length > 0) {
       Promise.all(wishlist.map(id => 
-        fetch(`http://localhost:5000/api/products/${id}`).then(r => r.json()).then(d => d.data)
+        fetch(`/api/products/${id}`).then(r => r.json()).then(d => d.data)
       )).then(prods => setProducts(prods.filter(Boolean)))
     } else {
       setProducts([])

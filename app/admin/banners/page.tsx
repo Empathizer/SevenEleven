@@ -20,7 +20,7 @@ export default function AdminBannersPage() {
   const [link, setLink] = useState("/products")
 
   const loadBanners = () => {
-    fetch("http://localhost:5000/api/admin/banners", { credentials: "include" })
+    fetch("/api/admin/banners", { credentials: "include" })
       .then(r => r.json())
       .then(data => setBanners(data.data || []))
   }
@@ -29,7 +29,7 @@ export default function AdminBannersPage() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
-    const res = await fetch("http://localhost:5000/api/admin/banners", {
+    const res = await fetch("/api/admin/banners", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -44,7 +44,7 @@ export default function AdminBannersPage() {
   }
 
   const toggleActive = async (id: string, active: boolean) => {
-    const res = await fetch(`http://localhost:5000/api/admin/banners/${id}`, {
+    const res = await fetch(`/api/admin/banners/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -57,7 +57,7 @@ export default function AdminBannersPage() {
   }
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(`http://localhost:5000/api/admin/banners/${id}`, {
+    const res = await fetch(`/api/admin/banners/${id}`, {
       method: "DELETE",
       credentials: "include"
     })

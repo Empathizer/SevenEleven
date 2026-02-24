@@ -14,7 +14,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
 export default function AdminSellersPage() {
   const router = useRouter()
@@ -441,7 +441,7 @@ export default function AdminSellersPage() {
                     <img src={selectedSeller.idImage} alt="ID" className="w-full max-h-64 object-contain rounded-lg border" />
                   ) : (
                     <div className="rounded-lg border bg-muted p-8 text-center">
-                      <a href={`http://localhost:5000${selectedSeller.idImage}`} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
+                      <a href={`${selectedSeller.idImage}`} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
                         View Image
                       </a>
                     </div>

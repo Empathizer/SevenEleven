@@ -29,7 +29,7 @@ export default function NewProductPage() {
   const [featured, setFeatured] = useState(false)
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/products/categories")
+    fetch("/api/products/categories")
       .then(r => r.json())
       .then(data => setCategories(data.data || []))
   }, [])
@@ -40,7 +40,7 @@ export default function NewProductPage() {
     e.preventDefault()
     if (!categoryId) { toast("Please select a category"); return }
 
-    const res = await fetch("http://localhost:5000/api/seller/products", {
+    const res = await fetch("/api/seller/products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

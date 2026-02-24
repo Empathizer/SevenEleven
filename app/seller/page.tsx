@@ -5,7 +5,7 @@ import { DollarSign, ShoppingCart, Package, TrendingUp, Wallet } from "lucide-re
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/lib/auth-context"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
 export default function SellerDashboard() {
   const { user } = useAuth()

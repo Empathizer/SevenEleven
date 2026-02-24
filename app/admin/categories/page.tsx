@@ -19,7 +19,7 @@ export default function AdminCategoriesPage() {
   const [open, setOpen] = useState(false)
 
   const loadCategories = () => {
-    fetch("http://localhost:5000/api/admin/categories", { credentials: "include" })
+    fetch("/api/admin/categories", { credentials: "include" })
       .then(r => r.json())
       .then(data => setCategories(data.data || []))
   }
@@ -28,7 +28,7 @@ export default function AdminCategoriesPage() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
-    const res = await fetch("http://localhost:5000/api/admin/categories", {
+    const res = await fetch("/api/admin/categories", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -43,7 +43,7 @@ export default function AdminCategoriesPage() {
   }
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(`http://localhost:5000/api/admin/categories/${id}`, {
+    const res = await fetch(`/api/admin/categories/${id}`, {
       method: "DELETE",
       credentials: "include"
     })
