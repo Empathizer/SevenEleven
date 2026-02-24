@@ -19,10 +19,10 @@ export async function PUT(req, { params }) {
     }
 
     if (status === 'approved') {
-      const User = (await import('@/server/models/User')).default;
-      const seller = await User.findById(withdrawal.sellerId);
+      const Seller = (await import('@/server/models/Seller')).default;
+      const seller = await Seller.findOne({ userId: withdrawal.sellerId });
       
-      if (seller.walletBalance < withdrawal.amount) {
+      if (!seller || seller.walletBalance < withdrawal.amount) {
         return Response.json({ success: false, message: 'Insufficient balance' }, { status: 400 });
       }
 

@@ -28,8 +28,12 @@ export async function POST(req) {
   }
 
   try {
-    const User = (await import('@/server/models/User')).default;
-    const seller = await User.findById(user.id);
+    const Seller = (await import('@/server/models/Seller')).default;
+    const seller = await Seller.findOne({ userId: user.id }).populate('userId');
+    
+    if (!seller) {
+      return Response.json({ success: false, message: 'Seller not found' }, { status: 404 });
+    }
     
     if (seller.walletBalance < amount) {
       return Response.json({ success: false, message: 'Insufficient balance' }, { status: 400 });
@@ -38,7 +42,7 @@ export async function POST(req) {
     const Withdrawal = (await import('@/server/models/Withdrawal')).default;
     await Withdrawal.create({
       sellerId: user.id,
-      sellerName: seller.name,
+      sellerName: seller.storeName || seller.userId.name,
       amount,
       status: 'pending'
     });
