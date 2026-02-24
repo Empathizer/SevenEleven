@@ -34,8 +34,6 @@ export default function OrdersPage() {
     )
   }
 
-  const orders = isAuthenticated && user ? orders : []
-
   const statusColor = (status: string) => {
     switch (status) {
       case "delivered": return "bg-chart-4 text-primary-foreground"
