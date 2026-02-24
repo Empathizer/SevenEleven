@@ -17,11 +17,9 @@ import { cn } from "@/lib/utils"
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/sellers", label: "Sellers", icon: Users },
-  { href: "/admin/sellers-advanced", label: "Sellers Advanced", icon: Settings },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/categories", label: "Categories", icon: Tag },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
-  { href: "/admin/orders-advanced", label: "Orders Advanced", icon: FileText },
   { href: "/admin/banners", label: "Banners", icon: ImageIcon },
   { href: "/admin/users", label: "All Users", icon: Users },
   { href: "/admin/virtual-customers", label: "Virtual Customers", icon: UserPlus },

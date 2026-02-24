@@ -45,7 +45,7 @@ exports.getUsers = async (req, res) => {
 exports.getSellers = async (req, res) => {
   try {
     const sellers = await Seller.find().populate('userId', 'name email walletBalance totalEarnings totalWithdrawn');
-    res.json({ success: true, sellers });
+    res.json({ success: true, data: sellers });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
