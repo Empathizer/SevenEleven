@@ -17,7 +17,11 @@ export default function OrdersPage() {
     if (isAuthenticated && user) {
       fetch("/api/orders", { credentials: "include" })
         .then(r => r.json())
-        .then(data => setOrders(data.orders || []))
+        .then(data => {
+          console.log('Orders data:', data)
+          setOrders(data.orders || [])
+        })
+        .catch(err => console.error('Orders fetch error:', err))
     }
   }, [isAuthenticated, user])
 
