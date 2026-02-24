@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth-context"
 import { useEffect } from "react"
 import {
   LayoutDashboard, Users, Package, Tag, ImageIcon, ShoppingCart, DollarSign, LogOut, ChevronLeft, Menu,
+  UserPlus, Settings, FileText, Wallet
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -16,11 +17,15 @@ import { cn } from "@/lib/utils"
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/sellers", label: "Sellers", icon: Users },
+  { href: "/admin/sellers-advanced", label: "Sellers Advanced", icon: Settings },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/categories", label: "Categories", icon: Tag },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/admin/orders-advanced", label: "Orders Advanced", icon: FileText },
   { href: "/admin/banners", label: "Banners", icon: ImageIcon },
   { href: "/admin/users", label: "All Users", icon: Users },
+  { href: "/admin/virtual-customers", label: "Virtual Customers", icon: UserPlus },
+  { href: "/admin/withdrawals", label: "Withdrawals", icon: Wallet },
 ]
 
 function SidebarNav({ pathname }: { pathname: string }) {
