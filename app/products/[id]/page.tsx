@@ -20,11 +20,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   useEffect(() => {
     fetch(`/api/products/${id}`).then(r => r.json()).then(data => {
-      const prod = data.data
+      const prod = data.product
       setProduct(prod)
       if (prod?.categoryId?._id) {
         fetch(`/api/products?category=${prod.categoryId.slug}`).then(r => r.json()).then(related => {
-          setRelatedProducts((related.data || []).filter((p: any) => p._id !== id).slice(0, 5))
+          setRelatedProducts((related.products || []).filter((p: any) => p._id !== id).slice(0, 5))
         })
       }
     })
