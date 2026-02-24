@@ -44,7 +44,47 @@ const sellerSchema = new mongoose.Schema({
     enum: ['pending', 'approved', 'rejected'],
     default: 'pending'
   },
-  rejectionReason: String
+  rejectionReason: String,
+  walletBalance: {
+    type: Number,
+    default: 0
+  },
+  pendingBalance: {
+    type: Number,
+    default: 0
+  },
+  guaranteeMoney: {
+    type: Number,
+    default: 0
+  },
+  totalRecharge: {
+    type: Number,
+    default: 0
+  },
+  totalWithdrawn: {
+    type: Number,
+    default: 0
+  },
+  creditScore: {
+    type: Number,
+    default: 100
+  },
+  viewsBase: {
+    type: Number,
+    default: 0
+  },
+  viewsInc: {
+    type: Number,
+    default: 0
+  },
+  package: {
+    type: String,
+    trim: true
+  },
+  salesman: {
+    type: String,
+    trim: true
+  }
 }, {
   timestamps: true
 });

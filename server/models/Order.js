@@ -51,6 +51,29 @@ const orderSchema = new mongoose.Schema({
   shippingAddress: {
     type: String,
     required: [true, 'Shipping address is required']
+  },
+  profit: {
+    type: Number,
+    default: 0
+  },
+  pickupStatus: {
+    type: String,
+    enum: ['Unpicked Up', 'Picked Up'],
+    default: 'Unpicked Up'
+  },
+  deliveryStatus: {
+    type: String,
+    enum: ['Pending', 'Confirmed', 'Picked Up', 'On The Way', 'Delivered', 'Cancel'],
+    default: 'Pending'
+  },
+  refundStatus: {
+    type: String,
+    enum: ['none', 'requested', 'approved', 'rejected'],
+    default: 'none'
+  },
+  isVirtualOrder: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

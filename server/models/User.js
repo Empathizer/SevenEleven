@@ -42,6 +42,18 @@ const userSchema = new mongoose.Schema({
   totalWithdrawn: {
     type: Number,
     default: 0
+  },
+  isVirtual: {
+    type: Boolean,
+    default: false
+  },
+  package: {
+    type: String,
+    trim: true
+  },
+  phone: {
+    type: String,
+    trim: true
   }
 }, {
   timestamps: true
