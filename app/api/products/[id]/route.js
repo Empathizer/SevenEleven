@@ -4,10 +4,11 @@ export async function GET(req, { params }) {
   await connectDB();
   
   try {
+    const { id } = await params;
     const Product = (await import('@/server/models/Product')).default;
-    const product = await Product.findById(params.id)
+    const product = await Product.findById(id)
       .populate('categoryId', 'name slug')
-      .populate('sellerId', 'name');
+      .populate('sellerId', 'name storeName');
     
     if (!product) {
       return Response.json({ success: false, message: 'Product not found' }, { status: 404 });
