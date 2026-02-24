@@ -2,7 +2,7 @@
 
 import React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { CreditCard, Truck, ShieldCheck, Package } from "lucide-react"
@@ -20,21 +20,68 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
 export default function CheckoutPage() {
   const { user } = useAuth()
-  const { getCartProducts, totalPrice, totalItems, clearCart } = useCart()
+  const { getCartProducts, totalItems, clearCart } = useCart()
   const router = useRouter()
   const cartProducts = getCartProducts()
+  const [products, setProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   const [address, setAddress] = useState("")
   const [city, setCity] = useState("")
   const [zip, setZip] = useState("")
   const [paymentMethod, setPaymentMethod] = useState("credit-card")
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!user) {
       router.push("/login")
     }
   }, [user, router])
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (cartProducts.length === 0) {
+        setProducts([])
+        setLoading(false)
+        return
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/api/products`, { credentials: 'include' })
+        if (res.ok) {
+          const data = await res.json()
+          if (data.success) {
+            const dbProducts = data.products || []
+            const merged = cartProducts.map(cp => {
+              if (cp.product) return { ...cp, product: cp.product }
+              const dbProd = dbProducts.find((p: any) => p._id === cp.productId)
+              if (dbProd) {
+                return {
+                  ...cp,
+                  product: {
+                    id: dbProd._id,
+                    name: dbProd.name,
+                    price: dbProd.price,
+                    images: dbProd.images || [],
+                    sellerId: dbProd.sellerId?._id || dbProd.sellerId
+                  }
+                }
+              }
+              return cp
+            })
+            setProducts(merged)
+          }
+        }
+      } catch (e) {
+        console.error('Failed to fetch products:', e)
+      }
+      setLoading(false)
+    }
+    fetchProducts()
+  }, [])
+
+  const totalPrice = products.reduce((sum, item) => {
+    return sum + (item.product?.price || 0) * item.quantity
+  }, 0)
   const shipping = totalPrice >= 50 ? 0 : 4.99
   const total = totalPrice + shipping
 
@@ -43,7 +90,7 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const orderItems = cartProducts.filter(item => item.product).map(item => ({
+    const orderItems = products.filter(item => item.product).map(item => ({
       productId: item.productId,
       productName: item.product!.name,
       productImage: item.product!.images[0],
@@ -51,6 +98,11 @@ export default function CheckoutPage() {
       quantity: item.quantity,
       sellerId: item.product!.sellerId,
     }))
+
+    if (orderItems.length === 0) {
+      toast.error("No items in cart")
+      return
+    }
 
     try {
       const res = await fetch(`${API_URL}/api/orders`, {
@@ -60,7 +112,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           items: orderItems,
           shippingAddress: `${address}, ${city}, ${zip}`,
-          paymentMethod: paymentMethod === "credit-card" ? "Credit Card" : paymentMethod === "paypal" ? "PayPal" : "Bank Transfer",
+          paymentMethod: "COD",
         })
       })
 
@@ -79,7 +131,19 @@ export default function CheckoutPage() {
     }
   }
 
-  if (cartProducts.length === 0) {
+  if (loading) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <StoreHeader />
+        <main className="flex-1 flex items-center justify-center">
+          <p>Loading...</p>
+        </main>
+        <StoreFooter />
+      </div>
+    )
+  }
+
+  if (products.length === 0) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
         <StoreHeader />
@@ -154,14 +218,14 @@ export default function CheckoutPage() {
                 <div className="sticky top-24 rounded-xl border border-border bg-card p-6">
                   <h2 className="text-lg font-semibold text-foreground">Order Summary</h2>
                   <div className="mt-4 flex flex-col gap-3">
-                    {cartProducts.map(({ productId, quantity, product }) => product && (
-                      <div key={productId} className="flex items-center gap-3">
-                        <img src={product.images[0] || "/placeholder.svg"} alt={product.name} className="h-10 w-10 rounded-lg object-cover" crossOrigin="anonymous" />
+                    {products.map((item) => item.product && (
+                      <div key={item.productId} className="flex items-center gap-3">
+                        <img src={item.product.images[0] || "/placeholder.svg"} alt={item.product.name} className="h-10 w-10 rounded-lg object-cover" crossOrigin="anonymous" />
                         <div className="flex-1">
-                          <p className="text-xs font-medium text-foreground line-clamp-1">{product.name}</p>
-                          <p className="text-xs text-muted-foreground">x{quantity}</p>
+                          <p className="text-xs font-medium text-foreground line-clamp-1">{item.product.name}</p>
+                          <p className="text-xs text-muted-foreground">x{item.quantity}</p>
                         </div>
-                        <span className="text-sm font-medium text-foreground">${(product.price * quantity).toFixed(2)}</span>
+                        <span className="text-sm font-medium text-foreground">${(item.product.price * item.quantity).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>

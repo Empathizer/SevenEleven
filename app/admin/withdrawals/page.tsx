@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+
 export default function WithdrawalsPage() {
   const [requests, setRequests] = useState([])
   const [filter, setFilter] = useState("pending")
@@ -18,13 +20,10 @@ export default function WithdrawalsPage() {
 
   const fetchRequests = async () => {
     try {
-      const url = filter === "all" 
-        ? '/api/withdrawals' 
-        : `/api/withdrawals?status=${filter}`
-      const res = await fetch(url, { credentials: 'include' })
+      const res = await fetch(`${API_URL}/api/admin/withdrawals`, { credentials: 'include' })
       const data = await res.json()
       if (data.success) {
-        setRequests(data.data)
+        setRequests(data.withdrawals || [])
       }
     } catch (error) {
       console.error(error)
@@ -37,7 +36,7 @@ export default function WithdrawalsPage() {
 
   const processRequest = async (requestId: string, status: string) => {
     try {
-      const res = await fetch(`/api/withdrawals/${requestId}`, {
+      const res = await fetch(`${API_URL}/api/admin/withdrawals/${requestId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -87,7 +86,7 @@ export default function WithdrawalsPage() {
         <TableBody>
           {requests.map((request: any) => (
             <TableRow key={request._id}>
-              <TableCell>{request.sellerId?.userId?.name || 'N/A'}</TableCell>
+              <TableCell>{request.sellerName || 'N/A'}</TableCell>
               <TableCell>${request.amount}</TableCell>
               <TableCell>
                 <Badge variant={

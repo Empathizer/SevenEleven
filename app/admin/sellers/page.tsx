@@ -98,22 +98,33 @@ export default function AdminSellersPage() {
   const loginAsSeller = async (seller: any) => {
     try {
       const user = seller.userId || {}
-      const res = await fetch(`${API_URL}/api/admin/login-as/${user._id}`, {
+      const userId = typeof user === 'string' ? user : user._id
+      console.log('Logging in as user ID:', userId)
+      const res = await fetch(`${API_URL}/api/admin/login-as/${userId}`, {
         method: 'POST',
         credentials: 'include'
       })
+      const data = await res.json()
+      console.log('Login response:', data)
       if (res.ok) {
         toast.success(`Logged in as ${seller.storeName || user.name}`)
-        // Force full page reload to refresh auth
-        window.location.replace('/seller')
+        setTimeout(() => {
+          window.location.href = '/seller'
+        }, 500)
+      } else {
+        toast.error(data.message || 'Failed to login as seller')
       }
-    } catch (e) {}
+    } catch (e: any) {
+      console.error('Login error:', e)
+      toast.error(e.message || 'Failed to login as seller')
+    }
   }
 
-  const banSeller = async (id: string) => {
+  const banSeller = async (id: string, userId: string) => {
+    if (!confirm('Are you sure you want to ban this seller?')) return
     try {
-      const res = await fetch(`${API_URL}/api/admin/sellers/${id}/reject`, {
-        method: 'PUT',
+      const res = await fetch(`${API_URL}/api/admin/users/${userId}`, {
+        method: 'DELETE',
         credentials: 'include'
       })
       if (res.ok) {
@@ -124,15 +135,39 @@ export default function AdminSellersPage() {
   }
 
   const openDialog = async (seller: any, type: string) => {
+    setDialogType(type)
+    
+    if (!seller && type === 'virtualOrder') {
+      // Load all products and customers for global virtual order
+      try {
+        const [pRes, cRes] = await Promise.all([
+          fetch(`${API_URL}/api/admin/products`, { credentials: 'include' }),
+          fetch(`${API_URL}/api/admin/virtual-customers`, { credentials: 'include' })
+        ])
+        let products = []
+        let customers = []
+        if (pRes.ok) {
+          const pData = await pRes.json()
+          products = pData.data || []
+        }
+        if (cRes.ok) {
+          const cData = await cRes.json()
+          customers = cData.data || []
+        }
+        setFormData({ products, customers })
+      } catch (e) {
+        console.error('Load error:', e)
+      }
+      return
+    }
+    
     if (!seller) {
-      setDialogType(type)
       setFormData({})
       return
     }
     
     const user = seller.userId || {}
     setSelectedSeller({...seller, ...user, sellerId: seller._id, userId: user._id})
-    setDialogType(type)
     
     let products = []
     let customers = []
@@ -318,7 +353,7 @@ export default function AdminSellersPage() {
                             </DropdownMenuItem>
                           </>
                         )}
-                        <DropdownMenuItem onClick={() => banSeller(seller._id)} className="text-orange-600">
+                        <DropdownMenuItem onClick={() => banSeller(seller._id, user._id)} className="text-orange-600">
                           <Ban className="h-4 w-4 mr-2" /> Ban Seller
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => openDialog(seller, 'message')}>
@@ -583,21 +618,26 @@ export default function AdminSellersPage() {
           </DialogHeader>
           <div className="space-y-4">
             <Button onClick={async () => {
-              if (!selectedSeller) return
               const invitationCode = 'INV' + Math.random().toString(36).substr(2, 8).toUpperCase()
-              try {
-                const res = await fetch(`${API_URL}/api/admin/sellers/${selectedSeller.sellerId}/invitation`, {
-                  method: 'PUT',
-                  headers: { 'Content-Type': 'application/json' },
-                  credentials: 'include',
-                  body: JSON.stringify({ invitationCode })
-                })
-                if (res.ok) {
-                  setFormData({...formData, generatedCode: invitationCode})
-                  toast.success('Invitation code generated')
-                  loadSellers()
-                }
-              } catch (e) {}
+              
+              if (selectedSeller) {
+                try {
+                  const res = await fetch(`${API_URL}/api/admin/sellers/${selectedSeller.sellerId}/invitation`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ invitationCode })
+                  })
+                  if (res.ok) {
+                    setFormData({...formData, generatedCode: invitationCode})
+                    toast.success('Invitation code generated')
+                    loadSellers()
+                  }
+                } catch (e) {}
+              } else {
+                setFormData({...formData, generatedCode: invitationCode})
+                toast.success('Invitation code generated')
+              }
             }} disabled={formData.generatedCode}>Generate Code</Button>
             
             {formData.generatedCode && (
@@ -640,7 +680,7 @@ export default function AdminSellersPage() {
       <Dialog open={dialogType === 'virtualOrder'} onOpenChange={() => setDialogType('')}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Virtual Order - {selectedSeller?.storeName}</DialogTitle>
+            <DialogTitle>Add Virtual Order{selectedSeller ? ` - ${selectedSeller.storeName}` : ''}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -685,7 +725,7 @@ export default function AdminSellersPage() {
               />
             </div>
             <Button onClick={async () => {
-              if (!selectedSeller || !formData.productId || !formData.customerId) {
+              if (!formData.productId || !formData.customerId) {
                 toast.error('Please select product and customer')
                 return
               }
@@ -693,6 +733,12 @@ export default function AdminSellersPage() {
                 const product = formData.selectedProduct
                 const customer = formData.selectedCustomer
                 const quantity = parseInt(formData.quantity) || 1
+                const sellerId = product.sellerId || (selectedSeller?.userId)
+                
+                if (!sellerId) {
+                  toast.error('Product has no seller')
+                  return
+                }
                 
                 const res = await fetch(`${API_URL}/api/admin/orders/virtual`, {
                   method: 'POST',
@@ -700,7 +746,7 @@ export default function AdminSellersPage() {
                   credentials: 'include',
                   body: JSON.stringify({
                     customerId: customer._id,
-                    sellerId: selectedSeller.userId,
+                    sellerId,
                     items: [{
                       productId: product._id,
                       productName: product.name,
@@ -1070,7 +1116,8 @@ export default function AdminSellersPage() {
               <Button onClick={() => { 
                 toast.success('Seller updated successfully')
                 setDialogType('')
-              }} className="w-full">Close</Button>
+                loadSellers()
+              }} className="w-full">Save Changes</Button>
             </div>
           )}
         </DialogContent>

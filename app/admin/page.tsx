@@ -4,13 +4,19 @@ import { useState, useEffect } from "react"
 import { DollarSign, ShoppingCart, Users, Package, Store, Clock } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8']
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({ totalSales: 0, totalOrders: 0, totalProducts: 0, totalSellers: 0, totalUsers: 0, pendingSellers: 0 })
   const [recentOrders, setRecentOrders] = useState<any[]>([])
   const [pendingSellers, setPendingSellers] = useState<any[]>([])
+  const [products, setProducts] = useState<any[]>([])
+  const [categories, setCategories] = useState<any[]>([])
+  const [banners, setBanners] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -47,6 +53,18 @@ export default function AdminDashboard() {
           setPendingSellers(pending)
         }
       }
+
+      fetch(`${API_URL}/api/products`, { credentials: 'include' })
+        .then(r => r.json())
+        .then(data => data.success && setProducts(data.products?.slice(0, 6) || []))
+
+      fetch(`${API_URL}/api/admin/categories`, { credentials: 'include' })
+        .then(r => r.json())
+        .then(data => data.success && setCategories(data.categories || []))
+
+      fetch(`${API_URL}/api/admin/banners`, { credentials: 'include' })
+        .then(r => r.json())
+        .then(data => data.success && setBanners(data.banners || []))
     } catch (e) {
       console.error('Failed to load dashboard:', e)
     } finally {
@@ -85,6 +103,68 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Charts */}
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        {/* Sales Chart */}
+        <Card className="bg-card">
+          <CardHeader>
+            <CardTitle className="text-foreground">Sales Overview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={[
+                { name: 'Mon', sales: 120 },
+                { name: 'Tue', sales: 200 },
+                { name: 'Wed', sales: 150 },
+                { name: 'Thu', sales: 180 },
+                { name: 'Fri', sales: 250 },
+                { name: 'Sat', sales: 300 },
+                { name: 'Sun', sales: 220 }
+              ]}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="sales" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Orders Chart */}
+        <Card className="bg-card">
+          <CardHeader>
+            <CardTitle className="text-foreground">Order Status Distribution</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Pending', value: recentOrders.filter(o => o.status === 'pending').length || 1 },
+                    { name: 'Processing', value: recentOrders.filter(o => o.status === 'processing').length || 1 },
+                    { name: 'Shipped', value: recentOrders.filter(o => o.status === 'shipped').length || 1 },
+                    { name: 'Delivered', value: recentOrders.filter(o => o.status === 'delivered').length || 1 }
+                  ]}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={(entry) => entry.name}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {COLORS.map((color, index) => (
+                    <Cell key={`cell-${index}`} fill={color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
@@ -143,6 +223,65 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        {/* Products */}
+        <Card className="bg-card">
+          <CardHeader>
+            <CardTitle className="text-foreground">Recent Products</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3">
+              {products.map((product) => (
+                <div key={product._id} className="rounded-lg border border-border p-2">
+                  <img src={product.images?.[0] || '/placeholder.svg'} alt={product.name} className="w-full h-24 object-cover rounded" />
+                  <p className="text-xs font-medium text-foreground mt-2 truncate">{product.name}</p>
+                  <p className="text-xs text-primary font-bold">${product.price}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Categories */}
+        <Card className="bg-card">
+          <CardHeader>
+            <CardTitle className="text-foreground">Categories ({categories.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3">
+              {categories.slice(0, 6).map((cat) => (
+                <div key={cat._id} className="rounded-lg border border-border p-2">
+                  <img src={cat.image || '/placeholder.svg'} alt={cat.name} className="w-full h-20 object-cover rounded" />
+                  <p className="text-xs font-medium text-foreground mt-2">{cat.name}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Banners */}
+      {banners.length > 0 && (
+        <Card className="mt-6 bg-card">
+          <CardHeader>
+            <CardTitle className="text-foreground">Active Banners</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {banners.filter(b => b.isActive).map((banner) => (
+                <div key={banner._id} className="rounded-lg border border-border overflow-hidden">
+                  <img src={banner.image} alt={banner.title} className="w-full h-32 object-cover" />
+                  <div className="p-3">
+                    <p className="text-sm font-medium text-foreground">{banner.title}</p>
+                    <p className="text-xs text-muted-foreground">{banner.subtitle}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

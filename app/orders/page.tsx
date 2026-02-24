@@ -15,9 +15,9 @@ export default function OrdersPage() {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      fetch("http://localhost:5000/api/orders", { credentials: "include" })
+      fetch("/api/orders", { credentials: "include" })
         .then(r => r.json())
-        .then(data => setOrders(data.data || []))
+        .then(data => setOrders(data.orders || []))
     }
   }, [isAuthenticated, user])
 

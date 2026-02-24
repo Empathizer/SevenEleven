@@ -58,6 +58,44 @@ const userSchema = new mongoose.Schema({
   phone: {
     type: String,
     trim: true
+  },
+  address: {
+    type: String,
+    trim: true
+  },
+  guaranteeMoney: {
+    type: Number,
+    default: 0
+  },
+  viewsBase: {
+    type: Number,
+    default: 0
+  },
+  viewsInc: {
+    type: Number,
+    default: 0
+  },
+  salesman: {
+    type: String,
+    trim: true
+  },
+  creditScore: {
+    type: Number,
+    default: 100
+  },
+  commentPermission: {
+    type: String,
+    enum: ['enabled', 'disabled'],
+    default: 'enabled'
+  },
+  homeDisplay: {
+    type: String,
+    enum: ['show', 'hide'],
+    default: 'show'
+  },
+  totalRecharge: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true

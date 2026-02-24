@@ -48,7 +48,7 @@ const orderSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['COD', 'online'],
+    enum: ['COD', 'online', 'virtual'],
     default: 'COD'
   },
   paymentStatus: {
@@ -80,6 +80,10 @@ const orderSchema = new mongoose.Schema({
     default: 'none'
   },
   isVirtualOrder: {
+    type: Boolean,
+    default: false
+  },
+  isVirtual: {
     type: Boolean,
     default: false
   }

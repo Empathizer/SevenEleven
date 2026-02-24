@@ -30,8 +30,10 @@ export async function POST(req) {
         return Response.json({ success: false, message: `Insufficient stock` }, { status: 400 });
       }
 
-      const profit = (product.price - (product.buyingPrice || 0)) * item.quantity;
-      totalAmount += product.price * item.quantity;
+      const buyingCost = (product.buyingPrice || 0) * item.quantity;
+      const sellingAmount = product.price * item.quantity;
+      const profit = sellingAmount - buyingCost;
+      totalAmount += sellingAmount;
 
       orderItems.push({
         productId: product._id,
@@ -47,6 +49,14 @@ export async function POST(req) {
       product.stock -= item.quantity;
       product.sold += item.quantity;
       await product.save();
+
+      // Update seller wallet: deduct buying cost, add to pending balance
+      await User.findByIdAndUpdate(product.sellerId, {
+        $inc: { 
+          walletBalance: -buyingCost,
+          pendingBalance: sellingAmount
+        }
+      });
     }
 
     const order = await Order.create({
@@ -58,23 +68,6 @@ export async function POST(req) {
       paymentMethod: paymentMethod || 'COD',
       paymentStatus: paymentMethod === 'COD' ? 'pending' : 'paid'
     });
-
-    const sellerTotals = {};
-    const sellerBuyingCosts = {};
-    for (const item of orderItems) {
-      if (!sellerTotals[item.sellerId]) {
-        sellerTotals[item.sellerId] = 0;
-        sellerBuyingCosts[item.sellerId] = 0;
-      }
-      sellerTotals[item.sellerId] += item.price * item.quantity;
-      sellerBuyingCosts[item.sellerId] += (item.buyingPrice || 0) * item.quantity;
-    }
-    
-    for (const [sellerId, amount] of Object.entries(sellerTotals)) {
-      await User.findByIdAndUpdate(sellerId, {
-        $inc: { pendingBalance: amount, walletBalance: -sellerBuyingCosts[sellerId] }
-      });
-    }
 
     return Response.json({ success: true, order }, { status: 201 });
   } catch (error) {

@@ -120,7 +120,7 @@ export default function HomePage() {
             </div>
             <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {featuredProducts.slice(0, 10).map((product) => (
-                <ProductCard key={product._id} product={{...product, id: product._id}} />
+                <ProductCard key={product._id} product={{...product, id: product._id, sellerName: product.sellerId?.name || 'Unknown'}} />
               ))}
             </div>
           </div>
@@ -153,7 +153,7 @@ export default function HomePage() {
           </div>
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {allProducts.slice(0, 10).map((product) => (
-              <ProductCard key={product._id} product={{...product, id: product._id}} />
+              <ProductCard key={product._id} product={{...product, id: product._id, sellerName: product.sellerId?.name || 'Unknown'}} />
             ))}
           </div>
         </section>

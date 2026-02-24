@@ -33,27 +33,28 @@ export default function AdminSellerWalletPage() {
 
   const loadData = async () => {
     try {
-      const [userRes, walletRes, txnRes] = await Promise.all([
-        fetch(`${API_URL}/api/admin/users/${sellerId}`, { credentials: 'include' }),
-        fetch(`${API_URL}/api/admin/sellers/${sellerId}/wallet`, { credentials: 'include' }),
-        fetch(`${API_URL}/api/admin/sellers/${sellerId}/transactions`, { credentials: 'include' })
-      ])
+      const userRes = await fetch(`${API_URL}/api/admin/users/${sellerId}`, { credentials: 'include' })
 
       if (userRes.ok) {
         const data = await userRes.json()
-        if (data.success) setSeller(data.user)
+        if (data.success) {
+          setSeller(data.user)
+          setWallet({
+            walletBalance: data.user.walletBalance || 0,
+            totalEarnings: data.user.totalEarnings || 0,
+            totalWithdrawn: data.user.totalWithdrawn || 0
+          })
+        }
       }
 
-      if (walletRes.ok) {
-        const data = await walletRes.json()
-        if (data.success) setWallet(data.wallet)
-      }
-
+      const txnRes = await fetch(`${API_URL}/api/admin/sellers/${sellerId}/wallet/transactions`, { credentials: 'include' })
       if (txnRes.ok) {
         const data = await txnRes.json()
         if (data.success) setTransactions(data.transactions || [])
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('Load error:', e)
+    }
   }
 
   const handleDeposit = async () => {
@@ -68,7 +69,7 @@ export default function AdminSellerWalletPage() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/admin/sellers/${sellerId}/deposit`, {
+      const res = await fetch(`${API_URL}/api/admin/sellers/${sellerId}/wallet/deposit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -101,7 +102,7 @@ export default function AdminSellerWalletPage() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/admin/sellers/${sellerId}/deduct`, {
+      const res = await fetch(`${API_URL}/api/admin/sellers/${sellerId}/wallet/deduct`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -119,7 +120,14 @@ export default function AdminSellerWalletPage() {
   }
 
   if (!seller) {
-    return <div className="text-muted-foreground">Loading...</div>
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading seller data...</p>
+          <p className="text-xs text-muted-foreground mt-2">Seller ID: {sellerId}</p>
+        </div>
+      </div>
+    )
   }
 
   return (

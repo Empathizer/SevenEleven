@@ -7,24 +7,27 @@ import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { toast } from "sonner"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([])
 
   const loadProducts = () => {
-    fetch("http://localhost:5000/api/admin/products", { credentials: "include" })
+    fetch(`${API_URL}/api/admin/products`, { credentials: "include" })
       .then(r => r.json())
       .then(data => setProducts(data.data || []))
+      .catch(e => console.error('Load error:', e))
   }
 
   useEffect(() => { loadProducts() }, [])
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(`/api/admin/products/${id}`, {
+    const res = await fetch(`${API_URL}/api/admin/products/${id}`, {
       method: "DELETE",
       credentials: "include"
     })
     if (res.ok) {
-      toast("Product deleted")
+      toast.success("Product deleted")
       loadProducts()
     }
   }
@@ -47,30 +50,38 @@ export default function AdminProductsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products.map((product) => (
-              <TableRow key={product._id}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <img src={product.images[0] || "/placeholder.svg"} alt={product.name} className="h-10 w-10 rounded-lg object-cover" crossOrigin="anonymous" />
-                    <span className="max-w-[200px] truncate font-medium text-foreground">{product.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="text-muted-foreground">{product.categoryId?.name}</TableCell>
-                <TableCell className="font-medium text-primary">${product.price.toFixed(2)}</TableCell>
-                <TableCell className="text-muted-foreground">{product.stock}</TableCell>
-                <TableCell className="text-muted-foreground">{product.sellerId?.storeName || product.sellerId?.name}</TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Link href={`/products/${product._id}`}>
-                      <Button size="sm" variant="outline"><Eye className="mr-1 h-3 w-3" /> View</Button>
-                    </Link>
-                    <Button size="sm" variant="destructive" onClick={() => handleDelete(product._id)}>
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
+            {products.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                  No products found
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              products.map((product) => (
+                <TableRow key={product._id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <img src={product.images?.[0] || "/placeholder.svg"} alt={product.name} className="h-10 w-10 rounded-lg object-cover" crossOrigin="anonymous" />
+                      <span className="max-w-[200px] truncate font-medium text-foreground">{product.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{product.categoryId?.name || 'N/A'}</TableCell>
+                  <TableCell className="font-medium text-primary">${product.price?.toFixed(2)}</TableCell>
+                  <TableCell className="text-muted-foreground">{product.stock}</TableCell>
+                  <TableCell className="text-muted-foreground">{product.sellerId?.storeName || product.sellerId?.name || 'N/A'}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Link href={`/products/${product._id}`}>
+                        <Button size="sm" variant="outline"><Eye className="mr-1 h-3 w-3" /> View</Button>
+                      </Link>
+                      <Button size="sm" variant="destructive" onClick={() => handleDelete(product._id)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

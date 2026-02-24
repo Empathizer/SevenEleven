@@ -11,6 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { toast } from "sonner"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<any[]>([])
   const [name, setName] = useState("")
@@ -19,16 +21,16 @@ export default function AdminCategoriesPage() {
   const [open, setOpen] = useState(false)
 
   const loadCategories = () => {
-    fetch("http://localhost:5000/api/admin/categories", { credentials: "include" })
+    fetch(`${API_URL}/api/admin/categories`, { credentials: "include" })
       .then(r => r.json())
-      .then(data => setCategories(data.data || []))
+      .then(data => setCategories(data.categories || []))
   }
 
   useEffect(() => { loadCategories() }, [])
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
-    const res = await fetch("http://localhost:5000/api/admin/categories", {
+    const res = await fetch(`${API_URL}/api/admin/categories`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -38,18 +40,18 @@ export default function AdminCategoriesPage() {
       setName(""); setSlug(""); setImage("")
       setOpen(false)
       loadCategories()
-      toast("Category added")
+      toast.success("Category added")
     }
   }
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(`/api/admin/categories/${id}`, {
+    const res = await fetch(`${API_URL}/api/admin/categories/${id}`, {
       method: "DELETE",
       credentials: "include"
     })
     if (res.ok) {
       loadCategories()
-      toast("Category deleted")
+      toast.success("Category deleted")
     }
   }
 

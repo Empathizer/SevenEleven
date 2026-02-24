@@ -11,21 +11,26 @@ export async function PUT(req) {
   const { searchParams } = new URL(req.url);
   const action = searchParams.get('action');
   
-  const controller = await import('@/server/controllers/advancedSellerController');
-  
-  const mockReq = { user, body, params: { id: body.id } };
-  const mockRes = {
-    status: (code) => ({
-      json: (data) => Response.json(data, { status: code })
-    }),
-    json: (data) => Response.json(data)
-  };
-
   try {
-    if (action === 'package') return await controller.setSellerPackage(mockReq, mockRes);
-    if (action === 'salesman') return await controller.setSellerSalesman(mockReq, mockRes);
-    if (action === 'views') return await controller.setSellerViews(mockReq, mockRes);
-    if (action === 'guarantee') return await controller.setSellerGuarantee(mockReq, mockRes);
+    const User = (await import('@/server/models/User')).default;
+    const Seller = (await import('@/server/models/Seller')).default;
+    
+    if (action === 'package') {
+      await User.findByIdAndUpdate(body.id, { package: body.package });
+      return Response.json({ success: true });
+    }
+    if (action === 'salesman') {
+      await User.findByIdAndUpdate(body.id, { salesman: body.salesman });
+      return Response.json({ success: true });
+    }
+    if (action === 'views') {
+      await User.findByIdAndUpdate(body.id, { viewsBase: body.viewsBase, viewsInc: body.viewsInc });
+      return Response.json({ success: true });
+    }
+    if (action === 'guarantee') {
+      await User.findByIdAndUpdate(body.id, { guaranteeMoney: body.guaranteeMoney });
+      return Response.json({ success: true });
+    }
     
     return Response.json({ success: false, message: 'Invalid action' }, { status: 400 });
   } catch (error) {
@@ -43,19 +48,13 @@ export async function POST(req) {
   const { searchParams } = new URL(req.url);
   const action = searchParams.get('action');
   
-  const controller = await import('@/server/controllers/advancedSellerController');
-  
-  const mockReq = { user, body, params: { id: body.id } };
-  const mockRes = {
-    status: (code) => ({
-      json: (data) => Response.json(data, { status: code })
-    }),
-    json: (data) => Response.json(data)
-  };
-
   try {
-    if (action === 'message') return await controller.sendMessageToSeller(mockReq, mockRes);
-    if (action === 'balance') return await controller.adjustSellerBalance(mockReq, mockRes);
+    const User = (await import('@/server/models/User')).default;
+    
+    if (action === 'balance') {
+      await User.findByIdAndUpdate(body.id, { $inc: { walletBalance: body.amount } });
+      return Response.json({ success: true });
+    }
     
     return Response.json({ success: false, message: 'Invalid action' }, { status: 400 });
   } catch (error) {

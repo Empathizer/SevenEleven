@@ -8,8 +8,8 @@ export async function GET(req) {
 
   try {
     const User = (await import('@/server/models/User')).default;
-    const users = await User.find().select('-password');
-    return Response.json({ success: true, users });
+    const users = await User.find().select('-password').sort({ createdAt: -1 });
+    return Response.json({ success: true, data: users });
   } catch (error) {
     return Response.json({ success: false, message: error.message }, { status: 500 });
   }

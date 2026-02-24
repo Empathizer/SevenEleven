@@ -11,6 +11,8 @@ import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { toast } from "sonner"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+
 export default function AdminBannersPage() {
   const [banners, setBanners] = useState<any[]>([])
   const [open, setOpen] = useState(false)
@@ -20,16 +22,16 @@ export default function AdminBannersPage() {
   const [link, setLink] = useState("/products")
 
   const loadBanners = () => {
-    fetch("http://localhost:5000/api/admin/banners", { credentials: "include" })
+    fetch(`${API_URL}/api/admin/banners`, { credentials: "include" })
       .then(r => r.json())
-      .then(data => setBanners(data.data || []))
+      .then(data => setBanners(data.banners || []))
   }
 
   useEffect(() => { loadBanners() }, [])
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
-    const res = await fetch("http://localhost:5000/api/admin/banners", {
+    const res = await fetch(`${API_URL}/api/admin/banners`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -39,12 +41,12 @@ export default function AdminBannersPage() {
       setTitle(""); setSubtitle(""); setImage(""); setLink("/products")
       setOpen(false)
       loadBanners()
-      toast("Banner added")
+      toast.success("Banner added")
     }
   }
 
   const toggleActive = async (id: string, active: boolean) => {
-    const res = await fetch(`/api/admin/banners/${id}`, {
+    const res = await fetch(`${API_URL}/api/admin/banners/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -52,18 +54,18 @@ export default function AdminBannersPage() {
     })
     if (res.ok) {
       loadBanners()
-      toast(active ? "Banner activated" : "Banner deactivated")
+      toast.success(active ? "Banner activated" : "Banner deactivated")
     }
   }
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(`/api/admin/banners/${id}`, {
+    const res = await fetch(`${API_URL}/api/admin/banners/${id}`, {
       method: "DELETE",
       credentials: "include"
     })
     if (res.ok) {
       loadBanners()
-      toast("Banner deleted")
+      toast.success("Banner deleted")
     }
   }
 

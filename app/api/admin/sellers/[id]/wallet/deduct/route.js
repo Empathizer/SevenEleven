@@ -11,7 +11,7 @@ export async function POST(req, { params }) {
     const User = (await import('@/server/models/User')).default;
     const WalletTransaction = (await import('@/server/models/WalletTransaction')).default;
     
-    const seller = await User.findById(params.sellerId);
+    const seller = await User.findById(params.id);
     if (!seller || seller.role !== 'seller') {
       return Response.json({ success: false, message: 'Seller not found' }, { status: 404 });
     }

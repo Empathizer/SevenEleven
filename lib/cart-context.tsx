@@ -55,10 +55,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [userId, store, forceUpdate])
 
   const getCartProducts = useCallback(() => {
-    return items.map(item => ({
-      ...item,
-      product: store.getProductById(item.productId),
-    }))
+    return items.map(item => {
+      const product = store.getProductById(item.productId)
+      // If product not in store, it might be from database - return placeholder
+      if (!product) {
+        return {
+          ...item,
+          product: null
+        }
+      }
+      return {
+        ...item,
+        product,
+      }
+    })
   }, [items, store])
 
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0)

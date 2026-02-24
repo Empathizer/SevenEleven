@@ -6,7 +6,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { useEffect } from "react"
-import { LayoutDashboard, Package, ShoppingCart, BarChart3, Store, LogOut, ChevronLeft, Menu, Plus, Wallet } from "lucide-react"
+import { LayoutDashboard, Package, ShoppingCart, BarChart3, Store, LogOut, ChevronLeft, Menu, Plus, Wallet, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
@@ -18,6 +18,7 @@ const navItems = [
   { href: "/seller/orders", label: "Orders", icon: ShoppingCart },
   { href: "/seller/wallet", label: "Wallet", icon: Wallet },
   { href: "/seller/store", label: "Store Profile", icon: Store },
+  { href: "/seller/support", label: "Support", icon: MessageCircle },
 ]
 
 function SidebarNav({ pathname }: { pathname: string }) {

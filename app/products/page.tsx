@@ -10,6 +10,8 @@ import { StoreHeader } from "@/components/store-header"
 import { StoreFooter } from "@/components/store-footer"
 import { ProductCard } from "@/components/product-card"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+
 function ProductsContent() {
   const searchParams = useSearchParams()
   const categorySlug = searchParams.get("category") || ""
@@ -22,8 +24,8 @@ function ProductsContent() {
 
   useEffect(() => {
     Promise.all([
-      fetch("http://localhost:5000/api/products/categories").then(r => r.json()),
-      fetch(`http://localhost:5000/api/products?category=${categorySlug}&search=${searchQuery}`).then(r => r.json())
+      fetch(`${API_URL}/api/products/categories`).then(r => r.json()),
+      fetch(`${API_URL}/api/products?category=${categorySlug}&search=${searchQuery}`).then(r => r.json())
     ]).then(([cats, prods]) => {
       setCategories(cats.categories || [])
       setAllProducts(prods.products || [])

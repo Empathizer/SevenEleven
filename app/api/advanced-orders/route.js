@@ -9,25 +9,16 @@ export async function GET(req) {
   
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
-  const action = searchParams.get('action');
   
-  const controller = await import('@/server/controllers/advancedOrderController');
-  
-  const mockReq = { user, params: { id }, query: Object.fromEntries(searchParams) };
-  const mockRes = {
-    status: (code) => ({
-      json: (data) => Response.json(data, { status: code })
-    }),
-    json: (data) => Response.json(data)
-  };
-
   try {
-    if (id && action === 'receipt') {
-      return await controller.generateReceipt(mockReq, mockRes);
-    } else if (id) {
-      return await controller.getOrderById(mockReq, mockRes);
+    const Order = (await import('@/server/models/Order')).default;
+    
+    if (id) {
+      const order = await Order.findById(id).populate('userId', 'name email');
+      return Response.json({ success: true, order });
     } else {
-      return await controller.getOrders(mockReq, mockRes);
+      const orders = await Order.find().populate('userId', 'name email').sort({ createdAt: -1 });
+      return Response.json({ success: true, orders });
     }
   } catch (error) {
     return Response.json({ success: false, message: error.message }, { status: 500 });
@@ -41,18 +32,11 @@ export async function PUT(req) {
   if (error) return error;
   
   const body = await req.json();
-  const { updateOrderStatus } = await import('@/server/controllers/advancedOrderController');
   
-  const mockReq = { user, body, params: { id: body.id } };
-  const mockRes = {
-    status: (code) => ({
-      json: (data) => Response.json(data, { status: code })
-    }),
-    json: (data) => Response.json(data)
-  };
-
   try {
-    return await updateOrderStatus(mockReq, mockRes);
+    const Order = (await import('@/server/models/Order')).default;
+    const order = await Order.findByIdAndUpdate(body.id, { status: body.status }, { new: true });
+    return Response.json({ success: true, order });
   } catch (error) {
     return Response.json({ success: false, message: error.message }, { status: 500 });
   }
@@ -67,18 +51,10 @@ export async function DELETE(req) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
   
-  const { deleteOrder } = await import('@/server/controllers/advancedOrderController');
-  
-  const mockReq = { user, params: { id } };
-  const mockRes = {
-    status: (code) => ({
-      json: (data) => Response.json(data, { status: code })
-    }),
-    json: (data) => Response.json(data)
-  };
-
   try {
-    return await deleteOrder(mockReq, mockRes);
+    const Order = (await import('@/server/models/Order')).default;
+    await Order.findByIdAndDelete(id);
+    return Response.json({ success: true, message: 'Order deleted' });
   } catch (error) {
     return Response.json({ success: false, message: error.message }, { status: 500 });
   }

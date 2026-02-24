@@ -7,11 +7,75 @@ import { StoreHeader } from "@/components/store-header"
 import { StoreFooter } from "@/components/store-footer"
 import { useCart } from "@/lib/cart-context"
 import { useAuth } from "@/lib/auth-context"
+import { useState, useEffect } from "react"
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
 export default function CartPage() {
-  const { getCartProducts, removeItem, updateQuantity, totalPrice, totalItems, clearCart } = useCart()
+  const { getCartProducts, removeItem, updateQuantity, totalItems, clearCart } = useCart()
   const { isAuthenticated } = useAuth()
   const cartProducts = getCartProducts()
+  const [products, setProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const productIds = cartProducts.map(cp => cp.productId)
+      if (productIds.length === 0) {
+        setProducts([])
+        setLoading(false)
+        return
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/api/products`, { credentials: 'include' })
+        if (res.ok) {
+          const data = await res.json()
+          if (data.success) {
+            const dbProducts = data.products || []
+            const merged = cartProducts.map(cp => {
+              if (cp.product) return { ...cp, product: cp.product }
+              const dbProd = dbProducts.find((p: any) => p._id === cp.productId)
+              if (dbProd) {
+                return {
+                  ...cp,
+                  product: {
+                    id: dbProd._id,
+                    name: dbProd.name,
+                    price: dbProd.price,
+                    images: dbProd.images || [],
+                    sellerName: dbProd.sellerId?.storeName || 'Unknown'
+                  }
+                }
+              }
+              return cp
+            })
+            setProducts(merged)
+          }
+        }
+      } catch (e) {
+        console.error('Failed to fetch products:', e)
+      }
+      setLoading(false)
+    }
+    fetchProducts()
+  }, [])
+
+  const totalPrice = products.reduce((sum, item) => {
+    return sum + (item.product?.price || 0) * item.quantity
+  }, 0)
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <StoreHeader />
+        <main className="flex-1 flex items-center justify-center">
+          <p>Loading cart...</p>
+        </main>
+        <StoreFooter />
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -34,8 +98,9 @@ export default function CartPage() {
               {/* Cart items */}
               <div className="lg:col-span-2">
                 <div className="flex flex-col gap-4">
-                  {cartProducts.map(({ productId, quantity, product }) => {
-                    if (!product) return null
+                  {products.map((item) => {
+                    if (!item.product) return null
+                    const { productId, quantity, product } = item
                     return (
                       <div key={productId} className="flex gap-4 rounded-xl border border-border bg-card p-4">
                         <Link href={`/products/${product.id}`} className="h-24 w-24 shrink-0 overflow-hidden rounded-lg">

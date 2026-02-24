@@ -18,8 +18,21 @@ export async function POST(req) {
         return Response.json({ success: false, message: 'Email already exists' }, { status: 400 });
       }
 
-      if (role === 'seller' && !invitationCode) {
-        return Response.json({ success: false, message: 'Invitation code required' }, { status: 400 });
+      if (role === 'seller') {
+        if (!invitationCode) {
+          return Response.json({ success: false, message: 'Invitation code required' }, { status: 400 });
+        }
+
+        const InvitationCode = (await import('@/server/models/InvitationCode')).default;
+        const code = await InvitationCode.findOne({ code: invitationCode });
+        
+        if (!code) {
+          return Response.json({ success: false, message: 'Invalid invitation code' }, { status: 400 });
+        }
+        
+        if (code.isUsed) {
+          return Response.json({ success: false, message: 'Invitation code already used' }, { status: 400 });
+        }
       }
 
       const user = await User.create({
@@ -34,6 +47,12 @@ export async function POST(req) {
           idType, idNumber, idImage, address, invitationCode,
           status: 'pending'
         });
+
+        const InvitationCode = (await import('@/server/models/InvitationCode')).default;
+        await InvitationCode.findOneAndUpdate(
+          { code: invitationCode },
+          { isUsed: true, usedBy: user._id }
+        );
       }
 
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });

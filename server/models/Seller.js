@@ -18,17 +18,14 @@ const sellerSchema = new mongoose.Schema({
   },
   idType: {
     type: String,
-    enum: ['CNIC', 'Passport', 'Driving License'],
-    required: [true, 'ID type is required']
+    enum: ['CNIC', 'Passport', 'Driving License']
   },
   idNumber: {
     type: String,
-    required: [true, 'ID number is required'],
     trim: true
   },
   idImage: {
-    type: String,
-    required: [true, 'ID image is required']
+    type: String
   },
   address: {
     type: String,

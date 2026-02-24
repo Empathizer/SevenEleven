@@ -24,8 +24,7 @@ const navItems = [
   { href: "/admin/users", label: "All Users", icon: Users },
   { href: "/admin/virtual-customers", label: "Virtual Customers", icon: UserPlus },
   { href: "/admin/withdrawals", label: "Withdrawals", icon: Wallet },
-  { href: "/admin/customer-support", label: "Customer Support", icon: MessageCircle },
-  { href: "/admin/seller-support", label: "Seller Support", icon: Headphones },
+  { href: "/admin/messages", label: "Messages", icon: MessageCircle },
 ]
 
 function SidebarNav({ pathname }: { pathname: string }) {
