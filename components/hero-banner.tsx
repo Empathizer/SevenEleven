@@ -4,11 +4,16 @@ import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { getStore } from "@/lib/store"
 
 export function HeroBanner() {
-  const banners = getStore().getBanners(true)
+  const [banners, setBanners] = useState<any[]>([])
   const [current, setCurrent] = useState(0)
+
+  useEffect(() => {
+    fetch("http://localhost:5000/api/admin/banners")
+      .then(r => r.json())
+      .then(data => setBanners((data.data || []).filter((b: any) => b.isActive)))
+  }, [])
 
   const next = useCallback(() => {
     setCurrent((c) => (c + 1) % banners.length)
@@ -30,7 +35,7 @@ export function HeroBanner() {
       <div className="relative aspect-[3/1] min-h-[200px] w-full md:aspect-[3.5/1]">
         {banners.map((banner, idx) => (
           <Link
-            key={banner.id}
+            key={banner._id}
             href={banner.link}
             className={`absolute inset-0 transition-opacity duration-700 ${idx === current ? "opacity-100" : "opacity-0 pointer-events-none"}`}
           >

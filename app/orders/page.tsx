@@ -7,11 +7,19 @@ import { Badge } from "@/components/ui/badge"
 import { StoreHeader } from "@/components/store-header"
 import { StoreFooter } from "@/components/store-footer"
 import { useAuth } from "@/lib/auth-context"
-import { getStore } from "@/lib/store"
+import { useState, useEffect } from "react"
 
 export default function OrdersPage() {
   const { user, isAuthenticated } = useAuth()
-  const store = getStore()
+  const [orders, setOrders] = useState<any[]>([])
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      fetch("http://localhost:5000/api/orders", { credentials: "include" })
+        .then(r => r.json())
+        .then(data => setOrders(data.data || []))
+    }
+  }, [isAuthenticated, user])
 
   if (!isAuthenticated || !user) {
     return (
@@ -26,7 +34,7 @@ export default function OrdersPage() {
     )
   }
 
-  const orders = store.getOrders({ userId: user.id })
+  const orders = isAuthenticated && user ? orders : []
 
   const statusColor = (status: string) => {
     switch (status) {
@@ -58,17 +66,17 @@ export default function OrdersPage() {
           ) : (
             <div className="mt-6 flex flex-col gap-4">
               {orders.map((order) => (
-                <div key={order.id} className="rounded-xl border border-border bg-card p-5">
+                <div key={order._id} className="rounded-xl border border-border bg-card p-5">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-semibold text-foreground">{order.id}</p>
+                      <p className="text-sm font-semibold text-foreground">{order._id}</p>
                       <p className="text-xs text-muted-foreground">{new Date(order.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
                     </div>
                     <Badge className={statusColor(order.status)}>{order.status}</Badge>
                   </div>
 
                   <div className="mt-4 flex flex-col gap-3">
-                    {order.items.map((item, idx) => (
+                    {order.items.map((item: any, idx: number) => (
                       <div key={idx} className="flex items-center gap-3">
                         <img src={item.productImage || "/placeholder.svg"} alt={item.productName} className="h-12 w-12 rounded-lg object-cover" crossOrigin="anonymous" />
                         <div className="flex-1">
@@ -84,7 +92,7 @@ export default function OrdersPage() {
                     <div className="text-xs text-muted-foreground">
                       <span className="font-medium">Shipping:</span> {order.shippingAddress}
                     </div>
-                    <div className="text-lg font-bold text-primary">${order.total.toFixed(2)}</div>
+                    <div className="text-lg font-bold text-primary">${order.totalAmount.toFixed(2)}</div>
                   </div>
                 </div>
               ))}

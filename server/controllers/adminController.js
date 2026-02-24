@@ -44,7 +44,7 @@ exports.getUsers = async (req, res) => {
 
 exports.getSellers = async (req, res) => {
   try {
-    const sellers = await Seller.find().populate('userId', 'name email walletBalance totalEarnings totalWithdrawn');
+    const sellers = await Seller.find().populate('userId');
     res.json({ success: true, data: sellers });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -82,8 +82,10 @@ exports.rejectSeller = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find().populate('sellerId', 'name').populate('categoryId');
-    res.json({ success: true, products });
+    const { sellerId } = req.query;
+    const query = sellerId ? { sellerId } : {};
+    const products = await Product.find(query).populate('sellerId', 'name').populate('categoryId');
+    res.json({ success: true, data: products });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -270,6 +272,26 @@ exports.getSellerTransactions = async (req, res) => {
       sellerId: req.params.sellerId 
     }).sort('-createdAt');
     res.json({ success: true, transactions });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getSellerStats = async (req, res) => {
+  try {
+    const sellerId = req.params.sellerId;
+    const products = await Product.find({ sellerId });
+    const orders = await Order.find({ 'items.sellerId': sellerId });
+    const totalSales = orders.reduce((sum, o) => sum + o.totalAmount, 0);
+    
+    res.json({
+      success: true,
+      stats: {
+        totalProducts: products.length,
+        totalOrders: orders.length,
+        totalSales
+      }
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

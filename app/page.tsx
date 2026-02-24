@@ -6,13 +6,24 @@ import { StoreHeader } from "@/components/store-header"
 import { StoreFooter } from "@/components/store-footer"
 import { HeroBanner } from "@/components/hero-banner"
 import { ProductCard } from "@/components/product-card"
-import { getStore } from "@/lib/store"
+import { useState, useEffect } from "react"
 
 export default function HomePage() {
-  const store = getStore()
-  const categories = store.getCategories()
-  const featuredProducts = store.getProducts({ featured: true })
-  const allProducts = store.getProducts()
+  const [categories, setCategories] = useState<any[]>([])
+  const [featuredProducts, setFeaturedProducts] = useState<any[]>([])
+  const [allProducts, setAllProducts] = useState<any[]>([])
+
+  useEffect(() => {
+    Promise.all([
+      fetch("http://localhost:5000/api/products/categories").then(r => r.json()),
+      fetch("http://localhost:5000/api/products?featured=true").then(r => r.json()),
+      fetch("http://localhost:5000/api/products").then(r => r.json())
+    ]).then(([cats, featured, all]) => {
+      setCategories(cats.data || [])
+      setFeaturedProducts(featured.data || [])
+      setAllProducts(all.data || [])
+    })
+  }, [])
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -77,7 +88,7 @@ export default function HomePage() {
           <div className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-7">
             {categories.map((cat) => (
               <Link
-                key={cat.id}
+                key={cat._id}
                 href={`/products?category=${cat.slug}`}
                 className="group flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-3 transition-shadow hover:shadow-md"
               >
@@ -109,7 +120,7 @@ export default function HomePage() {
             </div>
             <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {featuredProducts.slice(0, 10).map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard key={product._id} product={{...product, id: product._id}} />
               ))}
             </div>
           </div>
@@ -142,7 +153,7 @@ export default function HomePage() {
           </div>
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {allProducts.slice(0, 10).map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product._id} product={{...product, id: product._id}} />
             ))}
           </div>
         </section>

@@ -23,6 +23,14 @@ const orderSchema = new mongoose.Schema({
       type: Number,
       required: true
     },
+    buyingPrice: {
+      type: Number,
+      default: 0
+    },
+    profit: {
+      type: Number,
+      default: 0
+    },
     sellerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

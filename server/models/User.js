@@ -35,6 +35,10 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  pendingBalance: {
+    type: Number,
+    default: 0
+  },
   totalEarnings: {
     type: Number,
     default: 0

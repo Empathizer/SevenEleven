@@ -17,6 +17,22 @@ exports.register = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email already exists' });
     }
 
+    if (role === 'seller') {
+      if (!invitationCode) {
+        return res.status(400).json({ success: false, message: 'Invitation code is required for seller registration' });
+      }
+      
+      const validInvitation = await Seller.findOne({ invitationCode, status: 'approved' });
+      if (validInvitation) {
+        return res.status(400).json({ success: false, message: 'This invitation code has already been used' });
+      }
+      
+      const unusedInvitation = await Seller.findOne({ invitationCode, userId: { $exists: false } });
+      if (!unusedInvitation) {
+        return res.status(400).json({ success: false, message: 'Invalid invitation code' });
+      }
+    }
+
     const user = await User.create({
       name,
       email,
@@ -102,7 +118,8 @@ exports.login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        status: user.status
+        status: user.status,
+        storeName: user.name
       },
       token
     });
@@ -122,7 +139,7 @@ exports.getMe = async (req, res) => {
 
     res.json({
       success: true,
-      user: {
+      data: {
         id: user._id,
         name: user.name,
         email: user.email,
@@ -131,6 +148,7 @@ exports.getMe = async (req, res) => {
         walletBalance: user.walletBalance,
         totalEarnings: user.totalEarnings,
         totalWithdrawn: user.totalWithdrawn,
+        storeName: sellerInfo?.storeName,
         seller: sellerInfo
       }
     });

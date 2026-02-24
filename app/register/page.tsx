@@ -206,8 +206,9 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label>Invitation Code (Optional)</Label>
-                  <Input value={invitationCode} onChange={e => setInvitationCode(e.target.value)} placeholder="Enter code if you have one" className="bg-muted" />
+                  <Label>Invitation Code <span className="text-destructive">*</span></Label>
+                  <Input value={invitationCode} onChange={e => setInvitationCode(e.target.value)} placeholder="Enter invitation code" required className="bg-muted" />
+                  <p className="text-xs text-muted-foreground">Contact admin to get an invitation code</p>
                 </div>
 
                 <div className="flex items-center gap-2">

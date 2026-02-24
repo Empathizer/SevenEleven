@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useState } from "react"
+import { use, useState, useEffect } from "react"
 import Link from "next/link"
 import { Star, ShoppingCart, Heart, Minus, Plus, Truck, ShieldCheck, ArrowLeft, Store } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -9,34 +9,43 @@ import { StoreHeader } from "@/components/store-header"
 import { StoreFooter } from "@/components/store-footer"
 import { ProductCard } from "@/components/product-card"
 import { useCart } from "@/lib/cart-context"
-import { getStore } from "@/lib/store"
 import { toast } from "sonner"
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const store = getStore()
-  const product = store.getProductById(id)
+  const [product, setProduct] = useState<any>(null)
+  const [relatedProducts, setRelatedProducts] = useState<any[]>([])
   const { addItem, toggleWishlist, isInWishlist } = useCart()
   const [quantity, setQuantity] = useState(1)
+
+  useEffect(() => {
+    fetch(`http://localhost:5000/api/products/${id}`).then(r => r.json()).then(data => {
+      const prod = data.data
+      setProduct(prod)
+      if (prod?.categoryId?._id) {
+        fetch(`http://localhost:5000/api/products?category=${prod.categoryId.slug}`).then(r => r.json()).then(related => {
+          setRelatedProducts((related.data || []).filter((p: any) => p._id !== id).slice(0, 5))
+        })
+      }
+    })
+  }, [id])
 
   if (!product) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
         <StoreHeader />
         <div className="flex flex-1 flex-col items-center justify-center">
-          <p className="text-lg font-medium text-foreground">Product not found</p>
-          <Link href="/products" className="mt-2 text-sm text-primary hover:underline">Back to products</Link>
+          <p className="text-lg font-medium text-foreground">Loading...</p>
         </div>
         <StoreFooter />
       </div>
     )
   }
 
-  const inWishlist = isInWishlist(product.id)
+  const inWishlist = isInWishlist(product._id)
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0
-  const relatedProducts = store.getProducts({ category: product.categorySlug }).filter(p => p.id !== product.id).slice(0, 5)
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -48,7 +57,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
             <Link href="/" className="hover:text-primary">Home</Link>
             <span>/</span>
-            <Link href={`/products?category=${product.categorySlug}`} className="hover:text-primary">{product.category}</Link>
+            <Link href={`/products?category=${product.categoryId?.slug}`} className="hover:text-primary">{product.categoryId?.name}</Link>
             <span>/</span>
             <span className="text-foreground line-clamp-1">{product.name}</span>
           </div>
@@ -102,7 +111,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               {/* Seller */}
               <div className="mt-4 flex items-center gap-2 rounded-lg border border-border p-3">
                 <Store className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-foreground">Sold by <strong>{product.sellerName}</strong></span>
+                <span className="text-sm text-foreground">Sold by <strong>{product.sellerId?.storeName || product.sellerId?.name}</strong></span>
               </div>
 
               {/* Stock */}
@@ -131,7 +140,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <Button
                   className="flex-1 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
                   size="lg"
-                  onClick={() => { addItem(product.id, quantity); toast("Added to cart") }}
+                  onClick={() => { addItem(product._id, quantity); toast("Added to cart") }}
                   disabled={product.stock === 0}
                 >
                   <ShoppingCart className="h-5 w-5" />
@@ -140,7 +149,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <Button
                   variant="outline"
                   size="lg"
-                  onClick={() => { toggleWishlist(product.id); toast(inWishlist ? "Removed from wishlist" : "Added to wishlist") }}
+                  onClick={() => { toggleWishlist(product._id); toast(inWishlist ? "Removed from wishlist" : "Added to wishlist") }}
                 >
                   <Heart className={`h-5 w-5 ${inWishlist ? "fill-accent text-accent" : ""}`} />
                 </Button>
@@ -163,7 +172,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <section className="mt-12">
               <h2 className="mb-4 text-xl font-bold text-foreground">You May Also Like</h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                {relatedProducts.map(p => <ProductCard key={p.id} product={p} />)}
+                {relatedProducts.map(p => <ProductCard key={p._id} product={{...p, id: p._id, categorySlug: p.categoryId?.slug}} />)}
               </div>
             </section>
           )}

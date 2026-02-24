@@ -2,45 +2,69 @@
 
 import React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Plus, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { getStore } from "@/lib/store"
 import { toast } from "sonner"
 
 export default function AdminBannersPage() {
-  const store = getStore()
-  const [, setRefresh] = useState(0)
+  const [banners, setBanners] = useState<any[]>([])
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState("")
   const [subtitle, setSubtitle] = useState("")
   const [image, setImage] = useState("")
   const [link, setLink] = useState("/products")
-  const banners = store.getBanners()
 
-  const handleAdd = (e: React.FormEvent) => {
+  const loadBanners = () => {
+    fetch("http://localhost:5000/api/admin/banners", { credentials: "include" })
+      .then(r => r.json())
+      .then(data => setBanners(data.data || []))
+  }
+
+  useEffect(() => { loadBanners() }, [])
+
+  const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
-    store.addBanner({ title, subtitle, image, link, active: true })
-    setTitle(""); setSubtitle(""); setImage(""); setLink("/products")
-    setOpen(false)
-    setRefresh(v => v + 1)
-    toast("Banner added")
+    const res = await fetch("http://localhost:5000/api/admin/banners", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ title, subtitle, image, link, isActive: true })
+    })
+    if (res.ok) {
+      setTitle(""); setSubtitle(""); setImage(""); setLink("/products")
+      setOpen(false)
+      loadBanners()
+      toast("Banner added")
+    }
   }
 
-  const toggleActive = (id: string, active: boolean) => {
-    store.updateBanner(id, { active })
-    setRefresh(v => v + 1)
-    toast(active ? "Banner activated" : "Banner deactivated")
+  const toggleActive = async (id: string, active: boolean) => {
+    const res = await fetch(`http://localhost:5000/api/admin/banners/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ isActive: active })
+    })
+    if (res.ok) {
+      loadBanners()
+      toast(active ? "Banner activated" : "Banner deactivated")
+    }
   }
 
-  const handleDelete = (id: string) => {
-    store.deleteBanner(id)
-    setRefresh(v => v + 1)
-    toast("Banner deleted")
+  const handleDelete = async (id: string) => {
+    const res = await fetch(`http://localhost:5000/api/admin/banners/${id}`, {
+      method: "DELETE",
+      credentials: "include"
+    })
+    if (res.ok) {
+      loadBanners()
+      toast("Banner deleted")
+    }
   }
 
   return (
@@ -69,7 +93,7 @@ export default function AdminBannersPage() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {banners.map((banner) => (
-          <div key={banner.id} className="overflow-hidden rounded-xl border border-border bg-card">
+          <div key={banner._id} className="overflow-hidden rounded-xl border border-border bg-card">
             <div className="aspect-[3/1]">
               <img src={banner.image || "/placeholder.svg"} alt={banner.title} className="h-full w-full object-cover" crossOrigin="anonymous" />
             </div>
@@ -78,10 +102,10 @@ export default function AdminBannersPage() {
               <p className="mt-1 text-xs text-muted-foreground">{banner.subtitle}</p>
               <div className="mt-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Switch checked={banner.active} onCheckedChange={(v) => toggleActive(banner.id, v)} />
-                  <span className="text-xs text-muted-foreground">{banner.active ? "Active" : "Inactive"}</span>
+                  <Switch checked={banner.isActive} onCheckedChange={(v) => toggleActive(banner._id, v)} />
+                  <span className="text-xs text-muted-foreground">{banner.isActive ? "Active" : "Inactive"}</span>
                 </div>
-                <Button size="sm" variant="destructive" onClick={() => handleDelete(banner.id)}>
+                <Button size="sm" variant="destructive" onClick={() => handleDelete(banner._id)}>
                   <Trash2 className="h-3 w-3" />
                 </Button>
               </div>

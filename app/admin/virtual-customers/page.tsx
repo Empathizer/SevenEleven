@@ -9,30 +9,37 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 export default function VirtualCustomersPage() {
-  const [customers, setCustomers] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [customers, setCustomers] = useState<any[]>([])
   const [count, setCount] = useState(10)
   const [initialBalance, setInitialBalance] = useState(100)
   const [packageName, setPackageName] = useState("Basic")
+  const [loading, setLoading] = useState(false)
+  const [open, setOpen] = useState(false)
 
-  const fetchCustomers = async () => {
+  useEffect(() => {
+    loadCustomers()
+  }, [])
+
+  const loadCustomers = async () => {
     try {
-      const res = await fetch('/api/admin/virtual-customers', {
+      const res = await fetch(`${API_URL}/api/admin/virtual-customers`, {
         credentials: 'include'
       })
+      if (!res.ok) {
+        setCustomers([])
+        return
+      }
       const data = await res.json()
       if (data.success) {
         setCustomers(data.data)
       }
     } catch (error) {
-      console.error(error)
+      setCustomers([])
     }
   }
-
-  useEffect(() => {
-    fetchCustomers()
-  }, [])
 
   const generateCustomers = async () => {
     if (count < 1 || count > 200) {
@@ -42,33 +49,43 @@ export default function VirtualCustomersPage() {
 
     setLoading(true)
     try {
-      const res = await fetch('/api/admin/virtual-customers/generate', {
+      const res = await fetch(`${API_URL}/api/admin/virtual-customers/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ count, initialBalance, packageName })
       })
+      
+      if (!res.ok) {
+        const errorText = await res.text()
+        toast.error(`Server error: ${res.status}`)
+        setLoading(false)
+        return
+      }
+      
       const data = await res.json()
+      
       if (data.success) {
         toast.success(data.message)
-        fetchCustomers()
+        setOpen(false)
+        loadCustomers()
       } else {
-        toast.error(data.message)
+        toast.error(data.message || 'Failed to generate customers')
       }
-    } catch (error) {
-      toast.error("Failed to generate customers")
-    } finally {
-      setLoading(false)
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to connect to server')
     }
+    setLoading(false)
   }
 
-  const loginAsCustomer = async (id: string) => {
+  const loginAsCustomer = async (user: any) => {
     try {
-      const res = await fetch(`/api/admin/virtual-customers/login-as/${id}`, {
+      const res = await fetch(`${API_URL}/api/admin/virtual-customers/login-as/${user._id}`, {
         method: 'POST',
         credentials: 'include'
       })
       const data = await res.json()
+      
       if (data.success) {
         toast.success(data.message)
         window.location.href = '/'
@@ -76,7 +93,7 @@ export default function VirtualCustomersPage() {
         toast.error(data.message)
       }
     } catch (error) {
-      toast.error("Failed to login as customer")
+      toast.error('Failed to login as customer')
     }
   }
 
@@ -84,7 +101,7 @@ export default function VirtualCustomersPage() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Virtual Customers</h1>
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button>Generate Virtual Customers</Button>
           </DialogTrigger>
@@ -132,14 +149,12 @@ export default function VirtualCustomersPage() {
               <TableCell>{customer.email}</TableCell>
               <TableCell>{customer.phone || 'N/A'}</TableCell>
               <TableCell>{customer.package || 'N/A'}</TableCell>
-              <TableCell>${customer.walletBalance}</TableCell>
+              <TableCell>${customer.walletBalance || 0}</TableCell>
               <TableCell>
-                <Badge variant={customer.isVirtual ? "secondary" : "default"}>
-                  {customer.isVirtual ? "Virtual" : "Real"}
-                </Badge>
+                <Badge variant="secondary">Virtual</Badge>
               </TableCell>
               <TableCell>
-                <Button size="sm" onClick={() => loginAsCustomer(customer._id)}>
+                <Button size="sm" onClick={() => loginAsCustomer(customer)}>
                   Login As
                 </Button>
               </TableCell>

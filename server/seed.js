@@ -23,7 +23,7 @@ const seedDatabase = async () => {
     // Create admin user
     const admin = await User.create({
       name: 'Admin',
-      email: 'admin@seveneleven.com',
+      email: 'admin@esellerstore.com',
       password: 'admin123',
       role: 'admin',
       status: 'active'
@@ -32,7 +32,7 @@ const seedDatabase = async () => {
     // Create seller users
     const seller1 = await User.create({
       name: 'StyleHub Store',
-      email: 'seller@seveneleven.com',
+      email: 'seller@esellerstore.com',
       password: 'seller123',
       role: 'seller',
       status: 'active',
@@ -43,7 +43,7 @@ const seedDatabase = async () => {
 
     const seller2 = await User.create({
       name: 'GlamGlow Beauty',
-      email: 'glamglow@seveneleven.com',
+      email: 'glamglow@esellerstore.com',
       password: 'seller123',
       role: 'seller',
       status: 'active',
@@ -78,7 +78,7 @@ const seedDatabase = async () => {
     // Create customer
     await User.create({
       name: 'Sarah Johnson',
-      email: 'customer@seveneleven.com',
+      email: 'customer@esellerstore.com',
       password: 'customer123',
       role: 'customer',
       status: 'active'
@@ -196,9 +196,9 @@ const seedDatabase = async () => {
     console.log('Created banners');
     console.log('\n✅ Database seeded successfully!');
     console.log('\nDefault credentials:');
-    console.log('Admin: admin@seveneleven.com / admin123');
-    console.log('Seller: seller@seveneleven.com / seller123');
-    console.log('Customer: customer@seveneleven.com / customer123');
+    console.log('Admin: admin@esellerstore.com / admin123');
+    console.log('Seller: seller@esellerstore.com / seller123');
+    console.log('Customer: customer@esellerstore.com / customer123');
 
     process.exit(0);
   } catch (error) {

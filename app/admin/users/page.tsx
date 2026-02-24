@@ -1,23 +1,33 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { getStore } from "@/lib/store"
 import { toast } from "sonner"
 
 export default function AdminUsersPage() {
-  const store = getStore()
-  const [, setRefresh] = useState(0)
-  const users = store.getUsers()
+  const [users, setUsers] = useState<any[]>([])
 
-  const handleDelete = (id: string) => {
-    if (id === "user-admin") { toast("Cannot delete admin"); return }
-    store.deleteUser(id)
-    setRefresh(v => v + 1)
-    toast("User deleted")
+  const loadUsers = () => {
+    fetch("http://localhost:5000/api/admin/users", { credentials: "include" })
+      .then(r => r.json())
+      .then(data => setUsers(data.data || []))
+  }
+
+  useEffect(() => { loadUsers() }, [])
+
+  const handleDelete = async (id: string, email: string) => {
+    if (email.includes("admin@")) { toast("Cannot delete admin"); return }
+    const res = await fetch(`http://localhost:5000/api/admin/users/${id}`, {
+      method: "DELETE",
+      credentials: "include"
+    })
+    if (res.ok) {
+      loadUsers()
+      toast("User deleted")
+    }
   }
 
   const roleColor = (role: string) => {
@@ -46,13 +56,13 @@ export default function AdminUsersPage() {
           </TableHeader>
           <TableBody>
             {users.map((user) => (
-              <TableRow key={user.id}>
+              <TableRow key={user._id}>
                 <TableCell className="font-medium text-foreground">{user.name}</TableCell>
                 <TableCell className="text-muted-foreground">{user.email}</TableCell>
                 <TableCell><Badge className={roleColor(user.role)}>{user.role}</Badge></TableCell>
                 <TableCell className="text-muted-foreground">{new Date(user.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">
-                  <Button size="sm" variant="destructive" onClick={() => handleDelete(user.id)} disabled={user.id === "user-admin"}>
+                  <Button size="sm" variant="destructive" onClick={() => handleDelete(user._id, user.email)} disabled={user.email.includes("admin@")}>
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </TableCell>

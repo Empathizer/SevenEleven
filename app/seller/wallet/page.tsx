@@ -3,28 +3,30 @@
 import { Wallet, TrendingUp, TrendingDown, DollarSign } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { getStore } from "@/lib/store"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 
 export default function SellerWalletPage() {
   const { user } = useAuth()
   const router = useRouter()
-  const store = getStore()
+  const [wallet, setWallet] = useState<any>(null)
+  const [transactions, setTransactions] = useState<any[]>([])
 
   useEffect(() => {
     if (!user || user.role !== "seller") {
       router.push("/login")
+      return
     }
+    fetch("http://localhost:5000/api/seller/wallet", { credentials: "include" })
+      .then(r => r.json())
+      .then(data => setWallet(data.data))
+    fetch("http://localhost:5000/api/seller/transactions", { credentials: "include" })
+      .then(r => r.json())
+      .then(data => setTransactions(data.data || []))
   }, [user, router])
 
-  if (!user || user.role !== "seller") return null
-
-  const wallet = store.getSellerWallet(user.id)
-  const transactions = store.getTransactions(user.id)
-
-  if (!wallet) return null
+  if (!user || user.role !== "seller" || !wallet) return null
 
   return (
     <div>
@@ -73,7 +75,7 @@ export default function SellerWalletPage() {
           ) : (
             <div className="flex flex-col gap-3">
               {transactions.map((txn) => (
-                <div key={txn.id} className="flex items-center justify-between rounded-lg border border-border p-4">
+                <div key={txn._id} className="flex items-center justify-between rounded-lg border border-border p-4">
                   <div className="flex items-center gap-3">
                     <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
                       txn.type === "deposit" || txn.type === "earning" ? "bg-chart-4/10" : "bg-chart-1/10"
@@ -97,6 +99,7 @@ export default function SellerWalletPage() {
                       txn.type === "deposit" ? "bg-chart-4 text-primary-foreground" :
                       txn.type === "earning" ? "bg-chart-3 text-primary-foreground" :
                       txn.type === "withdrawal" ? "bg-chart-1 text-primary-foreground" :
+                      txn.type === "deduction" ? "bg-destructive text-destructive-foreground" :
                       "bg-muted text-muted-foreground"
                     }>
                       {txn.type}

@@ -2,7 +2,7 @@
 
 import React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,23 +11,41 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ShieldCheck, ShieldAlert } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
-import { getStore } from "@/lib/store"
 import { toast } from "sonner"
 
 export default function SellerStorePage() {
   const { user } = useAuth()
-  const store = getStore()
+  const [storeName, setStoreName] = useState("")
+  const [storeDescription, setStoreDescription] = useState("")
+  const [name, setName] = useState("")
+  const [seller, setSeller] = useState<any>(null)
 
-  const [storeName, setStoreName] = useState(user?.storeName || "")
-  const [storeDescription, setStoreDescription] = useState(user?.storeDescription || "")
-  const [name, setName] = useState(user?.name || "")
+  useEffect(() => {
+    if (user) {
+      fetch("http://localhost:5000/api/seller/profile", { credentials: "include" })
+        .then(r => r.json())
+        .then(data => {
+          setSeller(data.data)
+          setStoreName(data.data?.storeName || "")
+          setStoreDescription(data.data?.storeDescription || "")
+          setName(user.name || "")
+        })
+    }
+  }, [user])
 
   if (!user) return null
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    store.updateUser(user.id, { name, storeName, storeDescription })
-    toast("Store profile updated!")
+    const res = await fetch("http://localhost:5000/api/seller/profile", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ storeName, storeDescription })
+    })
+    if (res.ok) {
+      toast("Store profile updated!")
+    }
   }
 
   return (
@@ -43,7 +61,7 @@ export default function SellerStorePage() {
           </Badge>
         ) : (
           <Badge variant="destructive">
-            <ShieldAlert className="mr-1 h-3 w-3" /> Unverified
+            <ShieldAlert className="mr-1 h-3 w-3" /> Pending
           </Badge>
         )}
       </div>
@@ -66,7 +84,7 @@ export default function SellerStorePage() {
             <div className="flex flex-col gap-5">
               <div className="flex flex-col gap-2">
                 <Label>Your Name</Label>
-                <Input value={name} onChange={e => setName(e.target.value)} className="bg-muted" />
+                <Input value={name} onChange={e => setName(e.target.value)} className="bg-muted" disabled />
               </div>
               <div className="flex flex-col gap-2">
                 <Label>Store Name</Label>

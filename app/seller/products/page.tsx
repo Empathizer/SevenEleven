@@ -1,28 +1,48 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Plus, Trash2, Pencil, Eye } from "lucide-react"
+import { Plus, Trash2, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useAuth } from "@/lib/auth-context"
-import { getStore } from "@/lib/store"
 import { toast } from "sonner"
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
 export default function SellerProductsPage() {
   const { user } = useAuth()
-  const store = getStore()
-  const [, setRefresh] = useState(0)
+  const [products, setProducts] = useState<any[]>([])
+
+  useEffect(() => {
+    if (user) loadProducts()
+  }, [user])
+
+  const loadProducts = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/seller/products`, { credentials: 'include' })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success) setProducts(data.data || [])
+      }
+    } catch (e) {}
+  }
+
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await fetch(`${API_URL}/api/seller/products/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+      if (res.ok) {
+        toast.success('Product deleted')
+        loadProducts()
+      }
+    } catch (e) {}
+  }
 
   if (!user) return null
-  const products = store.getProducts({ sellerId: user.id })
-
-  const handleDelete = (id: string) => {
-    store.deleteProduct(id)
-    setRefresh(v => v + 1)
-    toast("Product deleted")
-  }
 
   return (
     <div>
@@ -50,13 +70,13 @@ export default function SellerProductsPage() {
           </TableHeader>
           <TableBody>
             {products.map((product) => (
-              <TableRow key={product.id}>
+              <TableRow key={product._id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <img src={product.images[0] || "/placeholder.svg"} alt={product.name} className="h-10 w-10 rounded-lg object-cover" crossOrigin="anonymous" />
                     <div>
                       <p className="max-w-[200px] truncate font-medium text-foreground">{product.name}</p>
-                      <p className="text-xs text-muted-foreground">{product.category}</p>
+                      <p className="text-xs text-muted-foreground">{product.categoryId?.name || 'N/A'}</p>
                     </div>
                   </div>
                 </TableCell>
@@ -70,10 +90,10 @@ export default function SellerProductsPage() {
                 <TableCell className="text-muted-foreground">{product.rating}/5</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    <Link href={`/products/${product.id}`}>
+                    <Link href={`/products/${product._id}`}>
                       <Button size="sm" variant="outline"><Eye className="h-3 w-3" /></Button>
                     </Link>
-                    <Button size="sm" variant="destructive" onClick={() => handleDelete(product.id)}>
+                    <Button size="sm" variant="destructive" onClick={() => handleDelete(product._id)}>
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>

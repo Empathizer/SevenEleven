@@ -2,38 +2,55 @@
 
 import React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Plus, Trash2, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { getStore } from "@/lib/store"
 import { toast } from "sonner"
 
 export default function AdminCategoriesPage() {
-  const store = getStore()
-  const [, setRefresh] = useState(0)
+  const [categories, setCategories] = useState<any[]>([])
   const [name, setName] = useState("")
   const [slug, setSlug] = useState("")
   const [image, setImage] = useState("")
   const [open, setOpen] = useState(false)
-  const categories = store.getCategories()
 
-  const handleAdd = (e: React.FormEvent) => {
-    e.preventDefault()
-    store.addCategory({ name, slug: slug || name.toLowerCase().replace(/\s+/g, "-"), image: image || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop" })
-    setName(""); setSlug(""); setImage("")
-    setOpen(false)
-    setRefresh(v => v + 1)
-    toast("Category added")
+  const loadCategories = () => {
+    fetch("http://localhost:5000/api/admin/categories", { credentials: "include" })
+      .then(r => r.json())
+      .then(data => setCategories(data.data || []))
   }
 
-  const handleDelete = (id: string) => {
-    store.deleteCategory(id)
-    setRefresh(v => v + 1)
-    toast("Category deleted")
+  useEffect(() => { loadCategories() }, [])
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const res = await fetch("http://localhost:5000/api/admin/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ name, slug: slug || name.toLowerCase().replace(/\s+/g, "-"), image: image || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop" })
+    })
+    if (res.ok) {
+      setName(""); setSlug(""); setImage("")
+      setOpen(false)
+      loadCategories()
+      toast("Category added")
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    const res = await fetch(`http://localhost:5000/api/admin/categories/${id}`, {
+      method: "DELETE",
+      credentials: "include"
+    })
+    if (res.ok) {
+      loadCategories()
+      toast("Category deleted")
+    }
   }
 
   return (
@@ -71,7 +88,7 @@ export default function AdminCategoriesPage() {
           </TableHeader>
           <TableBody>
             {categories.map((cat) => (
-              <TableRow key={cat.id}>
+              <TableRow key={cat._id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <img src={cat.image || "/placeholder.svg"} alt={cat.name} className="h-10 w-10 rounded-lg object-cover" crossOrigin="anonymous" />
@@ -79,9 +96,9 @@ export default function AdminCategoriesPage() {
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground">{cat.slug}</TableCell>
-                <TableCell className="text-muted-foreground">{cat.productCount}</TableCell>
+                <TableCell className="text-muted-foreground">-</TableCell>
                 <TableCell className="text-right">
-                  <Button size="sm" variant="destructive" onClick={() => handleDelete(cat.id)}>
+                  <Button size="sm" variant="destructive" onClick={() => handleDelete(cat._id)}>
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </TableCell>

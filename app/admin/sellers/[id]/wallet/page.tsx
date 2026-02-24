@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Wallet, TrendingUp, TrendingDown, DollarSign, Plus, Minus, ArrowLeft } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,33 +10,53 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { getStore } from "@/lib/store"
-import { useAuth } from "@/lib/auth-context"
 import { toast } from "sonner"
 import Link from "next/link"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 export default function AdminSellerWalletPage() {
   const params = useParams()
-  const router = useRouter()
-  const { user } = useAuth()
-  const store = getStore()
   const sellerId = params.id as string
 
   const [depositOpen, setDepositOpen] = useState(false)
   const [deductOpen, setDeductOpen] = useState(false)
   const [amount, setAmount] = useState("")
   const [note, setNote] = useState("")
-  const [, setRefresh] = useState(0)
+  const [seller, setSeller] = useState<any>(null)
+  const [wallet, setWallet] = useState({ walletBalance: 0, totalEarnings: 0, totalWithdrawn: 0 })
+  const [transactions, setTransactions] = useState<any[]>([])
 
-  const seller = store.getUserById(sellerId)
-  const wallet = store.getSellerWallet(sellerId)
-  const transactions = store.getTransactions(sellerId)
+  useEffect(() => {
+    loadData()
+  }, [])
 
-  if (!seller || seller.role !== "seller" || !wallet) {
-    return <div className="text-muted-foreground">Seller not found</div>
+  const loadData = async () => {
+    try {
+      const [userRes, walletRes, txnRes] = await Promise.all([
+        fetch(`${API_URL}/api/admin/users/${sellerId}`, { credentials: 'include' }),
+        fetch(`${API_URL}/api/admin/sellers/${sellerId}/wallet`, { credentials: 'include' }),
+        fetch(`${API_URL}/api/admin/sellers/${sellerId}/transactions`, { credentials: 'include' })
+      ])
+
+      if (userRes.ok) {
+        const data = await userRes.json()
+        if (data.success) setSeller(data.user)
+      }
+
+      if (walletRes.ok) {
+        const data = await walletRes.json()
+        if (data.success) setWallet(data.wallet)
+      }
+
+      if (txnRes.ok) {
+        const data = await txnRes.json()
+        if (data.success) setTransactions(data.transactions || [])
+      }
+    } catch (e) {}
   }
 
-  const handleDeposit = () => {
+  const handleDeposit = async () => {
     const amt = parseFloat(amount)
     if (!amt || amt <= 0) {
       toast.error("Invalid amount")
@@ -46,15 +66,26 @@ export default function AdminSellerWalletPage() {
       toast.error("Note is required")
       return
     }
-    store.addDeposit(sellerId, amt, note, user?.id || "admin")
-    toast.success(`$${amt.toFixed(2)} deposited to ${seller.storeName}`)
-    setAmount("")
-    setNote("")
-    setDepositOpen(false)
-    setRefresh(v => v + 1)
+
+    try {
+      const res = await fetch(`${API_URL}/api/admin/sellers/${sellerId}/deposit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ amount: amt, note })
+      })
+
+      if (res.ok) {
+        toast.success(`$${amt.toFixed(2)} deposited`)
+        setAmount("")
+        setNote("")
+        setDepositOpen(false)
+        loadData()
+      }
+    } catch (e) {}
   }
 
-  const handleDeduct = () => {
+  const handleDeduct = async () => {
     const amt = parseFloat(amount)
     if (!amt || amt <= 0) {
       toast.error("Invalid amount")
@@ -68,12 +99,27 @@ export default function AdminSellerWalletPage() {
       toast.error("Note is required")
       return
     }
-    store.deductAmount(sellerId, amt, note, user?.id || "admin")
-    toast.success(`$${amt.toFixed(2)} deducted from ${seller.storeName}`)
-    setAmount("")
-    setNote("")
-    setDeductOpen(false)
-    setRefresh(v => v + 1)
+
+    try {
+      const res = await fetch(`${API_URL}/api/admin/sellers/${sellerId}/deduct`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ amount: amt, note })
+      })
+
+      if (res.ok) {
+        toast.success(`$${amt.toFixed(2)} deducted`)
+        setAmount("")
+        setNote("")
+        setDeductOpen(false)
+        loadData()
+      }
+    } catch (e) {}
+  }
+
+  if (!seller) {
+    return <div className="text-muted-foreground">Loading...</div>
   }
 
   return (
@@ -85,7 +131,7 @@ export default function AdminSellerWalletPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{seller.storeName} - Wallet</h1>
+          <h1 className="text-2xl font-bold text-foreground">{seller.name} - Wallet</h1>
           <p className="text-sm text-muted-foreground">{seller.email}</p>
         </div>
       </div>
@@ -182,7 +228,7 @@ export default function AdminSellerWalletPage() {
           ) : (
             <div className="flex flex-col gap-3">
               {transactions.map((txn) => (
-                <div key={txn.id} className="flex items-center justify-between rounded-lg border border-border p-4">
+                <div key={txn._id} className="flex items-center justify-between rounded-lg border border-border p-4">
                   <div className="flex items-center gap-3">
                     <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
                       txn.type === "deposit" || txn.type === "earning" ? "bg-chart-4/10" : "bg-chart-1/10"

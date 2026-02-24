@@ -12,7 +12,12 @@ const productSchema = new mongoose.Schema({
   },
   price: {
     type: Number,
-    required: [true, 'Price is required'],
+    required: [true, 'Selling price is required'],
+    min: 0
+  },
+  buyingPrice: {
+    type: Number,
+    required: [true, 'Buying price is required'],
     min: 0
   },
   originalPrice: {

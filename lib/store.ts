@@ -24,6 +24,18 @@ export interface User {
   walletBalance?: number
   totalEarnings?: number
   totalWithdrawn?: number
+  pendingBalance?: number
+  guaranteeMoney?: number
+  totalRecharge?: number
+  creditScore?: number
+  viewsBase?: number
+  viewsInc?: number
+  package?: string
+  salesman?: string
+  isVirtual?: boolean
+  phone?: string
+  commentPermission?: string
+  homeDisplay?: string
   createdAt: string
 }
 
@@ -104,6 +116,17 @@ export interface WalletTransaction {
   createdAt: string
 }
 
+export interface Message {
+  id: string
+  senderId: string
+  senderName: string
+  senderRole: UserRole
+  receiverId: string
+  message: string
+  read: boolean
+  createdAt: string
+}
+
 // ---- Initial Data ----
 
 const categories: Category[] = [
@@ -168,6 +191,7 @@ class Store {
   private carts: Map<string, CartItem[]> = new Map()
   private wishlists: Map<string, WishlistItem[]> = new Map()
   private transactions: WalletTransaction[] = []
+  private messages: Message[] = []
   private currentUserId: string | null = null
 
   constructor() {
@@ -478,6 +502,68 @@ class Store {
     }
     this.transactions.push(transaction)
     return transaction
+  }
+
+  // Messages / Support Chat
+  sendMessage(senderId: string, receiverId: string, message: string): Message {
+    const sender = this.users.find(u => u.id === senderId)
+    if (!sender) return null as any
+    
+    const newMessage: Message = {
+      id: `msg-${Date.now()}`,
+      senderId,
+      senderName: sender.name,
+      senderRole: sender.role,
+      receiverId,
+      message,
+      read: false,
+      createdAt: new Date().toISOString()
+    }
+    this.messages.push(newMessage)
+    return newMessage
+  }
+
+  getMessages(userId: string): Message[] {
+    return this.messages
+      .filter(m => m.senderId === userId || m.receiverId === userId)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+  }
+
+  getUnreadCount(userId: string): number {
+    return this.messages.filter(m => m.receiverId === userId && !m.read).length
+  }
+
+  markAsRead(messageId: string) {
+    const message = this.messages.find(m => m.id === messageId)
+    if (message) message.read = true
+  }
+
+  getCustomerChats(): { userId: string; userName: string; lastMessage: string; unread: number }[] {
+    const customers = this.users.filter(u => u.role === 'customer')
+    return customers.map(customer => {
+      const msgs = this.getMessages(customer.id)
+      const unread = msgs.filter(m => m.receiverId === 'user-admin' && !m.read).length
+      return {
+        userId: customer.id,
+        userName: customer.name,
+        lastMessage: msgs[msgs.length - 1]?.message || 'No messages',
+        unread
+      }
+    }).filter(c => this.getMessages(c.userId).length > 0)
+  }
+
+  getSellerChats(): { userId: string; userName: string; lastMessage: string; unread: number }[] {
+    const sellers = this.users.filter(u => u.role === 'seller')
+    return sellers.map(seller => {
+      const msgs = this.getMessages(seller.id)
+      const unread = msgs.filter(m => m.receiverId === 'user-admin' && !m.read).length
+      return {
+        userId: seller.id,
+        userName: seller.name,
+        lastMessage: msgs[msgs.length - 1]?.message || 'No messages',
+        unread
+      }
+    }).filter(s => this.getMessages(s.userId).length > 0)
   }
 }
 

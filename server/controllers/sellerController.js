@@ -33,7 +33,7 @@ exports.updateProfile = async (req, res) => {
 exports.getProducts = async (req, res) => {
   try {
     const products = await Product.find({ sellerId: req.user.id }).populate('categoryId');
-    res.json({ success: true, products });
+    res.json({ success: true, data: products });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -87,7 +87,7 @@ exports.getOrders = async (req, res) => {
     const orders = await Order.find({ 
       'items.sellerId': req.user.id 
     }).populate('userId', 'name email').sort('-createdAt');
-    res.json({ success: true, orders });
+    res.json({ success: true, data: orders });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -98,7 +98,7 @@ exports.getWallet = async (req, res) => {
     const user = await User.findById(req.user.id);
     res.json({
       success: true,
-      wallet: {
+      data: {
         walletBalance: user.walletBalance || 0,
         totalEarnings: user.totalEarnings || 0,
         totalWithdrawn: user.totalWithdrawn || 0

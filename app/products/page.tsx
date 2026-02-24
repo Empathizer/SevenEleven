@@ -1,7 +1,7 @@
 "use client"
 
 import { useSearchParams } from "next/navigation"
-import { useState, useMemo, Suspense } from "react"
+import { useState, useMemo, Suspense, useEffect } from "react"
 import { SlidersHorizontal, Grid3X3, LayoutList } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,25 +9,29 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { StoreHeader } from "@/components/store-header"
 import { StoreFooter } from "@/components/store-footer"
 import { ProductCard } from "@/components/product-card"
-import { getStore } from "@/lib/store"
 
 function ProductsContent() {
   const searchParams = useSearchParams()
   const categorySlug = searchParams.get("category") || ""
   const searchQuery = searchParams.get("search") || ""
 
-  const store = getStore()
-  const categories = store.getCategories()
+  const [categories, setCategories] = useState<any[]>([])
+  const [allProducts, setAllProducts] = useState<any[]>([])
   const [sort, setSort] = useState("popular")
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500])
 
-  const products = useMemo(() => {
-    let result = store.getProducts({
-      category: categorySlug || undefined,
-      search: searchQuery || undefined,
+  useEffect(() => {
+    Promise.all([
+      fetch("http://localhost:5000/api/products/categories").then(r => r.json()),
+      fetch(`http://localhost:5000/api/products?category=${categorySlug}&search=${searchQuery}`).then(r => r.json())
+    ]).then(([cats, prods]) => {
+      setCategories(cats.data || [])
+      setAllProducts(prods.data || [])
     })
+  }, [categorySlug, searchQuery])
 
-    result = result.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1])
+  const products = useMemo(() => {
+    let result = allProducts.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1])
 
     switch (sort) {
       case "price-low": return [...result].sort((a, b) => a.price - b.price)
@@ -36,7 +40,7 @@ function ProductsContent() {
       case "newest": return [...result].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       default: return [...result].sort((a, b) => b.sold - a.sold)
     }
-  }, [store, categorySlug, searchQuery, sort, priceRange])
+  }, [allProducts, sort, priceRange])
 
   const activeCat = categories.find(c => c.slug === categorySlug)
 
@@ -78,11 +82,11 @@ function ProductsContent() {
                     </a>
                     {categories.map(cat => (
                       <a
-                        key={cat.id}
+                        key={cat._id}
                         href={`/products?category=${cat.slug}`}
                         className={`rounded px-2 py-1.5 text-sm ${categorySlug === cat.slug ? "bg-primary/10 font-medium text-primary" : "text-foreground hover:bg-muted"}`}
                       >
-                        {cat.name} ({cat.productCount})
+                        {cat.name}
                       </a>
                     ))}
                   </div>
@@ -132,7 +136,7 @@ function ProductsContent() {
               {products.length > 0 ? (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                   {products.map(product => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCard key={product._id} product={{...product, id: product._id, categorySlug: product.categoryId?.slug}} />
                   ))}
                 </div>
               ) : (

@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/auth-context"
 import { useEffect } from "react"
 import {
   LayoutDashboard, Users, Package, Tag, ImageIcon, ShoppingCart, DollarSign, LogOut, ChevronLeft, Menu,
-  UserPlus, Settings, FileText, Wallet
+  UserPlus, Settings, FileText, Wallet, MessageCircle, Headphones
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -24,6 +24,8 @@ const navItems = [
   { href: "/admin/users", label: "All Users", icon: Users },
   { href: "/admin/virtual-customers", label: "Virtual Customers", icon: UserPlus },
   { href: "/admin/withdrawals", label: "Withdrawals", icon: Wallet },
+  { href: "/admin/customer-support", label: "Customer Support", icon: MessageCircle },
+  { href: "/admin/seller-support", label: "Seller Support", icon: Headphones },
 ]
 
 function SidebarNav({ pathname }: { pathname: string }) {
@@ -103,7 +105,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </Sheet>
           <span className="font-semibold text-foreground">Admin Panel</span>
         </header>
-        <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>
+        <main className="flex-1 p-4 md:p-6 overflow-hidden">{children}</main>
       </div>
     </div>
   )

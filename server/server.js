@@ -15,6 +15,7 @@ const virtualCustomerRoutes = require('./routes/virtualCustomers');
 const advancedSellerRoutes = require('./routes/advancedSeller');
 const advancedOrderRoutes = require('./routes/advancedOrders');
 const withdrawalRoutes = require('./routes/withdrawals');
+const messageRoutes = require('./routes/messages');
 
 const app = express();
 
@@ -54,6 +55,7 @@ app.use('/api/admin/virtual-customers', virtualCustomerRoutes);
 app.use('/api/admin/sellers', advancedSellerRoutes);
 app.use('/api/admin/orders', advancedOrderRoutes);
 app.use('/api/withdrawals', withdrawalRoutes);
+app.use('/api/messages', messageRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -21,10 +21,10 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-    const result = login(email, password)
+    const result = await login(email, password)
     if (result.success) {
       toast("Login successful!")
       const store = getStore()
@@ -41,10 +41,10 @@ export default function LoginPage() {
     }
   }
 
-  const quickLogin = (demoEmail: string, demoPassword: string) => {
+  const quickLogin = async (demoEmail: string, demoPassword: string) => {
     setEmail(demoEmail)
     setPassword(demoPassword)
-    const result = login(demoEmail, demoPassword)
+    const result = await login(demoEmail, demoPassword)
     if (result.success) {
       toast("Login successful!")
       const store = getStore()

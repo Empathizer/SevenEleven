@@ -1,22 +1,32 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Trash2, Eye } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { getStore } from "@/lib/store"
 import { toast } from "sonner"
 
 export default function AdminProductsPage() {
-  const store = getStore()
-  const [, setRefresh] = useState(0)
-  const products = store.getProducts()
+  const [products, setProducts] = useState<any[]>([])
 
-  const handleDelete = (id: string) => {
-    store.deleteProduct(id)
-    setRefresh(v => v + 1)
-    toast("Product deleted")
+  const loadProducts = () => {
+    fetch("http://localhost:5000/api/admin/products", { credentials: "include" })
+      .then(r => r.json())
+      .then(data => setProducts(data.data || []))
+  }
+
+  useEffect(() => { loadProducts() }, [])
+
+  const handleDelete = async (id: string) => {
+    const res = await fetch(`http://localhost:5000/api/admin/products/${id}`, {
+      method: "DELETE",
+      credentials: "include"
+    })
+    if (res.ok) {
+      toast("Product deleted")
+      loadProducts()
+    }
   }
 
   return (
@@ -38,23 +48,23 @@ export default function AdminProductsPage() {
           </TableHeader>
           <TableBody>
             {products.map((product) => (
-              <TableRow key={product.id}>
+              <TableRow key={product._id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <img src={product.images[0] || "/placeholder.svg"} alt={product.name} className="h-10 w-10 rounded-lg object-cover" crossOrigin="anonymous" />
                     <span className="max-w-[200px] truncate font-medium text-foreground">{product.name}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-muted-foreground">{product.category}</TableCell>
+                <TableCell className="text-muted-foreground">{product.categoryId?.name}</TableCell>
                 <TableCell className="font-medium text-primary">${product.price.toFixed(2)}</TableCell>
                 <TableCell className="text-muted-foreground">{product.stock}</TableCell>
-                <TableCell className="text-muted-foreground">{product.sellerName}</TableCell>
+                <TableCell className="text-muted-foreground">{product.sellerId?.storeName || product.sellerId?.name}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    <Link href={`/products/${product.id}`}>
+                    <Link href={`/products/${product._id}`}>
                       <Button size="sm" variant="outline"><Eye className="mr-1 h-3 w-3" /> View</Button>
                     </Link>
-                    <Button size="sm" variant="destructive" onClick={() => handleDelete(product.id)}>
+                    <Button size="sm" variant="destructive" onClick={() => handleDelete(product._id)}>
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>

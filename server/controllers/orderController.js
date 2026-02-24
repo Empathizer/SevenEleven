@@ -29,6 +29,7 @@ exports.createOrder = async (req, res) => {
         });
       }
 
+      const profit = (product.price - (product.buyingPrice || 0)) * item.quantity;
       totalAmount += product.price * item.quantity;
 
       orderItems.push({
@@ -37,6 +38,8 @@ exports.createOrder = async (req, res) => {
         productImage: product.images[0] || '',
         quantity: item.quantity,
         price: product.price,
+        buyingPrice: product.buyingPrice || 0,
+        profit: profit,
         sellerId: product.sellerId
       });
 
@@ -45,14 +48,41 @@ exports.createOrder = async (req, res) => {
       await product.save();
     }
 
+    const totalProfit = orderItems.reduce((sum, item) => sum + item.profit, 0);
+
     const order = await Order.create({
       userId: req.user.id,
       items: orderItems,
       totalAmount,
+      profit: totalProfit,
       shippingAddress,
       paymentMethod: paymentMethod || 'COD',
       paymentStatus: paymentMethod === 'COD' ? 'pending' : 'paid'
     });
+
+    // Add to seller pending balance and deduct buying price from wallet
+    const User = require('../models/User');
+    const sellerTotals = {};
+    const sellerBuyingCosts = {};
+    for (const item of orderItems) {
+      if (!sellerTotals[item.sellerId]) {
+        sellerTotals[item.sellerId] = 0;
+        sellerBuyingCosts[item.sellerId] = 0;
+      }
+      sellerTotals[item.sellerId] += item.price * item.quantity;
+      sellerBuyingCosts[item.sellerId] += (item.buyingPrice || 0) * item.quantity;
+    }
+    
+    for (const [sellerId, amount] of Object.entries(sellerTotals)) {
+      const buyingCost = sellerBuyingCosts[sellerId];
+      console.log(`Seller ${sellerId}: Adding ${amount} to pending, deducting ${buyingCost} from wallet`);
+      await User.findByIdAndUpdate(sellerId, {
+        $inc: { 
+          pendingBalance: amount,
+          walletBalance: -buyingCost
+        }
+      });
+    }
 
     res.status(201).json({ success: true, order });
   } catch (error) {
@@ -62,8 +92,20 @@ exports.createOrder = async (req, res) => {
 
 exports.getOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ userId: req.user.id })
-      .populate('items.productId', 'name images')
+    let query = {};
+    
+    // If user is customer, show only their orders
+    if (req.user.role === 'customer') {
+      query.userId = req.user.id;
+    }
+    // If user is seller, show orders with their products
+    else if (req.user.role === 'seller') {
+      query['items.sellerId'] = req.user.id;
+    }
+    // Admin sees all orders
+    
+    const orders = await Order.find(query)
+      .populate('userId', 'name email')
       .sort('-createdAt');
     res.json({ success: true, orders });
   } catch (error) {

@@ -2,7 +2,7 @@
 
 import React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,47 +11,56 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { useAuth } from "@/lib/auth-context"
-import { getStore } from "@/lib/store"
 import { toast } from "sonner"
 
 export default function NewProductPage() {
   const { user } = useAuth()
-  const store = getStore()
   const router = useRouter()
-  const categories = store.getCategories()
+  const [categories, setCategories] = useState<any[]>([])
 
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [price, setPrice] = useState("")
+  const [buyingPrice, setBuyingPrice] = useState("")
   const [originalPrice, setOriginalPrice] = useState("")
   const [image, setImage] = useState("")
-  const [categorySlug, setCategorySlug] = useState("")
+  const [categoryId, setCategoryId] = useState("")
   const [stock, setStock] = useState("")
   const [featured, setFeatured] = useState(false)
 
+  useEffect(() => {
+    fetch("http://localhost:5000/api/products/categories")
+      .then(r => r.json())
+      .then(data => setCategories(data.data || []))
+  }, [])
+
   if (!user) return null
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const cat = categories.find(c => c.slug === categorySlug)
-    if (!cat) { toast("Please select a category"); return }
+    if (!categoryId) { toast("Please select a category"); return }
 
-    store.addProduct({
-      name,
-      description,
-      price: Number(price),
-      originalPrice: originalPrice ? Number(originalPrice) : undefined,
-      images: [image || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=600&fit=crop"],
-      category: cat.name,
-      categorySlug: cat.slug,
-      stock: Number(stock),
-      sellerId: user.id,
-      sellerName: user.storeName || user.name,
-      featured,
+    const res = await fetch("http://localhost:5000/api/seller/products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        name,
+        description,
+        price: Number(price),
+        buyingPrice: Number(buyingPrice),
+        originalPrice: originalPrice ? Number(originalPrice) : undefined,
+        images: [image || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=600&fit=crop"],
+        categoryId,
+        stock: Number(stock),
+        featured,
+      })
     })
 
-    toast("Product added successfully!")
-    router.push("/seller/products")
+    if (res.ok) {
+      toast("Product added successfully!")
+      router.push("/seller/products")
+    }
   }
 
   return (
@@ -72,21 +81,25 @@ export default function NewProductPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
-                <Label>Price ($)</Label>
-                <Input type="number" step="0.01" value={price} onChange={e => setPrice(e.target.value)} placeholder="29.99" required className="bg-muted" />
+                <Label>Buying Price ($)</Label>
+                <Input type="number" step="0.01" value={buyingPrice} onChange={e => setBuyingPrice(e.target.value)} placeholder="20.00" required className="bg-muted" />
               </div>
               <div className="flex flex-col gap-2">
-                <Label>Original Price ($)</Label>
-                <Input type="number" step="0.01" value={originalPrice} onChange={e => setOriginalPrice(e.target.value)} placeholder="49.99" className="bg-muted" />
+                <Label>Selling Price ($)</Label>
+                <Input type="number" step="0.01" value={price} onChange={e => setPrice(e.target.value)} placeholder="29.99" required className="bg-muted" />
               </div>
             </div>
             <div className="flex flex-col gap-2">
+              <Label>Original Price ($) - Optional</Label>
+              <Input type="number" step="0.01" value={originalPrice} onChange={e => setOriginalPrice(e.target.value)} placeholder="49.99" className="bg-muted" />
+            </div>
+            <div className="flex flex-col gap-2">
               <Label>Category</Label>
-              <Select value={categorySlug} onValueChange={setCategorySlug}>
+              <Select value={categoryId} onValueChange={setCategoryId}>
                 <SelectTrigger className="bg-muted"><SelectValue placeholder="Select category" /></SelectTrigger>
                 <SelectContent className="bg-card">
                   {categories.map(cat => (
-                    <SelectItem key={cat.id} value={cat.slug}>{cat.name}</SelectItem>
+                    <SelectItem key={cat._id} value={cat._id}>{cat.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

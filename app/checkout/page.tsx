@@ -14,14 +14,14 @@ import { StoreHeader } from "@/components/store-header"
 import { StoreFooter } from "@/components/store-footer"
 import { useAuth } from "@/lib/auth-context"
 import { useCart } from "@/lib/cart-context"
-import { getStore } from "@/lib/store"
 import { toast } from "sonner"
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
 export default function CheckoutPage() {
   const { user } = useAuth()
   const { getCartProducts, totalPrice, totalItems, clearCart } = useCart()
   const router = useRouter()
-  const store = getStore()
   const cartProducts = getCartProducts()
 
   const [address, setAddress] = useState("")
@@ -29,15 +29,18 @@ export default function CheckoutPage() {
   const [zip, setZip] = useState("")
   const [paymentMethod, setPaymentMethod] = useState("credit-card")
 
-  if (!user) {
-    router.push("/login")
-    return null
-  }
+  React.useEffect(() => {
+    if (!user) {
+      router.push("/login")
+    }
+  }, [user, router])
 
   const shipping = totalPrice >= 50 ? 0 : 4.99
   const total = totalPrice + shipping
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  if (!user) return null
+
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault()
 
     const orderItems = cartProducts.filter(item => item.product).map(item => ({
@@ -49,18 +52,31 @@ export default function CheckoutPage() {
       sellerId: item.product!.sellerId,
     }))
 
-    store.createOrder({
-      userId: user.id,
-      items: orderItems,
-      total,
-      status: "pending",
-      shippingAddress: `${address}, ${city}, ${zip}`,
-      paymentMethod: paymentMethod === "credit-card" ? "Credit Card" : paymentMethod === "paypal" ? "PayPal" : "Bank Transfer",
-    })
+    try {
+      const res = await fetch(`${API_URL}/api/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          items: orderItems,
+          shippingAddress: `${address}, ${city}, ${zip}`,
+          paymentMethod: paymentMethod === "credit-card" ? "Credit Card" : paymentMethod === "paypal" ? "PayPal" : "Bank Transfer",
+        })
+      })
 
-    clearCart()
-    toast("Order placed successfully!")
-    router.push("/orders")
+      if (res.ok) {
+        clearCart()
+        toast.success("Order placed successfully!")
+        router.push("/orders")
+      } else {
+        const data = await res.json()
+        console.error('Order error:', data)
+        toast.error(data.message || "Failed to place order")
+      }
+    } catch (e) {
+      console.error('Order exception:', e)
+      toast.error("Failed to place order")
+    }
   }
 
   if (cartProducts.length === 0) {

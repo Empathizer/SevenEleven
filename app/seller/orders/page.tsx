@@ -1,26 +1,48 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useAuth } from "@/lib/auth-context"
-import { getStore, type OrderStatus } from "@/lib/store"
 import { toast } from "sonner"
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
 export default function SellerOrdersPage() {
   const { user } = useAuth()
-  const store = getStore()
-  const [, setRefresh] = useState(0)
+  const [orders, setOrders] = useState<any[]>([])
+
+  useEffect(() => {
+    if (user) loadOrders()
+  }, [user])
+
+  const loadOrders = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/seller/orders`, { credentials: 'include' })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success) setOrders(data.data || [])
+      }
+    } catch (e) {}
+  }
+
+  const updateStatus = async (orderId: string, status: string) => {
+    try {
+      const res = await fetch(`${API_URL}/api/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status })
+      })
+      if (res.ok) {
+        toast.success(`Order updated to ${status}`)
+        loadOrders()
+      }
+    } catch (e) {}
+  }
 
   if (!user) return null
-  const orders = store.getOrders({ sellerId: user.id })
-
-  const updateStatus = (orderId: string, status: OrderStatus) => {
-    store.updateOrderStatus(orderId, status)
-    setRefresh(v => v + 1)
-    toast(`Order updated to ${status}`)
-  }
 
   const statusColor = (status: string) => {
     switch (status) {
@@ -51,11 +73,11 @@ export default function SellerOrdersPage() {
           </TableHeader>
           <TableBody>
             {orders.map((order) => {
-              const myItems = order.items.filter(i => i.sellerId === user.id)
-              const myTotal = myItems.reduce((s, i) => s + i.price * i.quantity, 0)
+              const myItems = order.items.filter((i: any) => i.sellerId === user.id)
+              const myTotal = myItems.reduce((s: number, i: any) => s + i.price * i.quantity, 0)
               return (
-                <TableRow key={order.id}>
-                  <TableCell className="font-medium text-foreground">{order.id}</TableCell>
+                <TableRow key={order._id}>
+                  <TableCell className="font-medium text-foreground">{order._id}</TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-1">
                       {myItems.map((item, idx) => (
@@ -67,7 +89,7 @@ export default function SellerOrdersPage() {
                   <TableCell><Badge className={statusColor(order.status)}>{order.status}</Badge></TableCell>
                   <TableCell className="text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell className="text-right">
-                    <Select value={order.status} onValueChange={(v) => updateStatus(order.id, v as OrderStatus)}>
+                    <Select value={order.status} onValueChange={(v) => updateStatus(order._id, v)}>
                       <SelectTrigger className="w-32 bg-muted"><SelectValue /></SelectTrigger>
                       <SelectContent className="bg-card">
                         <SelectItem value="pending">Pending</SelectItem>
