@@ -7,6 +7,8 @@ export async function GET(req) {
   try {
     const Product = (await import('@/server/models/Product')).default;
     const Category = (await import('@/server/models/Category')).default;
+    // Ensure User model is registered so populate('sellerId') works
+    const User = (await import('@/server/models/User')).default;
     
     const category = searchParams.get('category');
     const search = searchParams.get('search');
