@@ -54,7 +54,7 @@ export default function SellerRegisterPage() {
     setIdImagePreview("")
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     
@@ -94,7 +94,7 @@ export default function SellerRegisterPage() {
       return
     }
     
-    const result = register({ 
+    const result = await register({ 
       name, 
       email, 
       password, 
