@@ -9,7 +9,7 @@ export async function POST(req) {
   try {
     const InvitationCode = (await import('@/server/models/InvitationCode')).default;
     
-    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const code = 'INV' + Math.random().toString(36).substring(2, 10).toUpperCase();
     
     await InvitationCode.create({
       code,

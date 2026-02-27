@@ -24,7 +24,9 @@ export async function POST(req) {
         }
 
         const InvitationCode = (await import('@/server/models/InvitationCode')).default;
+        console.log('Looking for code:', invitationCode);
         const code = await InvitationCode.findOne({ code: invitationCode });
+        console.log('Found code:', code);
         
         if (!code) {
           return Response.json({ success: false, message: 'Invalid invitation code' }, { status: 400 });
@@ -53,6 +55,13 @@ export async function POST(req) {
           { code: invitationCode },
           { isUsed: true, usedBy: user._id }
         );
+        
+        const { sendEmail } = require('@/server/utils/email');
+        await sendEmail({
+          to: email,
+          subject: 'Seller Registration Received',
+          html: `<h2>Welcome ${name}!</h2><p>Your seller registration has been received and is pending admin approval.</p><p>Store: ${storeName}</p><p>You will receive another email once your account is approved.</p>`
+        });
       }
 
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });

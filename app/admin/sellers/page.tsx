@@ -618,25 +618,20 @@ export default function AdminSellersPage() {
           </DialogHeader>
           <div className="space-y-4">
             <Button onClick={async () => {
-              const invitationCode = 'INV' + Math.random().toString(36).substr(2, 8).toUpperCase()
-              
-              if (selectedSeller) {
-                try {
-                  const res = await fetch(`${API_URL}/api/admin/sellers/${selectedSeller.sellerId}/invitation`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ invitationCode })
-                  })
-                  if (res.ok) {
-                    setFormData({...formData, generatedCode: invitationCode})
-                    toast.success('Invitation code generated')
-                    loadSellers()
-                  }
-                } catch (e) {}
-              } else {
-                setFormData({...formData, generatedCode: invitationCode})
-                toast.success('Invitation code generated')
+              try {
+                const res = await fetch(`${API_URL}/api/admin/invitation-codes`, {
+                  method: 'POST',
+                  credentials: 'include'
+                })
+                const data = await res.json()
+                if (res.ok && data.success) {
+                  setFormData({...formData, generatedCode: data.code})
+                  toast.success('Invitation code generated')
+                } else {
+                  toast.error('Failed to generate code')
+                }
+              } catch (e) {
+                toast.error('Failed to generate code')
               }
             }} disabled={formData.generatedCode}>Generate Code</Button>
             
