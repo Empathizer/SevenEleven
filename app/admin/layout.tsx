@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/auth-context"
 import { useEffect } from "react"
 import {
   LayoutDashboard, Users, Package, Tag, ImageIcon, ShoppingCart, DollarSign, LogOut, ChevronLeft, Menu,
-  UserPlus, Settings, FileText, Wallet, MessageCircle, Headphones
+  UserPlus, Settings, FileText, Wallet, MessageCircle, Headphones, MessageSquare
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -24,6 +24,7 @@ const navItems = [
   { href: "/admin/users", label: "All Users", icon: Users },
   { href: "/admin/virtual-customers", label: "Virtual Customers", icon: UserPlus },
   { href: "/admin/withdrawals", label: "Withdrawals", icon: Wallet },
+  { href: "/admin/chats", label: "Chats", icon: MessageSquare },
   { href: "/admin/messages", label: "Messages", icon: MessageCircle },
 ]
 
