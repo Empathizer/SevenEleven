@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { AdminLayout } from "@/components/admin-layout"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -60,9 +59,9 @@ export default function AdminChatsPage() {
   }, [selectedChat?.messages])
 
   return (
-    <AdminLayout>
+    <>
       <div className="flex h-[calc(100vh-4rem)] gap-4">
-        <Card className="w-80 p-4 overflow-y-auto">
+      <Card className="w-80 p-4 overflow-y-auto">
           <h2 className="font-semibold mb-4">Chats</h2>
           <div className="space-y-2">
             {chats.map((chat) => (
@@ -142,6 +141,6 @@ export default function AdminChatsPage() {
           )}
         </Card>
       </div>
-    </AdminLayout>
+    </>
   )
 }
