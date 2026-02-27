@@ -6,6 +6,7 @@ import { StoreHeader } from "@/components/store-header"
 import { StoreFooter } from "@/components/store-footer"
 import { HeroBanner } from "@/components/hero-banner"
 import { ProductCard } from "@/components/product-card"
+import { ChatWidget } from "@/components/chat-widget"
 import { useState, useEffect } from "react"
 
 export default function HomePage() {
@@ -160,6 +161,7 @@ export default function HomePage() {
       </main>
 
       <StoreFooter />
+      <ChatWidget />
     </div>
   )
 }
