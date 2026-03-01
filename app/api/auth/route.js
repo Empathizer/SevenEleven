@@ -56,7 +56,7 @@ export async function POST(req) {
           { isUsed: true, usedBy: user._id }
         );
         
-        const { sendEmail } = require('@/server/utils/email');
+        const { sendEmail } = await import('@/server/utils/email');
         await sendEmail({
           to: email,
           subject: 'Seller Registration Received',

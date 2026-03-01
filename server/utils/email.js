@@ -1,4 +1,4 @@
-const nodemailer = require('nodemailer');
+import nodemailer from 'nodemailer';
 
 let transporter;
 
@@ -33,7 +33,7 @@ const createTransporter = async () => {
   return transporter;
 };
 
-const sendEmail = async ({ to, subject, html }) => {
+export const sendEmail = async ({ to, subject, html }) => {
   try {
     const transport = await createTransporter();
     
@@ -44,14 +44,12 @@ const sendEmail = async ({ to, subject, html }) => {
       html
     });
     
-    console.log('Email sent to:', to);
-    console.log('Preview URL:', nodemailer.getTestMessageUrl(info));
+    console.log('✅ Email sent to:', to);
+    console.log('📧 Preview URL:', nodemailer.getTestMessageUrl(info));
     
     return { success: true, previewUrl: nodemailer.getTestMessageUrl(info) };
   } catch (error) {
-    console.error('Email error:', error.message);
+    console.error('❌ Email error:', error.message);
     return { success: false, error: error.message };
   }
 };
-
-module.exports = { sendEmail };

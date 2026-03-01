@@ -13,7 +13,7 @@ export async function PUT(req, { params }) {
     const seller = await Seller.findByIdAndUpdate(id, { status: 'approved' }, { new: true }).populate('userId');
     await User.findByIdAndUpdate(seller.userId._id, { status: 'active' });
     
-    const { sendEmail } = require('@/server/utils/email');
+    const { sendEmail } = await import('@/server/utils/email');
     await sendEmail({
       to: seller.userId.email,
       subject: 'Seller Account Approved!',
