@@ -57,11 +57,17 @@ export async function POST(req) {
         );
         
         const { sendEmail } = await import('@/server/utils/email');
-        await sendEmail({
-          to: email,
-          subject: 'Seller Registration Received',
-          html: `<h2>Welcome ${name}!</h2><p>Your seller registration has been received and is pending admin approval.</p><p>Store: ${storeName}</p><p>You will receive another email once your account is approved.</p>`
-        });
+        console.log('🔄 Attempting to send email to:', email);
+        try {
+          const result = await sendEmail({
+            to: email,
+            subject: 'Seller Registration Received',
+            html: `<h2>Welcome ${name}!</h2><p>Your seller registration has been received and is pending admin approval.</p><p>Store: ${storeName}</p><p>You will receive another email once your account is approved.</p>`
+          });
+          console.log('📧 Email result:', result);
+        } catch (emailError) {
+          console.error('❌ Email send failed:', emailError);
+        }
       }
 
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });

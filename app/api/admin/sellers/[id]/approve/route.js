@@ -14,11 +14,17 @@ export async function PUT(req, { params }) {
     await User.findByIdAndUpdate(seller.userId._id, { status: 'active' });
     
     const { sendEmail } = await import('@/server/utils/email');
-    await sendEmail({
-      to: seller.userId.email,
-      subject: 'Seller Account Approved!',
-      html: `<h2>Congratulations ${seller.userId.name}!</h2><p>Your seller account has been approved.</p><p>Store: ${seller.storeName}</p><p>You can now login and start selling on SevenEleven.</p><p><a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/login">Login Now</a></p>`
-    });
+    console.log('🔄 Attempting to send approval email to:', seller.userId.email);
+    try {
+      const result = await sendEmail({
+        to: seller.userId.email,
+        subject: 'Seller Account Approved!',
+        html: `<h2>Congratulations ${seller.userId.name}!</h2><p>Your seller account has been approved.</p><p>Store: ${seller.storeName}</p><p>You can now login and start selling on SevenEleven.</p><p><a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/login">Login Now</a></p>`
+      });
+      console.log('📧 Email result:', result);
+    } catch (emailError) {
+      console.error('❌ Email send failed:', emailError);
+    }
     
     return Response.json({ success: true, seller });
   } catch (error) {
