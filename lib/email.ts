@@ -18,13 +18,21 @@ const transporter = nodemailer.createTransport({
 
 export async function sendEmail(data: EmailData): Promise<boolean> {
   try {
+    console.log('📧 Sending email to:', data.to)
+    console.log('📧 Email config:', {
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      user: process.env.EMAIL_USER,
+      hasPass: !!process.env.EMAIL_PASS
+    })
+    
     await transporter.sendMail({
       from: `${process.env.EMAIL_FROM_NAME || 'SevenEleven'} <${process.env.EMAIL_USER}>`,
       to: data.to,
       subject: data.subject,
       html: data.html,
     })
-    console.log(`✅ Email sent to ${data.to}`)
+    console.log(`✅ Email sent successfully to ${data.to}`)
     return true
   } catch (error) {
     console.error('❌ Email error:', error)
