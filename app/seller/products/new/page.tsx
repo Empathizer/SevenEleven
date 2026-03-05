@@ -94,31 +94,6 @@ export default function NewProductPage() {
     }
   }
 
-    const res = await fetch(`${API_URL}/api/seller/products`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        name: selectedProduct.name,
-        description: selectedProduct.description,
-        price: Number(buyingPrice),
-        buyingPrice: selectedProduct.originalPrice || selectedProduct.price,
-        originalPrice: selectedProduct.originalPrice,
-        images: selectedProduct.images,
-        categoryId: selectedProduct.categoryId,
-        stock: Number(stock),
-        featured: false,
-      })
-    })
-
-    if (res.ok) {
-      toast.success("Product added successfully!")
-      router.push("/seller/products")
-    } else {
-      toast.error("Failed to add product")
-    }
-  }
-
   return (
     <div>
       <h1 className="text-2xl font-bold text-foreground">Add Product to Your Store</h1>
