@@ -271,21 +271,7 @@ class Store {
   deleteUser(id: string) { this.users = this.users.filter(u => u.id !== id) }
   getPendingSellers(): User[] { return this.users.filter(u => u.role === "seller" && u.sellerStatus === "pending") }
   approveSeller(id: string) { 
-    const user = this.updateUser(id, { sellerStatus: "approved", emailVerified: true })
-    if (user) {
-      // Send email notification
-      if (typeof window !== 'undefined') {
-        // Client-side: Import dynamically to avoid SSR issues
-        import('./email').then(({ sendSellerApprovalEmail }) => {
-          sendSellerApprovalEmail({
-            email: user.email,
-            name: user.name,
-            storeName: user.storeName || 'Your Store'
-          })
-        })
-      }
-    }
-    return user
+    return this.updateUser(id, { sellerStatus: "approved", emailVerified: true })
   }
   rejectSeller(id: string) { return this.updateUser(id, { sellerStatus: "rejected" }) }
 

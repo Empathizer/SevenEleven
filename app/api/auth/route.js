@@ -56,15 +56,15 @@ export async function POST(req) {
           { isUsed: true, usedBy: user._id }
         );
         
-        const { sendEmail } = await import('@/server/utils/email');
+        const { sendSellerRegistrationEmail } = await import('@/lib/email');
         console.log('🔄 Attempting to send email to:', email);
         try {
-          const result = await sendEmail({
-            to: email,
-            subject: 'Seller Registration Received',
-            html: `<h2>Welcome ${name}!</h2><p>Your seller registration has been received and is pending admin approval.</p><p>Store: ${storeName}</p><p>You will receive another email once your account is approved.</p>`
+          await sendSellerRegistrationEmail({
+            email,
+            name,
+            storeName: storeName || 'Your Store'
           });
-          console.log('📧 Email result:', result);
+          console.log('📧 Registration email sent successfully');
         } catch (emailError) {
           console.error('❌ Email send failed:', emailError);
         }

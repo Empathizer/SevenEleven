@@ -25,6 +25,8 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+.env.local
+.env.production
 
 # vercel
 .vercel
@@ -36,3 +38,11 @@ next-env.d.ts
 # uploads
 /server/uploads
 uploads/
+
+# test files
+test-email.js
+
+# sensitive data
+*.key
+*.cert
+*.pem

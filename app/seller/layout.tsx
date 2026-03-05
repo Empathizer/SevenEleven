@@ -5,11 +5,14 @@ import React from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
-import { useEffect } from "react"
-import { LayoutDashboard, Package, ShoppingCart, BarChart3, Store, LogOut, ChevronLeft, Menu, Plus, Wallet, MessageCircle } from "lucide-react"
+import { useEffect, useState } from "react"
+import { LayoutDashboard, Package, ShoppingCart, BarChart3, Store, LogOut, ChevronLeft, Menu, Plus, Wallet, MessageCircle, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge"
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
 const navItems = [
   { href: "/seller", label: "Dashboard", icon: LayoutDashboard },
@@ -23,14 +26,29 @@ const navItems = [
 
 function SidebarNav({ pathname }: { pathname: string }) {
   const { logout, user } = useAuth()
+  const [seller, setSeller] = useState<any>(null)
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/seller/profile`, { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => setSeller(data.data))
+  }, [])
+
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
       <div className="flex items-center gap-2 border-b border-sidebar-border px-4 py-4">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary">
           <Store className="h-4 w-4 text-sidebar-primary-foreground" />
         </div>
-        <div className="flex flex-col">
-          <span className="text-sm font-bold">{user?.storeName || "Seller Panel"}</span>
+        <div className="flex flex-col flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold">{user?.storeName || "Seller Panel"}</span>
+            {seller?.status === 'approved' && (
+              <Badge className="bg-green-500 text-white text-[10px] px-1 py-0 h-4">
+                <CheckCircle className="h-2.5 w-2.5 mr-0.5" /> Verified
+              </Badge>
+            )}
+          </div>
           <span className="text-xs text-sidebar-foreground/60">Seller Dashboard</span>
         </div>
       </div>

@@ -22,7 +22,7 @@ export default function SellerStorePage() {
 
   useEffect(() => {
     if (user) {
-      fetch("http://localhost:5000/api/seller/profile", { credentials: "include" })
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/seller/profile`, { credentials: "include" })
         .then(r => r.json())
         .then(data => {
           setSeller(data.data)
@@ -37,7 +37,7 @@ export default function SellerStorePage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    const res = await fetch("http://localhost:5000/api/seller/profile", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/seller/profile`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -55,7 +55,7 @@ export default function SellerStorePage() {
           <h1 className="text-2xl font-bold text-foreground">Store Profile</h1>
           <p className="mt-1 text-sm text-muted-foreground">Manage your store information.</p>
         </div>
-        {user.emailVerified ? (
+        {seller?.status === 'approved' ? (
           <Badge className="bg-chart-4 text-primary-foreground">
             <ShieldCheck className="mr-1 h-3 w-3" /> Verified
           </Badge>
@@ -66,7 +66,7 @@ export default function SellerStorePage() {
         )}
       </div>
 
-      {!user.emailVerified && (
+      {seller?.status !== 'approved' && (
         <div className="mt-4 rounded-lg bg-destructive/10 border border-destructive/20 p-4">
           <p className="text-sm text-destructive font-semibold">⚠️ Account Not Verified</p>
           <p className="text-sm text-muted-foreground mt-1">
@@ -98,7 +98,7 @@ export default function SellerStorePage() {
                 <Label>Email</Label>
                 <div className="flex items-center gap-2">
                   <Input value={user.email} disabled className="bg-muted opacity-60" />
-                  {user.emailVerified ? (
+                  {seller?.status === 'approved' ? (
                     <Badge className="bg-chart-4 text-primary-foreground shrink-0">
                       <ShieldCheck className="mr-1 h-3 w-3" /> Verified
                     </Badge>

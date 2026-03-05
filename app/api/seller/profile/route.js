@@ -12,7 +12,7 @@ export async function GET(req) {
     if (!seller) {
       return Response.json({ success: false, message: 'Seller not found' }, { status: 404 });
     }
-    return Response.json({ success: true, seller });
+    return Response.json({ success: true, data: seller });
   } catch (error) {
     return Response.json({ success: false, message: error.message }, { status: 500 });
   }
@@ -31,7 +31,7 @@ export async function PUT(req) {
       { storeName: body.storeName, storeDescription: body.storeDescription },
       { new: true }
     );
-    return Response.json({ success: true, seller });
+    return Response.json({ success: true, data: seller });
   } catch (error) {
     return Response.json({ success: false, message: error.message }, { status: 500 });
   }

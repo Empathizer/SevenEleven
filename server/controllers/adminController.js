@@ -4,6 +4,7 @@ const Order = require('../models/Order');
 const Category = require('../models/Category');
 const Banner = require('../models/Banner');
 const Seller = require('../models/Seller');
+const { sendSellerApprovalEmail } = require('../../lib/email');
 
 const getDashboard = async (req, res) => {
   try {
@@ -36,7 +37,16 @@ const getSellers = async (req, res) => {
 
 const approveSeller = async (req, res) => {
   try {
-    await Seller.findByIdAndUpdate(req.params.id, { status: 'approved' });
+    const seller = await Seller.findByIdAndUpdate(req.params.id, { status: 'approved' }, { new: true }).populate('userId');
+    
+    if (seller && seller.userId) {
+      await sendSellerApprovalEmail({
+        email: seller.userId.email,
+        name: seller.userId.name,
+        storeName: seller.storeName || 'Your Store'
+      });
+    }
+    
     res.json({ success: true, message: 'Seller approved' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
