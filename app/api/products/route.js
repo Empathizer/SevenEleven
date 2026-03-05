@@ -48,7 +48,7 @@ export async function GET(req) {
 
     return Response.json({
       success: true,
-      products,
+      data: products,
       totalPages: Math.ceil(count / limit),
       currentPage: page
     });
