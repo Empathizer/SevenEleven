@@ -13,15 +13,15 @@ export async function PUT(req, { params }) {
     const seller = await Seller.findByIdAndUpdate(id, { status: 'approved' }, { new: true }).populate('userId');
     await User.findByIdAndUpdate(seller.userId._id, { status: 'active' });
     
-    const { sendEmail } = await import('@/server/utils/email');
+    const { sendSellerApprovalEmail } = await import('@/lib/email');
     console.log('🔄 Attempting to send approval email to:', seller.userId.email);
     try {
-      const result = await sendEmail({
-        to: seller.userId.email,
-        subject: 'Seller Account Approved!',
-        html: `<h2>Congratulations ${seller.userId.name}!</h2><p>Your seller account has been approved.</p><p>Store: ${seller.storeName}</p><p>You can now login and start selling on SevenEleven.</p><p><a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/login">Login Now</a></p>`
+      await sendSellerApprovalEmail({
+        email: seller.userId.email,
+        name: seller.userId.name,
+        storeName: seller.storeName || 'Your Store'
       });
-      console.log('📧 Email result:', result);
+      console.log('📧 Approval email sent successfully');
     } catch (emailError) {
       console.error('❌ Email send failed:', emailError);
     }
