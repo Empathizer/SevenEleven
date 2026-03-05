@@ -57,7 +57,7 @@ export async function POST(req) {
         );
         
         const { sendSellerRegistrationEmail } = await import('@/lib/email');
-        console.log('🔄 Attempting to send email to:', email);
+        console.log('🔄 Attempting to send registration email to:', email);
         try {
           await sendSellerRegistrationEmail({
             email,
