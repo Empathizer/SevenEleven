@@ -8,7 +8,11 @@ export async function GET(req) {
 
   try {
     const Seller = (await import('@/server/models/Seller')).default;
+    const User = (await import('@/server/models/User')).default;
+    
+    const userData = await User.findById(user._id).select('-password');
     let sellerInfo = null;
+    
     if (user.role === 'seller') {
       sellerInfo = await Seller.findOne({ userId: user._id });
     }
@@ -16,15 +20,24 @@ export async function GET(req) {
     return Response.json({
       success: true,
       data: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        status: user.status,
-        walletBalance: user.walletBalance,
-        totalEarnings: user.totalEarnings,
-        totalWithdrawn: user.totalWithdrawn,
-        storeName: sellerInfo?.storeName,
+        id: userData._id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
+        status: userData.status,
+        walletBalance: userData.walletBalance || 0,
+        pendingBalance: userData.pendingBalance || 0,
+        totalEarnings: userData.totalEarnings || 0,
+        totalWithdrawn: userData.totalWithdrawn || 0,
+        guaranteeMoney: userData.guaranteeMoney || 0,
+        creditScore: userData.creditScore || 100,
+        viewsBase: userData.viewsBase || 0,
+        viewsInc: userData.viewsInc || 0,
+        package: userData.package || '',
+        salesman: userData.salesman || '',
+        phone: userData.phone || '',
+        storeName: userData.storeName || sellerInfo?.storeName || '',
+        storeDescription: userData.storeDescription || sellerInfo?.storeDescription || '',
         seller: sellerInfo
       }
     });

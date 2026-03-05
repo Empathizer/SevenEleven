@@ -83,7 +83,9 @@ export default function AdminSellersPage() {
         credentials: 'include',
         body: JSON.stringify({ [field]: value })
       })
-      if (res.ok) loadSellers()
+      if (res.ok) {
+        loadSellers()
+      }
     } catch (e) {}
   }
 

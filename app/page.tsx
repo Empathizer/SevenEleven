@@ -20,9 +20,9 @@ export default function HomePage() {
       fetch("/api/products?featured=true").then(r => r.json()),
       fetch("/api/products").then(r => r.json())
     ]).then(([cats, featured, all]) => {
-      setCategories(cats.categories || [])
-      setFeaturedProducts(featured.products || [])
-      setAllProducts(all.products || [])
+      setCategories(cats.categories || cats.data || [])
+      setFeaturedProducts(featured.data || featured.products || [])
+      setAllProducts(all.data || all.products || [])
     })
   }, [])
 

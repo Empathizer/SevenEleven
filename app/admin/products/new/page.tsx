@@ -22,8 +22,18 @@ export default function AdminAddProductPage() {
   const [categoryId, setCategoryId] = useState("")
   const [sellerId, setSellerId] = useState("")
   const [stock, setStock] = useState("")
-  const [images, setImages] = useState("")
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [imagePreview, setImagePreview] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    setImageFiles(files)
+    
+    // Create preview URLs
+    const previews = files.map(file => URL.createObjectURL(file))
+    setImagePreview(previews)
+  }
 
   useEffect(() => {
     fetch(`${API_URL}/api/admin/categories`, { credentials: 'include' })
@@ -40,6 +50,25 @@ export default function AdminAddProductPage() {
     setLoading(true)
 
     try {
+      let imageUrls: string[] = []
+      
+      // Upload images if any
+      if (imageFiles.length > 0) {
+        const formData = new FormData()
+        imageFiles.forEach(file => formData.append('images', file))
+        
+        const uploadRes = await fetch(`${API_URL}/api/upload`, {
+          method: 'POST',
+          credentials: 'include',
+          body: formData
+        })
+        
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json()
+          imageUrls = uploadData.urls || []
+        }
+      }
+
       const res = await fetch(`${API_URL}/api/admin/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -49,10 +78,11 @@ export default function AdminAddProductPage() {
           description,
           price: parseFloat(price),
           buyingPrice: parseFloat(buyingPrice),
+          originalPrice: parseFloat(buyingPrice),
           categoryId,
           sellerId,
           stock: parseInt(stock),
-          images: images.split(',').map(img => img.trim())
+          images: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=600&fit=crop']
         })
       })
 
@@ -131,8 +161,23 @@ export default function AdminAddProductPage() {
         </div>
 
         <div>
-          <Label>Images (comma separated URLs)</Label>
-          <Input value={images} onChange={(e) => setImages(e.target.value)} placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg" className="mt-1" />
+          <Label>Product Images</Label>
+          <Input 
+            type="file" 
+            accept="image/*" 
+            multiple 
+            onChange={handleImageChange} 
+            className="mt-1" 
+          />
+          <p className="text-xs text-muted-foreground mt-1">Upload product images (multiple allowed)</p>
+          
+          {imagePreview.length > 0 && (
+            <div className="mt-3 grid grid-cols-4 gap-2">
+              {imagePreview.map((preview, idx) => (
+                <img key={idx} src={preview} alt={`Preview ${idx + 1}`} className="w-full h-24 object-cover rounded border" />
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="flex gap-3">

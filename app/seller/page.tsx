@@ -10,7 +10,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 export default function SellerDashboard() {
   const { user } = useAuth()
   const [stats, setStats] = useState({ totalSales: 0, totalOrders: 0, totalProducts: 0, topProducts: [] })
-  const [wallet, setWallet] = useState({ walletBalance: 0, totalEarnings: 0, totalWithdrawn: 0 })
+  const [wallet, setWallet] = useState({ walletBalance: 0, pendingBalance: 0, totalEarnings: 0, totalWithdrawn: 0, storeName: '', guaranteeMoney: 0, creditScore: 100 })
 
   useEffect(() => {
     if (user) loadData()
@@ -61,8 +61,8 @@ export default function SellerDashboard() {
 
   const statCards = [
     { label: "Wallet Balance", value: `$${(wallet?.walletBalance || 0).toFixed(2)}`, icon: Wallet, color: "text-primary" },
-    { label: "Total Sales", value: `$${(stats?.totalSales || 0).toFixed(2)}`, icon: DollarSign, color: "text-chart-1" },
-    { label: "Total Orders", value: stats?.totalOrders || 0, icon: ShoppingCart, color: "text-chart-2" },
+    { label: "Pending Balance", value: `$${(wallet?.pendingBalance || 0).toFixed(2)}`, icon: DollarSign, color: "text-orange-500" },
+    { label: "Total Earnings", value: `$${(wallet?.totalEarnings || 0).toFixed(2)}`, icon: TrendingUp, color: "text-green-500" },
     { label: "Total Products", value: stats?.totalProducts || 0, icon: Package, color: "text-chart-3" },
   ]
 

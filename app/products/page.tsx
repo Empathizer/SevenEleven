@@ -27,8 +27,8 @@ function ProductsContent() {
       fetch(`${API_URL}/api/products/categories`).then(r => r.json()),
       fetch(`${API_URL}/api/products?category=${categorySlug}&search=${searchQuery}`).then(r => r.json())
     ]).then(([cats, prods]) => {
-      setCategories(cats.categories || [])
-      setAllProducts(prods.products || [])
+      setCategories(cats.categories || cats.data || [])
+      setAllProducts(prods.data || prods.products || [])
     })
   }, [categorySlug, searchQuery])
 

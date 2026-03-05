@@ -7,6 +7,10 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Name is required'],
     trim: true
   },
+  storeName: {
+    type: String,
+    trim: true
+  },
   email: {
     type: String,
     required: [true, 'Email is required'],
@@ -60,6 +64,26 @@ const userSchema = new mongoose.Schema({
     trim: true
   },
   address: {
+    type: String,
+    trim: true
+  },
+  storeDescription: {
+    type: String,
+    trim: true
+  },
+  idType: {
+    type: String,
+    enum: ['CNIC', 'Passport', 'Driving License'],
+    trim: true
+  },
+  idNumber: {
+    type: String,
+    trim: true
+  },
+  idImage: {
+    type: String
+  },
+  invitationCode: {
     type: String,
     trim: true
   },
