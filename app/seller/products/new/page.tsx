@@ -30,6 +30,8 @@ export default function NewProductPage() {
       .then(r => r.json())
       .then(data => {
         console.log('Products loaded:', data)
+        console.log('Products array:', data.data)
+        console.log('Products count:', data.data?.length)
         setProducts(data.data || [])
         setFilteredProducts(data.data || [])
       })
@@ -86,7 +88,7 @@ export default function NewProductPage() {
         buyingPrice: selectedProduct.originalPrice || selectedProduct.price,
         originalPrice: selectedProduct.originalPrice,
         images: selectedProduct.images,
-        categoryId: selectedProduct.categoryId,
+        categoryId: selectedProduct.categoryId?._id || selectedProduct.categoryId,
         stock: Number(stock),
         featured: false,
       })
@@ -123,8 +125,10 @@ export default function NewProductPage() {
             
             <div className="flex flex-col gap-2">
               <Label>Select Product</Label>
+              <p className="text-xs text-muted-foreground mb-2">Available products: {filteredProducts.length}</p>
               <Select value={selectedProduct?._id} onValueChange={(id) => {
                 const product = products.find(p => p._id === id)
+                console.log('Selected product:', product)
                 setSelectedProduct(product)
               }}>
                 <SelectTrigger className="bg-muted">
