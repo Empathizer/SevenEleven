@@ -12,7 +12,12 @@ export async function GET(req) {
     if (!seller) {
       return Response.json({ success: false, message: 'Seller not found' }, { status: 404 });
     }
-    return Response.json({ success: true, data: seller });
+    
+    // Add wallet balance from user
+    const sellerData = seller.toObject();
+    sellerData.walletBalance = seller.userId.walletBalance || 0;
+    
+    return Response.json({ success: true, data: sellerData });
   } catch (error) {
     return Response.json({ success: false, message: error.message }, { status: 500 });
   }

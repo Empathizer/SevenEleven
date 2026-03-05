@@ -21,7 +21,6 @@ export default function NewProductPage() {
   const [filteredProducts, setFilteredProducts] = useState<any[]>([])
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
   const [search, setSearch] = useState("")
-  const [buyingPrice, setBuyingPrice] = useState("")
   const [stock, setStock] = useState("")
   const [seller, setSeller] = useState<any>(null)
 
@@ -77,6 +76,14 @@ export default function NewProductPage() {
     e.preventDefault()
     if (!selectedProduct) { toast.error("Please select a product"); return }
 
+    const productPrice = selectedProduct.originalPrice || selectedProduct.price
+    
+    // Check if seller has enough balance
+    if (seller && seller.walletBalance < productPrice) {
+      toast.error(`Insufficient wallet balance. You need $${productPrice} but have $${seller.walletBalance}`);
+      return;
+    }
+
     const res = await fetch(`${API_URL}/api/seller/products`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -84,8 +91,8 @@ export default function NewProductPage() {
       body: JSON.stringify({
         name: selectedProduct.name,
         description: selectedProduct.description,
-        price: Number(buyingPrice),
-        buyingPrice: selectedProduct.originalPrice || selectedProduct.price,
+        price: selectedProduct.price,
+        buyingPrice: productPrice,
         originalPrice: selectedProduct.originalPrice,
         images: selectedProduct.images,
         categoryId: selectedProduct.categoryId?._id || selectedProduct.categoryId,
@@ -98,7 +105,8 @@ export default function NewProductPage() {
       toast.success("Product added successfully!")
       router.push("/seller/products")
     } else {
-      toast.error("Failed to add product")
+      const data = await res.json()
+      toast.error(data.message || "Failed to add product")
     }
   }
 
@@ -106,6 +114,13 @@ export default function NewProductPage() {
     <div>
       <h1 className="text-2xl font-bold text-foreground">Add Product to Your Store</h1>
       <p className="mt-1 text-sm text-muted-foreground">Select a product from the catalog to sell in your store.</p>
+      
+      {seller && (
+        <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">Your Wallet Balance: ${seller.walletBalance?.toFixed(2) || '0.00'}</p>
+          <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">You can only add products with price ≤ your wallet balance</p>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="mt-6 max-w-2xl">
         <div className="rounded-xl border border-border bg-card p-6">
@@ -154,23 +169,11 @@ export default function NewProductPage() {
                     <div className="flex-1">
                       <h3 className="font-semibold">{selectedProduct.name}</h3>
                       <p className="text-sm text-muted-foreground mt-1">{selectedProduct.description}</p>
-                      <p className="text-sm font-semibold mt-2">Original Price: ${selectedProduct.originalPrice || selectedProduct.price}</p>
+                      <p className="text-sm font-semibold mt-2">Product Price: ${selectedProduct.price}</p>
+                      <p className="text-sm text-green-600 mt-1">Your Profit: ${(selectedProduct.price * 0.20).toFixed(2)} (20%)</p>
+                      <p className="text-sm text-orange-600 mt-1">Required Balance: ${selectedProduct.originalPrice || selectedProduct.price}</p>
                     </div>
                   </div>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <Label>Your Selling Price ($)</Label>
-                  <Input 
-                    type="number" 
-                    step="0.01" 
-                    value={buyingPrice} 
-                    onChange={e => setBuyingPrice(e.target.value)} 
-                    placeholder="Set your price" 
-                    required 
-                    className="bg-muted" 
-                  />
-                  <p className="text-xs text-muted-foreground">Buying cost: ${selectedProduct.originalPrice || selectedProduct.price} | Your profit: ${buyingPrice ? (Number(buyingPrice) - (selectedProduct.originalPrice || selectedProduct.price)).toFixed(2) : '0.00'} per unit</p>
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -194,7 +197,7 @@ export default function NewProductPage() {
             type="submit" 
             className="bg-primary text-primary-foreground hover:bg-primary/90" 
             size="lg"
-            disabled={!selectedProduct || !buyingPrice || !stock}
+            disabled={!selectedProduct || !stock}
           >
             Add to My Store
           </Button>

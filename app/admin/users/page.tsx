@@ -32,14 +32,16 @@ export default function AdminUsersPage() {
 
   const handleDelete = async (id: string, email: string) => {
     if (email.includes("admin@")) { toast.error("Cannot delete admin"); return }
-    if (!confirm('Block this user?')) return
-    const res = await fetch(`${API_URL}/api/admin/users/${id}`, {
+    if (!confirm('Permanently delete this user? This action cannot be undone.')) return
+    const res = await fetch(`${API_URL}/api/admin/users/${id}/delete`, {
       method: "DELETE",
       credentials: "include"
     })
     if (res.ok) {
       loadUsers()
-      toast.success("User blocked")
+      toast.success("User deleted permanently")
+    } else {
+      toast.error("Failed to delete user")
     }
   }
 
