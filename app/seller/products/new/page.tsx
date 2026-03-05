@@ -29,13 +29,19 @@ export default function NewProductPage() {
     fetch(`${API_URL}/api/products`)
       .then(r => r.json())
       .then(data => {
+        console.log('Products loaded:', data)
         setProducts(data.data || [])
         setFilteredProducts(data.data || [])
       })
+      .catch(err => console.error('Products fetch error:', err))
     
     fetch(`${API_URL}/api/seller/profile`, { credentials: 'include' })
       .then(r => r.json())
-      .then(data => setSeller(data.data))
+      .then(data => {
+        console.log('Seller profile:', data)
+        setSeller(data.data)
+      })
+      .catch(err => console.error('Profile fetch error:', err))
   }, [])
 
   useEffect(() => {
