@@ -19,6 +19,7 @@ const navItems = [
   { href: "/seller/products", label: "Products", icon: Package },
   { href: "/seller/products/new", label: "Add Product", icon: Plus },
   { href: "/seller/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/seller/messages", label: "Messages", icon: MessageCircle },
   { href: "/seller/wallet", label: "Wallet", icon: Wallet },
   { href: "/seller/store", label: "Store Profile", icon: Store },
   { href: "/seller/support", label: "Support", icon: MessageCircle },

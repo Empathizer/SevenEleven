@@ -114,13 +114,13 @@ export default function AdminAddProductPage() {
         <Button 
           type="button"
           variant="outline"
-          disabled={loading}
+          disabled={loading || !sellerId || sellerId === 'none'}
           onClick={async () => {
             if (!categories.length) {
               toast.error('Please create a category first')
               return
             }
-            if (!sellerId) {
+            if (!sellerId || sellerId === 'none') {
               toast.error('Please select a virtual seller first')
               return
             }

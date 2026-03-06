@@ -29,7 +29,7 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState("")
   const [city, setCity] = useState("")
   const [zip, setZip] = useState("")
-  const [paymentMethod, setPaymentMethod] = useState("credit-card")
+  const [paymentMethod, setPaymentMethod] = useState("cod")
 
   useEffect(() => {
     if (!user) {
@@ -46,17 +46,18 @@ export default function CheckoutPage() {
       }
 
       try {
+        const productIds = cartProducts.map(cp => cp.productId)
         const res = await fetch(`${API_URL}/api/products`, { credentials: 'include' })
         if (res.ok) {
           const data = await res.json()
           if (data.success) {
             const dbProducts = data.products || []
             const merged = cartProducts.map(cp => {
-              if (cp.product) return { ...cp, product: cp.product }
               const dbProd = dbProducts.find((p: any) => p._id === cp.productId)
               if (dbProd) {
                 return {
-                  ...cp,
+                  productId: cp.productId,
+                  quantity: cp.quantity,
                   product: {
                     id: dbProd._id,
                     name: dbProd.name,
@@ -66,8 +67,8 @@ export default function CheckoutPage() {
                   }
                 }
               }
-              return cp
-            })
+              return null
+            }).filter(Boolean)
             setProducts(merged)
           }
         }
@@ -77,7 +78,7 @@ export default function CheckoutPage() {
       setLoading(false)
     }
     fetchProducts()
-  }, [])
+  }, [cartProducts])
 
   const totalPrice = products.reduce((sum, item) => {
     return sum + (item.product?.price || 0) * item.quantity
@@ -198,16 +199,8 @@ export default function CheckoutPage() {
                   </h2>
                   <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="mt-4 flex flex-col gap-3">
                     <div className="flex items-center gap-3 rounded-lg border border-border p-3">
-                      <RadioGroupItem value="credit-card" id="cc" />
-                      <Label htmlFor="cc" className="flex-1 cursor-pointer">Credit Card / Debit Card</Label>
-                    </div>
-                    <div className="flex items-center gap-3 rounded-lg border border-border p-3">
-                      <RadioGroupItem value="paypal" id="pp" />
-                      <Label htmlFor="pp" className="flex-1 cursor-pointer">PayPal</Label>
-                    </div>
-                    <div className="flex items-center gap-3 rounded-lg border border-border p-3">
-                      <RadioGroupItem value="bank" id="bank" />
-                      <Label htmlFor="bank" className="flex-1 cursor-pointer">Bank Transfer</Label>
+                      <RadioGroupItem value="cod" id="cod" />
+                      <Label htmlFor="cod" className="flex-1 cursor-pointer">Cash on Delivery</Label>
                     </div>
                   </RadioGroup>
                 </div>

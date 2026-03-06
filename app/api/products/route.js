@@ -19,6 +19,11 @@ export async function GET(req) {
     
     let query = {};
     
+    // Only show products with sellerId on home page (exclude catalogue products)
+    if (!adminOnly && !sellerId) {
+      query.sellerId = { $ne: null };
+    }
+    
     if (adminOnly === 'true') {
       query.sellerId = null;
     } else if (sellerId) {
