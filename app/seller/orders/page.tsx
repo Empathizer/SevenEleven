@@ -4,14 +4,17 @@ import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Pagination } from "@/components/ui/pagination"
 import { useAuth } from "@/lib/auth-context"
 import { toast } from "sonner"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+const ITEMS_PER_PAGE = 20
 
 export default function SellerOrdersPage() {
   const { user } = useAuth()
   const [orders, setOrders] = useState<any[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     if (user) loadOrders()
@@ -72,7 +75,7 @@ export default function SellerOrdersPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders.map((order) => {
+            {orders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((order) => {
               const myItems = order.items.filter((i: any) => i.sellerId === user.id)
               const myTotal = myItems.reduce((s: number, i: any) => s + i.price * i.quantity, 0)
               return (
@@ -111,6 +114,12 @@ export default function SellerOrdersPage() {
           </TableBody>
         </Table>
       </div>
+
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={Math.ceil(orders.length / ITEMS_PER_PAGE)}
+        onPageChange={setCurrentPage}
+      />
     </div>
   )
 }

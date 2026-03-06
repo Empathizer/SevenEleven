@@ -11,10 +11,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Pagination } from "@/components/ui/pagination"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+const ITEMS_PER_PAGE = 20
 
 export default function AdminSellersPage() {
   const router = useRouter()
@@ -22,6 +24,7 @@ export default function AdminSellersPage() {
   const [selectedSeller, setSelectedSeller] = useState<any>(null)
   const [dialogType, setDialogType] = useState<string>('')
   const [formData, setFormData] = useState<any>({})
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     loadSellers()
@@ -279,7 +282,7 @@ export default function AdminSellersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sellers.map((seller) => {
+              {sellers.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((seller) => {
                 const user = seller.userId || {}
                 return (
                 <TableRow key={seller._id}>
@@ -418,6 +421,12 @@ export default function AdminSellersPage() {
           </Table>
         </div>
       </div>
+
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={Math.ceil(sellers.length / ITEMS_PER_PAGE)}
+        onPageChange={setCurrentPage}
+      />
 
       {/* Profile Dialog */}
       <Dialog open={dialogType === 'profile'} onOpenChange={() => setDialogType('')}>

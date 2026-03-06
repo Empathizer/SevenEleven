@@ -7,9 +7,11 @@ import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
+import { Pagination } from "@/components/ui/pagination"
 import { toast } from "sonner"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+const ITEMS_PER_PAGE = 20
 
 export default function VirtualCustomersPage() {
   const [customers, setCustomers] = useState<any[]>([])
@@ -18,6 +20,7 @@ export default function VirtualCustomersPage() {
   const [packageName, setPackageName] = useState("Basic")
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     loadCustomers()
@@ -143,7 +146,7 @@ export default function VirtualCustomersPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {customers.map((customer: any) => (
+          {customers.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((customer: any) => (
             <TableRow key={customer._id}>
               <TableCell>{customer.name}</TableCell>
               <TableCell>{customer.email}</TableCell>
@@ -162,6 +165,12 @@ export default function VirtualCustomersPage() {
           ))}
         </TableBody>
       </Table>
+
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={Math.ceil(customers.length / ITEMS_PER_PAGE)}
+        onPageChange={setCurrentPage}
+      />
     </div>
   )
 }

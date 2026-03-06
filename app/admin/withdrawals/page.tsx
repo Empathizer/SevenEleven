@@ -8,15 +8,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Pagination } from "@/components/ui/pagination"
 import { toast } from "sonner"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+const ITEMS_PER_PAGE = 20
 
 export default function WithdrawalsPage() {
   const [requests, setRequests] = useState([])
   const [filter, setFilter] = useState("pending")
   const [selectedRequest, setSelectedRequest] = useState<any>(null)
   const [adminNote, setAdminNote] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
 
   const fetchRequests = async () => {
     try {
@@ -84,7 +87,7 @@ export default function WithdrawalsPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {requests.map((request: any) => (
+          {requests.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((request: any) => (
             <TableRow key={request._id}>
               <TableCell>{request.sellerName || 'N/A'}</TableCell>
               <TableCell>${request.amount}</TableCell>
@@ -109,6 +112,12 @@ export default function WithdrawalsPage() {
           ))}
         </TableBody>
       </Table>
+
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={Math.ceil(requests.length / ITEMS_PER_PAGE)}
+        onPageChange={setCurrentPage}
+      />
 
       <Dialog open={!!selectedRequest} onOpenChange={() => setSelectedRequest(null)}>
         <DialogContent>

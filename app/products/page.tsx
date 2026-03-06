@@ -6,11 +6,13 @@ import { SlidersHorizontal, Grid3X3, LayoutList } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Pagination } from "@/components/ui/pagination"
 import { StoreHeader } from "@/components/store-header"
 import { StoreFooter } from "@/components/store-footer"
 import { ProductCard } from "@/components/product-card"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+const ITEMS_PER_PAGE = 24
 
 function ProductsContent() {
   const searchParams = useSearchParams()
@@ -21,6 +23,7 @@ function ProductsContent() {
   const [allProducts, setAllProducts] = useState<any[]>([])
   const [sort, setSort] = useState("popular")
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500])
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     Promise.all([
@@ -43,6 +46,16 @@ function ProductsContent() {
       default: return [...result].sort((a, b) => b.sold - a.sold)
     }
   }, [allProducts, sort, priceRange])
+
+  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE)
+  const paginatedProducts = products.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  )
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [categorySlug, searchQuery, sort, priceRange])
 
   const activeCat = categories.find(c => c.slug === categorySlug)
 
@@ -135,12 +148,20 @@ function ProductsContent() {
                 </Select>
               </div>
 
-              {products.length > 0 ? (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                  {products.map(product => (
-                    <ProductCard key={product._id} product={{...product, id: product._id, categorySlug: product.categoryId?.slug}} />
-                  ))}
-                </div>
+              {paginatedProducts.length > 0 ? (
+                <>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                    {paginatedProducts.map(product => (
+                      <ProductCard key={product._id} product={{...product, id: product._id, categorySlug: product.categoryId?.slug}} />
+                    ))}
+                  </div>
+                  
+                  <Pagination 
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                </>
               ) : (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
                   <p className="text-lg font-medium text-foreground">No products found</p>

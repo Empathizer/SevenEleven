@@ -7,15 +7,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Pagination } from "@/components/ui/pagination"
 import { MoreVertical, Eye, Trash2, Download, Edit } from "lucide-react"
 import { toast } from "sonner"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+const ITEMS_PER_PAGE = 20
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([])
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [dialogType, setDialogType] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     loadOrders()
@@ -95,7 +98,7 @@ export default function AdminOrdersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orders.map((order) => (
+              {orders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((order) => (
                 <TableRow key={order._id}>
                   <TableCell className="font-medium whitespace-nowrap">{order._id}</TableCell>
                   <TableCell className="whitespace-nowrap">{order.items[0]?.sellerEmail || 'N/A'}</TableCell>
@@ -158,6 +161,12 @@ export default function AdminOrdersPage() {
           </Table>
         </div>
       </div>
+
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={Math.ceil(orders.length / ITEMS_PER_PAGE)}
+        onPageChange={setCurrentPage}
+      />
 
       {/* View Details Dialog */}
       <Dialog open={dialogType === 'view'} onOpenChange={() => setDialogType('')}>

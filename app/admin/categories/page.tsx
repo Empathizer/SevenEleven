@@ -9,9 +9,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Pagination } from "@/components/ui/pagination"
 import { toast } from "sonner"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+const ITEMS_PER_PAGE = 20
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<any[]>([])
@@ -19,6 +21,7 @@ export default function AdminCategoriesPage() {
   const [slug, setSlug] = useState("")
   const [image, setImage] = useState("")
   const [open, setOpen] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
 
   const loadCategories = () => {
     fetch(`${API_URL}/api/admin/categories`, { credentials: "include" })
@@ -89,7 +92,7 @@ export default function AdminCategoriesPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {categories.map((cat) => (
+            {categories.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((cat) => (
               <TableRow key={cat._id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -109,6 +112,12 @@ export default function AdminCategoriesPage() {
           </TableBody>
         </Table>
       </div>
+
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={Math.ceil(categories.length / ITEMS_PER_PAGE)}
+        onPageChange={setCurrentPage}
+      />
     </div>
   )
 }

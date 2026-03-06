@@ -6,13 +6,16 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Pagination } from "@/components/ui/pagination"
 import { toast } from "sonner"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+const ITEMS_PER_PAGE = 20
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([])
   const [filter, setFilter] = useState<'all' | 'admin' | 'seller'>('admin')
+  const [currentPage, setCurrentPage] = useState(1)
 
   const loadProducts = () => {
     fetch(`${API_URL}/api/admin/products`, { credentials: "include" })
@@ -50,6 +53,16 @@ export default function AdminProductsPage() {
     if (filter === 'seller') return p.sellerId
     return true
   })
+
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  )
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filter])
 
   return (
     <div>
@@ -101,14 +114,14 @@ export default function AdminProductsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredProducts.length === 0 ? (
+            {paginatedProducts.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                   No products found
                 </TableCell>
               </TableRow>
             ) : (
-              filteredProducts.map((product) => (
+              paginatedProducts.map((product) => (
                 <TableRow key={product._id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
@@ -143,6 +156,12 @@ export default function AdminProductsPage() {
           </TableBody>
         </Table>
       </div>
+
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
     </div>
   )
 }

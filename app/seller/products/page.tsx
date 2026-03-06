@@ -6,14 +6,17 @@ import { Plus, Trash2, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Pagination } from "@/components/ui/pagination"
 import { useAuth } from "@/lib/auth-context"
 import { toast } from "sonner"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+const ITEMS_PER_PAGE = 20
 
 export default function SellerProductsPage() {
   const { user } = useAuth()
   const [products, setProducts] = useState<any[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     if (user) loadProducts()
@@ -69,7 +72,7 @@ export default function SellerProductsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products.map((product) => (
+            {products.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((product) => (
               <TableRow key={product._id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -110,6 +113,12 @@ export default function SellerProductsPage() {
           </TableBody>
         </Table>
       </div>
+
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={Math.ceil(products.length / ITEMS_PER_PAGE)}
+        onPageChange={setCurrentPage}
+      />
     </div>
   )
 }

@@ -9,9 +9,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Pagination } from "@/components/ui/pagination"
 import { toast } from "sonner"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+const ITEMS_PER_PAGE = 12
 
 export default function AdminBannersPage() {
   const [banners, setBanners] = useState<any[]>([])
@@ -20,6 +22,7 @@ export default function AdminBannersPage() {
   const [subtitle, setSubtitle] = useState("")
   const [image, setImage] = useState("")
   const [link, setLink] = useState("/products")
+  const [currentPage, setCurrentPage] = useState(1)
 
   const loadBanners = () => {
     fetch(`${API_URL}/api/admin/banners`, { credentials: "include" })
@@ -94,7 +97,7 @@ export default function AdminBannersPage() {
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {banners.map((banner) => (
+        {banners.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((banner) => (
           <div key={banner._id} className="overflow-hidden rounded-xl border border-border bg-card">
             <div className="aspect-[3/1]">
               <img src={banner.image || "/placeholder.svg"} alt={banner.title} className="h-full w-full object-cover" crossOrigin="anonymous" />
@@ -115,6 +118,12 @@ export default function AdminBannersPage() {
           </div>
         ))}
       </div>
+
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={Math.ceil(banners.length / ITEMS_PER_PAGE)}
+        onPageChange={setCurrentPage}
+      />
     </div>
   )
 }

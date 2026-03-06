@@ -5,12 +5,15 @@ import { Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Pagination } from "@/components/ui/pagination"
 import { toast } from "sonner"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+const ITEMS_PER_PAGE = 20
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<any[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
 
   const loadUsers = () => {
     fetch(`${API_URL}/api/admin/users`, { credentials: "include" })
@@ -78,7 +81,7 @@ export default function AdminUsersPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              users.map((user) => (
+              users.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((user) => (
                 <TableRow key={user._id}>
                   <TableCell className="font-medium text-foreground">{user.name}</TableCell>
                   <TableCell className="text-muted-foreground">{user.email}</TableCell>
@@ -100,6 +103,12 @@ export default function AdminUsersPage() {
           </TableBody>
         </Table>
       </div>
+
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={Math.ceil(users.length / ITEMS_PER_PAGE)}
+        onPageChange={setCurrentPage}
+      />
     </div>
   )
 }
