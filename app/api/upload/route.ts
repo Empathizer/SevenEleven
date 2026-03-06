@@ -1,5 +1,3 @@
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
 import { NextRequest } from 'next/server';
 
 export async function POST(req: NextRequest) {
@@ -11,24 +9,23 @@ export async function POST(req: NextRequest) {
       return Response.json({ success: false, message: 'No files uploaded' }, { status: 400 });
     }
 
-    const uploadDir = join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadDir, { recursive: true });
-
     const urls: string[] = [];
 
     for (const file of files) {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
       
-      const filename = `${Date.now()}-${file.name.replace(/\s/g, '-')}`;
-      const filepath = join(uploadDir, filename);
+      // Convert to base64 data URL for storage
+      const base64 = buffer.toString('base64');
+      const mimeType = file.type || 'image/jpeg';
+      const dataUrl = `data:${mimeType};base64,${base64}`;
       
-      await writeFile(filepath, buffer);
-      urls.push(`/uploads/${filename}`);
+      urls.push(dataUrl);
     }
 
     return Response.json({ success: true, urls });
   } catch (error: any) {
+    console.error('Upload error:', error);
     return Response.json({ success: false, message: error.message }, { status: 500 });
   }
 }
