@@ -28,10 +28,7 @@ export default function NewProductPage() {
     fetch(`${API_URL}/api/products?adminOnly=true`)
       .then(r => r.json())
       .then(data => {
-        console.log('Products loaded:', data)
-        const productList = data.data || data.products || []
-        console.log('Products array:', productList)
-        console.log('Products count:', productList.length)
+        const productList = (data.data || data.products || []).filter((p: any) => !p.sellerId)
         setProducts(productList)
         setFilteredProducts(productList)
       })
