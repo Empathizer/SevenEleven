@@ -48,7 +48,7 @@ export async function POST(req, { params }) {
 
     const transaction = await WalletTransaction.create({
       sellerId: seller._id,
-      type: 'deduction',
+      type: 'withdrawal',
       amount: -body.amount,
       note: body.note || 'Deduction',
       createdBy: user.id

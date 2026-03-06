@@ -90,6 +90,10 @@ export async function POST(req) {
       return Response.json({ success: false, message: 'Invalid credentials' }, { status: 401 });
     }
 
+    if (user.status === 'blocked') {
+      return Response.json({ success: false, message: 'Your account has been blocked. Contact admin.' }, { status: 403 });
+    }
+
     if (user.role === 'seller') {
       const seller = await Seller.findOne({ userId: user._id });
       if (seller && seller.status !== 'approved') {

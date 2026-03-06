@@ -106,7 +106,9 @@ export default function AdminProductsPage() {
             <TableRow className="bg-muted/50">
               <TableHead>Product</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead>Price</TableHead>
+              <TableHead>Buying Price</TableHead>
+              <TableHead>Selling Price</TableHead>
+              <TableHead>Profit (10%)</TableHead>
               <TableHead>Stock</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Seller</TableHead>
@@ -116,7 +118,7 @@ export default function AdminProductsPage() {
           <TableBody>
             {paginatedProducts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                   No products found
                 </TableCell>
               </TableRow>
@@ -130,7 +132,9 @@ export default function AdminProductsPage() {
                     </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{product.categoryId?.name || 'N/A'}</TableCell>
+                  <TableCell className="font-medium text-muted-foreground">${(product.buyingPrice || 0).toFixed(2)}</TableCell>
                   <TableCell className="font-medium text-primary">${product.price?.toFixed(2)}</TableCell>
+                  <TableCell className="font-medium text-chart-4">${((product.price || 0) - (product.buyingPrice || 0)).toFixed(2)}</TableCell>
                   <TableCell className="text-muted-foreground">{product.stock}</TableCell>
                   <TableCell>
                     {product.sellerId ? (

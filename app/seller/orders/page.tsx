@@ -15,10 +15,24 @@ export default function SellerOrdersPage() {
   const { user } = useAuth()
   const [orders, setOrders] = useState<any[]>([])
   const [currentPage, setCurrentPage] = useState(1)
+  const [walletBalance, setWalletBalance] = useState(0)
 
   useEffect(() => {
-    if (user) loadOrders()
+    if (user) {
+      loadOrders()
+      loadWallet()
+    }
   }, [user])
+
+  const loadWallet = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/seller/profile`, { credentials: 'include' })
+      if (res.ok) {
+        const data = await res.json()
+        setWalletBalance(data.data?.walletBalance || 0)
+      }
+    } catch (e) {}
+  }
 
   const loadOrders = async () => {
     try {
@@ -30,7 +44,12 @@ export default function SellerOrdersPage() {
     } catch (e) {}
   }
 
-  const updateStatus = async (orderId: string, status: string) => {
+  const updateStatus = async (orderId: string, status: string, requiredAmount: number) => {
+    if ((status === 'processing' || status === 'shipped') && walletBalance < requiredAmount) {
+      toast.error(`Insufficient wallet balance. Required: $${requiredAmount.toFixed(2)}, Available: $${walletBalance.toFixed(2)}`)
+      return
+    }
+    
     try {
       const res = await fetch(`${API_URL}/api/orders/${orderId}/status`, {
         method: 'PUT',
@@ -38,11 +57,17 @@ export default function SellerOrdersPage() {
         credentials: 'include',
         body: JSON.stringify({ status })
       })
+      const data = await res.json()
       if (res.ok) {
         toast.success(`Order updated to ${status}`)
         loadOrders()
+        loadWallet()
+      } else {
+        toast.error(data.message || 'Failed to update order')
       }
-    } catch (e) {}
+    } catch (e) {
+      toast.error('Failed to update order')
+    }
   }
 
   if (!user) return null
@@ -78,6 +103,9 @@ export default function SellerOrdersPage() {
             {orders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((order) => {
               const myItems = order.items.filter((i: any) => i.sellerId === user.id)
               const myTotal = myItems.reduce((s: number, i: any) => s + i.price * i.quantity, 0)
+              const buyingCost = myItems.reduce((s: number, i: any) => s + (i.buyingPrice || 0) * i.quantity, 0)
+              const canFulfill = walletBalance >= buyingCost
+              
               return (
                 <TableRow key={order._id}>
                   <TableCell className="font-medium text-foreground">{order._id}</TableCell>
@@ -92,12 +120,15 @@ export default function SellerOrdersPage() {
                   <TableCell><Badge className={statusColor(order.status)}>{order.status}</Badge></TableCell>
                   <TableCell className="text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell className="text-right">
-                    <Select value={order.status} onValueChange={(v) => updateStatus(order._id, v)}>
+                    {!canFulfill && order.status === 'pending' && (
+                      <p className="text-xs text-destructive mb-1">Need ${buyingCost.toFixed(2)} to fulfill</p>
+                    )}
+                    <Select value={order.status} onValueChange={(v) => updateStatus(order._id, v, buyingCost)}>
                       <SelectTrigger className="w-32 bg-muted"><SelectValue /></SelectTrigger>
                       <SelectContent className="bg-card">
                         <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="processing">Processing</SelectItem>
-                        <SelectItem value="shipped">Shipped</SelectItem>
+                        <SelectItem value="processing" disabled={!canFulfill}>Processing</SelectItem>
+                        <SelectItem value="shipped" disabled={!canFulfill}>Shipped</SelectItem>
                         <SelectItem value="delivered">Delivered</SelectItem>
                         <SelectItem value="cancelled">Cancelled</SelectItem>
                       </SelectContent>

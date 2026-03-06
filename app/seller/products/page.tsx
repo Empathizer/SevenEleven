@@ -64,7 +64,9 @@ export default function SellerProductsPage() {
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead>Product</TableHead>
-              <TableHead>Price</TableHead>
+              <TableHead>Buying Price</TableHead>
+              <TableHead>Selling Price</TableHead>
+              <TableHead>Profit (10%)</TableHead>
               <TableHead>Stock</TableHead>
               <TableHead>Sold</TableHead>
               <TableHead>Rating</TableHead>
@@ -83,7 +85,9 @@ export default function SellerProductsPage() {
                     </div>
                   </div>
                 </TableCell>
+                <TableCell className="font-medium text-muted-foreground">${(product.buyingPrice || 0).toFixed(2)}</TableCell>
                 <TableCell className="font-medium text-primary">${product.price.toFixed(2)}</TableCell>
+                <TableCell className="font-medium text-chart-4">${((product.price - (product.buyingPrice || 0))).toFixed(2)}</TableCell>
                 <TableCell>
                   <Badge className={product.stock > 10 ? "bg-chart-4 text-primary-foreground" : product.stock > 0 ? "bg-chart-3 text-primary-foreground" : "bg-destructive text-destructive-foreground"}>
                     {product.stock}
@@ -105,7 +109,7 @@ export default function SellerProductsPage() {
             ))}
             {products.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="py-8 text-center text-muted-foreground">
                   No products yet. <Link href="/seller/products/new" className="text-primary hover:underline">Add your first product</Link>
                 </TableCell>
               </TableRow>

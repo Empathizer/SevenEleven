@@ -50,13 +50,8 @@ export async function POST(req) {
       product.sold += item.quantity;
       await product.save();
 
-      // Update seller wallet: deduct buying cost, add to pending balance
-      await User.findByIdAndUpdate(product.sellerId, {
-        $inc: { 
-          walletBalance: -buyingCost,
-          pendingBalance: sellingAmount
-        }
-      });
+      // Don't update seller wallet on order creation
+      // Seller will pick order later
     }
 
     const order = await Order.create({
