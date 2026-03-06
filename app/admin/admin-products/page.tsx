@@ -57,11 +57,49 @@ export default function AdminProductsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Admin Products (Virtual)</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Catalogue products without sellers. Sellers can fetch these when adding products.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Catalogue products for sellers. Not shown on home page.</p>
         </div>
-        <Link href="/admin/products/new">
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Add Virtual Product</Button>
-        </Link>
+        <Button 
+          onClick={async () => {
+            const categories = await fetch(`${API_URL}/api/admin/categories`, { credentials: 'include' })
+              .then(r => r.json())
+              .then(data => data.categories || [])
+            
+            if (categories.length === 0) {
+              toast.error('Please create a category first')
+              return
+            }
+            
+            try {
+              const res = await fetch(`${API_URL}/api/admin/products`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                  name: `Admin Product ${Date.now()}`,
+                  description: `Unique admin product created at ${new Date().toISOString()}`,
+                  price: Math.floor(Math.random() * 200) + 20,
+                  buyingPrice: 0,
+                  categoryId: categories[0]._id,
+                  sellerId: null,
+                  stock: Math.floor(Math.random() * 200) + 50,
+                  images: ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=600&fit=crop']
+                })
+              })
+              if (res.ok) {
+                toast.success('Admin product added')
+                loadProducts()
+              } else {
+                toast.error('Failed to add product')
+              }
+            } catch (e) {
+              toast.error('Failed to add product')
+            }
+          }}
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          Add Unique Admin Product
+        </Button>
       </div>
 
       <div className="mt-6 overflow-hidden rounded-xl border border-border bg-card">

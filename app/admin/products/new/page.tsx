@@ -108,8 +108,8 @@ export default function AdminAddProductPage() {
     <div>
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Add Product to Catalogue</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Add a product that sellers can fetch and sell.</p>
+          <h1 className="text-2xl font-bold text-foreground">Add Seller Product</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Add a product with virtual seller that will show on home page.</p>
         </div>
         <Button 
           type="button"
@@ -136,14 +136,14 @@ export default function AdminAddProductPage() {
                   price: Math.floor(Math.random() * 200) + 20,
                   buyingPrice: 0,
                   categoryId: categories[0]._id,
-                  sellerId: null,
+                  sellerId: sellerId,
                   stock: Math.floor(Math.random() * 200) + 50,
                   images: ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=600&fit=crop']
                 })
               })
               if (res.ok) {
-                toast.success('Virtual product added')
-                router.push('/admin/admin-products')
+                toast.success('Seller product added')
+                router.push('/admin/products')
               } else {
                 toast.error('Failed to add product')
               }
@@ -153,7 +153,7 @@ export default function AdminAddProductPage() {
             setLoading(false)
           }}
         >
-          {loading ? 'Adding...' : 'Add Unique Virtual Product'}
+          {loading ? 'Adding...' : 'Add Unique Seller Product'}
         </Button>
       </div>
 
@@ -193,13 +193,12 @@ export default function AdminAddProductPage() {
         </div>
 
         <div>
-          <Label>Virtual Seller (Optional)</Label>
-          <Select value={sellerId} onValueChange={setSellerId}>
+          <Label>Virtual Seller (Required)</Label>
+          <Select value={sellerId} onValueChange={setSellerId} required>
             <SelectTrigger className="mt-1">
-              <SelectValue placeholder="Select virtual seller or leave empty" />
+              <SelectValue placeholder="Select virtual seller" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">No Seller (Catalogue)</SelectItem>
               {virtualSellers.map((seller) => {
                 const userId = typeof seller.userId === 'string' ? seller.userId : seller.userId?._id
                 const userName = typeof seller.userId === 'string' ? seller.storeName : (seller.storeName || seller.userId?.name)
@@ -212,7 +211,7 @@ export default function AdminAddProductPage() {
               })}
             </SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground mt-1">Select a virtual seller to associate this product</p>
+          <p className="text-xs text-muted-foreground mt-1">Required: Product will show on home page with this seller</p>
         </div>
 
         <div>
@@ -236,8 +235,8 @@ export default function AdminAddProductPage() {
         </div>
 
         <div className="flex gap-3">
-          <Button type="submit" disabled={loading}>
-            {loading ? "Adding..." : "Add to Catalogue"}
+          <Button type="submit" disabled={loading || !sellerId || sellerId === 'none'}>
+            {loading ? "Adding..." : "Add Seller Product"}
           </Button>
           <Button type="button" variant="outline" onClick={() => router.back()}>
             Cancel

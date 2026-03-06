@@ -14,7 +14,10 @@ const ITEMS_PER_PAGE = 20
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([])
-  const [filter, setFilter] = useState<'all' | 'admin' | 'seller'>('admin')
+  const [categories, setCategories] = useState<any[]>([])
+  const [virtualSellers, setVirtualSellers] = useState<any[]>([])
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([])
+  const [filter, setFilter] = useState<'all' | 'admin' | 'seller'>('seller')
   const [currentPage, setCurrentPage] = useState(1)
 
   const loadProducts = () => {
@@ -24,7 +27,48 @@ export default function AdminProductsPage() {
       .catch(e => console.error('Load error:', e))
   }
 
-  useEffect(() => { loadProducts() }, [])
+  useEffect(() => { 
+    loadProducts()
+    fetch(`${API_URL}/api/admin/categories`, { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => setCategories(data.categories || []))
+      .catch(e => console.error('Failed to load categories:', e))
+    
+    fetch(`${API_URL}/api/admin/sellers`, { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.data) {
+          const virtuals = data.data.filter((s: any) => {
+            const email = s.userId?.email || s.email || ''
+            return email.includes('seller') && email.includes('@')
+          })
+          setVirtualSellers(virtuals)
+        }
+      })
+      .catch(e => console.error('Failed to load sellers:', e))
+  }, [])
+
+  const handleBulkDelete = async () => {
+    if (selectedProducts.length === 0) {
+      toast.error('No products selected')
+      return
+    }
+    if (!confirm(`Delete ${selectedProducts.length} products?`)) return
+    
+    try {
+      for (const id of selectedProducts) {
+        await fetch(`${API_URL}/api/admin/products/${id}`, {
+          method: "DELETE",
+          credentials: "include"
+        })
+      }
+      toast.success(`Deleted ${selectedProducts.length} products`)
+      setSelectedProducts([])
+      loadProducts()
+    } catch (e) {
+      toast.error("Failed to delete products")
+    }
+  }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return
@@ -69,11 +113,57 @@ export default function AdminProductsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Manage Products</h1>
-          <p className="mt-1 text-sm text-muted-foreground">View and manage all products on the platform.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Seller products that show on home page.</p>
         </div>
-        <Link href="/admin/products/new">
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Add Product</Button>
-        </Link>
+        <div className="flex gap-2">
+          {selectedProducts.length > 0 && (
+            <Button variant="destructive" onClick={handleBulkDelete}>
+              Delete {selectedProducts.length} Selected
+            </Button>
+          )}
+          <Button 
+            variant="outline"
+            onClick={async () => {
+              if (categories.length === 0 || virtualSellers.length === 0) {
+                toast.error('Please create category and virtual seller first')
+                return
+              }
+              try {
+                const randomSeller = virtualSellers[Math.floor(Math.random() * virtualSellers.length)]
+                const sellerId = typeof randomSeller.userId === 'string' ? randomSeller.userId : randomSeller.userId?._id
+                
+                const res = await fetch(`${API_URL}/api/admin/products`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({
+                    name: `Product ${Date.now()}`,
+                    description: `Unique product created at ${new Date().toISOString()}`,
+                    price: Math.floor(Math.random() * 200) + 20,
+                    buyingPrice: 0,
+                    categoryId: categories[0]._id,
+                    sellerId: sellerId,
+                    stock: Math.floor(Math.random() * 200) + 50,
+                    images: ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=600&fit=crop']
+                  })
+                })
+                if (res.ok) {
+                  toast.success('Seller product added')
+                  loadProducts()
+                } else {
+                  toast.error('Failed to add product')
+                }
+              } catch (e) {
+                toast.error('Failed to add product')
+              }
+            }}
+          >
+            Add Unique Seller Product
+          </Button>
+          <Link href="/admin/products/new">
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Add Product</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="mt-4 flex gap-2">
@@ -104,6 +194,20 @@ export default function AdminProductsPage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
+              <TableHead className="w-12">
+                <input 
+                  type="checkbox" 
+                  checked={selectedProducts.length === paginatedProducts.length && paginatedProducts.length > 0}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedProducts(paginatedProducts.map(p => p._id))
+                    } else {
+                      setSelectedProducts([])
+                    }
+                  }}
+                  className="cursor-pointer"
+                />
+              </TableHead>
               <TableHead>Product</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Buying Price</TableHead>
@@ -118,13 +222,27 @@ export default function AdminProductsPage() {
           <TableBody>
             {paginatedProducts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
                   No products found
                 </TableCell>
               </TableRow>
             ) : (
               paginatedProducts.map((product) => (
                 <TableRow key={product._id}>
+                  <TableCell>
+                    <input 
+                      type="checkbox" 
+                      checked={selectedProducts.includes(product._id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedProducts([...selectedProducts, product._id])
+                        } else {
+                          setSelectedProducts(selectedProducts.filter(id => id !== product._id))
+                        }
+                      }}
+                      className="cursor-pointer"
+                    />
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <img src={product.images?.[0] || "/placeholder.svg"} alt={product.name} className="h-10 w-10 rounded-lg object-cover" crossOrigin="anonymous" />
