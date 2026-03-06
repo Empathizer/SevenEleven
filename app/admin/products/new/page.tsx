@@ -85,7 +85,7 @@ export default function AdminAddProductPage() {
           price: parseFloat(price),
           buyingPrice: 0,
           categoryId,
-          sellerId: sellerId || null,
+          sellerId: sellerId && sellerId !== 'none' ? sellerId : null,
           stock: parseInt(stock),
           images: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=600&fit=crop'],
           isCatalogue: true
@@ -164,7 +164,7 @@ export default function AdminAddProductPage() {
                     price: p.price,
                     buyingPrice: 0,
                     categoryId: categories[0]._id,
-                    sellerId: sellerId || null,
+                    sellerId: sellerId && sellerId !== 'none' ? sellerId : null,
                     stock: p.stock,
                     images: [p.image]
                   })
@@ -236,7 +236,7 @@ export default function AdminAddProductPage() {
               <SelectValue placeholder="Select virtual seller or leave empty" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">No Seller (Catalogue)</SelectItem>
+              <SelectItem value="none">No Seller (Catalogue)</SelectItem>
               {virtualSellers.map((seller) => {
                 const userId = typeof seller.userId === 'string' ? seller.userId : seller.userId?._id
                 const userName = typeof seller.userId === 'string' ? seller.storeName : (seller.storeName || seller.userId?.name)
