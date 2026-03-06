@@ -123,14 +123,14 @@ export default function SellerOrdersPage() {
                     {!canFulfill && order.status === 'pending' && (
                       <p className="text-xs text-destructive mb-1">Need ${buyingCost.toFixed(2)} to fulfill</p>
                     )}
-                    <Select value={order.status} onValueChange={(v) => updateStatus(order._id, v, buyingCost)}>
+                    <Select value={order.status} onValueChange={(v) => updateStatus(order._id, v, buyingCost)} disabled={!canFulfill && order.status === 'pending'}>
                       <SelectTrigger className="w-32 bg-muted"><SelectValue /></SelectTrigger>
                       <SelectContent className="bg-card">
                         <SelectItem value="pending">Pending</SelectItem>
                         <SelectItem value="processing" disabled={!canFulfill}>Processing</SelectItem>
                         <SelectItem value="shipped" disabled={!canFulfill}>Shipped</SelectItem>
-                        <SelectItem value="delivered">Delivered</SelectItem>
-                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                        <SelectItem value="delivered" disabled={!canFulfill && order.status === 'pending'}>Delivered</SelectItem>
+                        <SelectItem value="cancelled" disabled={!canFulfill && order.status === 'pending'}>Cancelled</SelectItem>
                       </SelectContent>
                     </Select>
                   </TableCell>
