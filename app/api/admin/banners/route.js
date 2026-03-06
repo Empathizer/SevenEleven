@@ -8,8 +8,12 @@ export async function GET(req) {
 
   try {
     const Banner = (await import('@/server/models/Banner')).default;
-    const banners = await Banner.find();
-    return Response.json({ success: true, banners });
+    const banners = await Banner.find().lean().limit(50);
+    return Response.json({ success: true, banners }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'
+      }
+    });
   } catch (error) {
     return Response.json({ success: false, message: error.message }, { status: 500 });
   }

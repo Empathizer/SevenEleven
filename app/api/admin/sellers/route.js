@@ -8,8 +8,24 @@ export async function GET(req) {
 
   try {
     const Seller = (await import('@/server/models/Seller')).default;
-    const sellers = await Seller.find().populate('userId');
-    return Response.json({ success: true, data: sellers });
+    const Product = (await import('@/server/models/Product')).default;
+    
+    const [sellers, productCounts] = await Promise.all([
+      Seller.find().populate('userId').lean(),
+      Product.aggregate([
+        { $match: { sellerId: { $ne: null } } },
+        { $group: { _id: '$sellerId', count: { $sum: 1 } } }
+      ])
+    ]);
+    
+    const countMap = Object.fromEntries(productCounts.map(p => [p._id.toString(), p.count]));
+    const sellersWithCounts = sellers.map(s => ({ ...s, productCount: countMap[s.userId?._id?.toString()] || 0 }));
+    
+    return Response.json({ success: true, data: sellersWithCounts }, {
+      headers: {
+        'Cache-Control': 'private, max-age=10'
+      }
+    });
   } catch (error) {
     return Response.json({ success: false, message: error.message }, { status: 500 });
   }

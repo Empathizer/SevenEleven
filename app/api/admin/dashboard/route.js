@@ -12,16 +12,16 @@ export async function GET(req) {
     const Product = (await import('@/server/models/Product')).default;
     const Order = (await import('@/server/models/Order')).default;
 
-    const [totalUsers, totalSellers, totalProducts, totalOrders, pendingSellers, orders] = await Promise.all([
+    const [totalUsers, totalSellers, totalProducts, totalOrders, pendingSellers, salesResult] = await Promise.all([
       User.countDocuments({ role: 'customer' }),
       User.countDocuments({ role: 'seller' }),
       Product.countDocuments(),
       Order.countDocuments(),
       Seller.countDocuments({ status: 'pending' }),
-      Order.find()
+      Order.aggregate([{ $group: { _id: null, total: { $sum: '$totalAmount' } } }])
     ]);
     
-    const totalSales = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+    const totalSales = salesResult[0]?.total || 0;
 
     return Response.json({
       success: true,

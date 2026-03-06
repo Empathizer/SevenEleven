@@ -8,7 +8,7 @@ export async function GET(req) {
 
   try {
     const Order = (await import('@/server/models/Order')).default;
-    const orders = await Order.find().populate('userId', 'name email').sort('-createdAt');
+    const orders = await Order.find().populate('userId', 'name email').sort('-createdAt').limit(50);
     return Response.json({ success: true, orders });
   } catch (error) {
     return Response.json({ success: false, message: error.message }, { status: 500 });

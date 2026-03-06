@@ -11,7 +11,7 @@ export async function GET(req) {
     const sellerId = searchParams.get('sellerId');
     const Product = (await import('@/server/models/Product')).default;
     const query = sellerId ? { sellerId } : {};
-    const products = await Product.find(query).populate('sellerId', 'name').populate('categoryId');
+    const products = await Product.find(query).populate('sellerId', 'name').populate('categoryId').lean();
     return Response.json({ success: true, data: products });
   } catch (error) {
     return Response.json({ success: false, message: error.message }, { status: 500 });

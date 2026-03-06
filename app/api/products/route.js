@@ -53,7 +53,7 @@ export async function GET(req) {
 
     return Response.json({
       success: true,
-      data: products,
+      products: products,
       totalPages: Math.ceil(count / limit),
       currentPage: page
     });

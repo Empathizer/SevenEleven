@@ -8,8 +8,12 @@ export async function GET(req) {
 
   try {
     const Category = (await import('@/server/models/Category')).default;
-    const categories = await Category.find();
-    return Response.json({ success: true, categories });
+    const categories = await Category.find().lean().limit(100);
+    return Response.json({ success: true, categories }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'
+      }
+    });
   } catch (error) {
     return Response.json({ success: false, message: error.message }, { status: 500 });
   }

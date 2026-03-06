@@ -4,11 +4,17 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { Providers } from "@/components/providers"
 
-const _inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ 
+  subsets: ["latin"],
+  display: 'swap',
+  preload: true,
+  variable: '--font-inter'
+})
 
 export const metadata: Metadata = {
   title: "EsellerStore - Your Multi-Vendor Marketplace",
   description: "Shop millions of products from trusted sellers. Fashion, beauty, electronics, and more at amazing prices.",
+  metadataBase: new URL('https://www.esellerstore.shop'),
 }
 
 export const viewport: Viewport = {
@@ -21,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={inter.variable}>
       <body className="font-sans antialiased">
         <Providers>{children}</Providers>
       </body>

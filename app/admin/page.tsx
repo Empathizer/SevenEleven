@@ -1,10 +1,21 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, lazy, Suspense } from "react"
 import { DollarSign, ShoppingCart, Users, Package, Store, Clock } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { Skeleton } from "@/components/ui/skeleton"
+
+const BarChart = lazy(() => import('recharts').then(m => ({ default: m.BarChart })))
+const Bar = lazy(() => import('recharts').then(m => ({ default: m.Bar })))
+const PieChart = lazy(() => import('recharts').then(m => ({ default: m.PieChart })))
+const Pie = lazy(() => import('recharts').then(m => ({ default: m.Pie })))
+const Cell = lazy(() => import('recharts').then(m => ({ default: m.Cell })))
+const XAxis = lazy(() => import('recharts').then(m => ({ default: m.XAxis })))
+const YAxis = lazy(() => import('recharts').then(m => ({ default: m.YAxis })))
+const CartesianGrid = lazy(() => import('recharts').then(m => ({ default: m.CartesianGrid })))
+const Tooltip = lazy(() => import('recharts').then(m => ({ default: m.Tooltip })))
+const ResponsiveContainer = lazy(() => import('recharts').then(m => ({ default: m.ResponsiveContainer })))
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
@@ -25,16 +36,11 @@ export default function AdminDashboard() {
 
   const loadData = async () => {
     try {
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 10000)
-
       const [dashRes, ordersRes, sellersRes] = await Promise.all([
-        fetch(`${API_URL}/api/admin/dashboard`, { credentials: 'include', signal: controller.signal }),
-        fetch(`${API_URL}/api/admin/orders`, { credentials: 'include', signal: controller.signal }),
-        fetch(`${API_URL}/api/admin/sellers`, { credentials: 'include', signal: controller.signal })
+        fetch(`${API_URL}/api/admin/dashboard`, { credentials: 'include' }),
+        fetch(`${API_URL}/api/admin/orders`, { credentials: 'include' }),
+        fetch(`${API_URL}/api/admin/sellers`, { credentials: 'include' })
       ])
-
-      clearTimeout(timeout)
 
       if (dashRes.ok) {
         const data = await dashRes.json()
@@ -54,17 +60,17 @@ export default function AdminDashboard() {
         }
       }
 
-      fetch(`${API_URL}/api/products`, { credentials: 'include' })
+      fetch(`${API_URL}/api/products?limit=6`, { credentials: 'include' })
         .then(r => r.json())
-        .then(data => data.success && setProducts(data.products?.slice(0, 6) || []))
+        .then(data => data.success && setProducts(data.products || []))
 
       fetch(`${API_URL}/api/admin/categories`, { credentials: 'include' })
         .then(r => r.json())
-        .then(data => data.success && setCategories(data.categories || []))
+        .then(data => data.success && setCategories(data.categories?.slice(0, 6) || []))
 
       fetch(`${API_URL}/api/admin/banners`, { credentials: 'include' })
         .then(r => r.json())
-        .then(data => data.success && setBanners(data.banners || []))
+        .then(data => data.success && setBanners(data.banners?.filter((b: any) => b.isActive) || []))
     } catch (e) {
       console.error('Failed to load dashboard:', e)
     } finally {
@@ -113,23 +119,25 @@ export default function AdminDashboard() {
             <CardTitle className="text-foreground">Sales Overview</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={[
-                { name: 'Mon', sales: 120 },
-                { name: 'Tue', sales: 200 },
-                { name: 'Wed', sales: 150 },
-                { name: 'Thu', sales: 180 },
-                { name: 'Fri', sales: 250 },
-                { name: 'Sat', sales: 300 },
-                { name: 'Sun', sales: 220 }
-              ]}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="sales" fill="#8884d8" />
-              </BarChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<Skeleton className="h-[250px] w-full" />}>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={[
+                  { name: 'Mon', sales: 120 },
+                  { name: 'Tue', sales: 200 },
+                  { name: 'Wed', sales: 150 },
+                  { name: 'Thu', sales: 180 },
+                  { name: 'Fri', sales: 250 },
+                  { name: 'Sat', sales: 300 },
+                  { name: 'Sun', sales: 220 }
+                ]}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="sales" fill="#8884d8" />
+                </BarChart>
+              </ResponsiveContainer>
+            </Suspense>
           </CardContent>
         </Card>
 
@@ -139,30 +147,32 @@ export default function AdminDashboard() {
             <CardTitle className="text-foreground">Order Status Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={[
-                    { name: 'Pending', value: recentOrders.filter(o => o.status === 'pending').length || 1 },
-                    { name: 'Processing', value: recentOrders.filter(o => o.status === 'processing').length || 1 },
-                    { name: 'Shipped', value: recentOrders.filter(o => o.status === 'shipped').length || 1 },
-                    { name: 'Delivered', value: recentOrders.filter(o => o.status === 'delivered').length || 1 }
-                  ]}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={(entry) => entry.name}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {COLORS.map((color, index) => (
-                    <Cell key={`cell-${index}`} fill={color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<Skeleton className="h-[250px] w-full" />}>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: 'Pending', value: recentOrders.filter(o => o.status === 'pending').length || 1 },
+                      { name: 'Processing', value: recentOrders.filter(o => o.status === 'processing').length || 1 },
+                      { name: 'Shipped', value: recentOrders.filter(o => o.status === 'shipped').length || 1 },
+                      { name: 'Delivered', value: recentOrders.filter(o => o.status === 'delivered').length || 1 }
+                    ]}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={(entry) => entry.name}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {COLORS.map((color, index) => (
+                      <Cell key={`cell-${index}`} fill={color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </Suspense>
           </CardContent>
         </Card>
       </div>

@@ -18,11 +18,16 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
 export default function AdminSellersPage() {
   const router = useRouter()
-  const [sellers, setSellers] = useState<any[]>([])
+  const [sellers, setSellersList] = useState<any[]>([])
   const [selectedSeller, setSelectedSeller] = useState<any>(null)
   const [dialogType, setDialogType] = useState<string>('')
   const [formData, setFormData] = useState<any>({})
-  const [productCounts, setProductCounts] = useState<{[key: string]: number}>({})
+
+  const setSellers = (data: any[]) => {
+    setSellersList(data)
+  }
+
+  const sellers = sellersList
 
   useEffect(() => {
     loadSellers()
@@ -33,18 +38,7 @@ export default function AdminSellersPage() {
       const res = await fetch(`${API_URL}/api/admin/sellers`, { credentials: 'include' })
       if (res.ok) {
         const data = await res.json()
-        if (data.success) {
-          setSellers(data.data)
-          // Load product counts for each seller
-          data.data.forEach(async (seller: any) => {
-            const userId = seller.userId?._id || seller.userId
-            const pRes = await fetch(`${API_URL}/api/admin/products?sellerId=${userId}`, { credentials: 'include' })
-            if (pRes.ok) {
-              const pData = await pRes.json()
-              setProductCounts(prev => ({ ...prev, [seller._id]: pData.data?.length || 0 }))
-            }
-          })
-        }
+        if (data.success) setSellers(data.data)
       }
     } catch (e) {}
   }
@@ -89,8 +83,8 @@ export default function AdminSellersPage() {
     } catch (e) {}
   }
 
-  const getProductCount = (sellerId: string) => {
-    return productCounts[sellerId] || 0
+  const getProductCount = (seller: any) => {
+    return seller.productCount || 0
   }
 
   const getRechargeDifference = (seller: any) => {
@@ -308,7 +302,7 @@ export default function AdminSellersPage() {
                       {user.status}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-center">{getProductCount(seller._id)}</TableCell>
+                  <TableCell className="text-center">{getProductCount(seller)}</TableCell>
                   <TableCell className="text-sm">${(seller.pendingBalance || 0).toFixed(2)}</TableCell>
                   <TableCell className="font-semibold">${(seller.walletBalance || 0).toFixed(2)}</TableCell>
                   <TableCell className="text-sm">${(user.guaranteeMoney || 0).toFixed(2)}</TableCell>
