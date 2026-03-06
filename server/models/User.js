@@ -120,6 +120,14 @@ const userSchema = new mongoose.Schema({
   totalRecharge: {
     type: Number,
     default: 0
+  },
+  recharge: {
+    type: Number,
+    default: 0
+  },
+  withdrawal: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true

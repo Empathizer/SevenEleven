@@ -24,7 +24,7 @@ export async function GET(req) {
     }
     
     if (category) {
-      const cat = await Category.findOne({ slug: category }).maxTimeMS(5000);
+      const cat = await Category.findOne({ slug: category }).maxTimeMS(30000);
       if (cat) query.categoryId = cat._id;
     }
     
@@ -46,10 +46,10 @@ export async function GET(req) {
       .limit(limit)
       .skip((page - 1) * limit)
       .sort('-createdAt')
-      .maxTimeMS(5000);
+      .maxTimeMS(30000);
 
     console.log('Products found:', products.length);
-    const count = await Product.countDocuments(query).maxTimeMS(5000);
+    const count = await Product.countDocuments(query).maxTimeMS(30000);
 
     return Response.json({
       success: true,

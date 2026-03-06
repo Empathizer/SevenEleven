@@ -1005,35 +1005,68 @@ export default function AdminSellersPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Total Recharge</Label>
+                  <Label>Recharge</Label>
                   <Input 
                     type="number"
-                    value={selectedSeller.totalRecharge || 0} 
+                    value={selectedSeller.recharge || 0} 
                     onChange={async (e) => {
-                      const oldRecharge = selectedSeller.totalRecharge || 0
+                      const oldRecharge = selectedSeller.recharge || 0
                       const newRecharge = Number(e.target.value)
                       const difference = newRecharge - oldRecharge
                       const newWalletBalance = (selectedSeller.walletBalance || 0) + difference
+                      const newTotalRecharge = (selectedSeller.totalRecharge || 0) + difference
                       
-                      setSelectedSeller({...selectedSeller, totalRecharge: newRecharge, walletBalance: newWalletBalance})
+                      setSelectedSeller({...selectedSeller, recharge: newRecharge, walletBalance: newWalletBalance, totalRecharge: newTotalRecharge})
                       
-                      await updateField(selectedSeller.userId, 'totalRecharge', newRecharge)
+                      await updateField(selectedSeller.userId, 'recharge', newRecharge)
                       await updateField(selectedSeller.userId, 'walletBalance', newWalletBalance)
+                      await updateField(selectedSeller.userId, 'totalRecharge', newTotalRecharge)
                     }}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">Changing this will update wallet balance</p>
+                  <p className="text-xs text-muted-foreground mt-1">Add recharge (increases wallet)</p>
                 </div>
                 <div>
-                  <Label>Total Withdrawal</Label>
+                  <Label>Withdrawal</Label>
+                  <Input 
+                    type="number"
+                    value={selectedSeller.withdrawal || 0} 
+                    onChange={async (e) => {
+                      const oldWithdrawal = selectedSeller.withdrawal || 0
+                      const newWithdrawal = Number(e.target.value)
+                      const difference = newWithdrawal - oldWithdrawal
+                      const newWalletBalance = (selectedSeller.walletBalance || 0) - difference
+                      const newTotalWithdrawn = (selectedSeller.totalWithdrawn || 0) + difference
+                      
+                      setSelectedSeller({...selectedSeller, withdrawal: newWithdrawal, walletBalance: newWalletBalance, totalWithdrawn: newTotalWithdrawn})
+                      
+                      await updateField(selectedSeller.userId, 'withdrawal', newWithdrawal)
+                      await updateField(selectedSeller.userId, 'walletBalance', newWalletBalance)
+                      await updateField(selectedSeller.userId, 'totalWithdrawn', newTotalWithdrawn)
+                    }}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Add withdrawal (decreases wallet)</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Total Recharge (Read Only)</Label>
+                  <Input 
+                    type="number"
+                    value={selectedSeller.totalRecharge || 0} 
+                    disabled
+                    className="bg-muted"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Auto-calculated from recharges</p>
+                </div>
+                <div>
+                  <Label>Total Withdrawal (Read Only)</Label>
                   <Input 
                     type="number"
                     value={selectedSeller.totalWithdrawn || 0} 
-                    onChange={async (e) => {
-                      const newValue = Number(e.target.value)
-                      setSelectedSeller({...selectedSeller, totalWithdrawn: newValue})
-                      await updateField(selectedSeller.userId, 'totalWithdrawn', newValue)
-                    }}
+                    disabled
+                    className="bg-muted"
                   />
+                  <p className="text-xs text-muted-foreground mt-1">Auto-calculated from withdrawals</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">

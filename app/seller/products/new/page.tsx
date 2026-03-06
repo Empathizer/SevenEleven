@@ -29,12 +29,20 @@ export default function NewProductPage() {
       .then(r => r.json())
       .then(data => {
         console.log('Products loaded:', data)
-        console.log('Products array:', data.data)
-        console.log('Products count:', data.data?.length)
-        setProducts(data.data || [])
-        setFilteredProducts(data.data || [])
+        if (data.success) {
+          console.log('Products array:', data.data)
+          console.log('Products count:', data.data?.length)
+          setProducts(data.data || [])
+          setFilteredProducts(data.data || [])
+        } else {
+          console.error('API error:', data.message)
+          toast.error('Failed to load products: ' + data.message)
+        }
       })
-      .catch(err => console.error('Products fetch error:', err))
+      .catch(err => {
+        console.error('Products fetch error:', err)
+        toast.error('Failed to load products. Please try again.')
+      })
     
     fetch(`${API_URL}/api/seller/profile`, { credentials: 'include' })
       .then(r => r.json())
@@ -143,6 +151,11 @@ export default function NewProductPage() {
             <div className="flex flex-col gap-2">
               <Label>Select Product</Label>
               <p className="text-xs text-muted-foreground mb-2">Available products: {filteredProducts.length}</p>
+              {filteredProducts.length === 0 && (
+                <div className="mb-2 p-3 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">⚠️ No admin products found. Admin needs to add products first at /admin/products/new</p>
+                </div>
+              )}
               <Select value={selectedProduct?._id} onValueChange={(id) => {
                 const product = products.find(p => p._id === id)
                 console.log('Selected product:', product)
