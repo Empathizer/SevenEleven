@@ -15,11 +15,15 @@ export async function GET(req) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
     const adminOnly = searchParams.get('adminOnly');
+    const sellerId = searchParams.get('sellerId');
     
     let query = {};
     
     if (adminOnly === 'true') {
       query.sellerId = null;
+    } else if (sellerId) {
+      query.sellerId = sellerId;
+      console.log('Fetching products for seller:', sellerId);
     }
     
     if (category) {
@@ -48,6 +52,8 @@ export async function GET(req) {
       .lean();
 
     const count = await Product.countDocuments(query).maxTimeMS(30000);
+
+    console.log(`Products query:`, query, `Found: ${products.length}`);
 
     return Response.json({
       success: true,

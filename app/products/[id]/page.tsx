@@ -109,9 +109,21 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               <p className="mt-4 text-sm text-muted-foreground leading-relaxed">{product.description}</p>
 
               {/* Seller */}
-              <div className="mt-4 flex items-center gap-2 rounded-lg border border-border p-3">
-                <Store className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-foreground">Sold by <strong>{product.sellerId?.storeName || product.sellerId?.name}</strong></span>
+              <div className="mt-4 flex items-center justify-between gap-2 rounded-lg border border-border p-3">
+                <div className="flex items-center gap-2">
+                  <Store className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-foreground">Sold by <strong>{product.sellerId?.storeName || product.sellerId?.name || 'Admin'}</strong></span>
+                </div>
+                {product.sellerId && (
+                  <div className="flex gap-2">
+                    <Link href={`/store/${product.sellerId._id || product.sellerId}`}>
+                      <Button size="sm" variant="outline">Visit Store</Button>
+                    </Link>
+                    <Link href={`/messages?seller=${product.sellerId._id || product.sellerId}`}>
+                      <Button size="sm" variant="outline">Message Seller</Button>
+                    </Link>
+                  </div>
+                )}
               </div>
 
               {/* Stock */}

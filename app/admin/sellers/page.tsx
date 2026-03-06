@@ -1002,46 +1002,24 @@ export default function AdminSellersPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Recharge</Label>
+                  <Label>Recharge (View Only)</Label>
                   <Input 
                     type="number"
                     value={selectedSeller.recharge || 0} 
-                    onChange={async (e) => {
-                      const oldRecharge = selectedSeller.recharge || 0
-                      const newRecharge = Number(e.target.value)
-                      const difference = newRecharge - oldRecharge
-                      const newWalletBalance = (selectedSeller.walletBalance || 0) + difference
-                      const newTotalRecharge = (selectedSeller.totalRecharge || 0) + difference
-                      
-                      setSelectedSeller({...selectedSeller, recharge: newRecharge, walletBalance: newWalletBalance, totalRecharge: newTotalRecharge})
-                      
-                      await updateField(selectedSeller.userId, 'recharge', newRecharge)
-                      await updateField(selectedSeller.userId, 'walletBalance', newWalletBalance)
-                      await updateField(selectedSeller.userId, 'totalRecharge', newTotalRecharge)
-                    }}
+                    disabled
+                    className="bg-muted"
                   />
-                  <p className="text-xs text-muted-foreground mt-1">Add recharge (increases wallet)</p>
+                  <p className="text-xs text-muted-foreground mt-1">Use Payment page to add deposit</p>
                 </div>
                 <div>
-                  <Label>Withdrawal</Label>
+                  <Label>Withdrawal (View Only)</Label>
                   <Input 
                     type="number"
                     value={selectedSeller.withdrawal || 0} 
-                    onChange={async (e) => {
-                      const oldWithdrawal = selectedSeller.withdrawal || 0
-                      const newWithdrawal = Number(e.target.value)
-                      const difference = newWithdrawal - oldWithdrawal
-                      const newWalletBalance = (selectedSeller.walletBalance || 0) - difference
-                      const newTotalWithdrawn = (selectedSeller.totalWithdrawn || 0) + difference
-                      
-                      setSelectedSeller({...selectedSeller, withdrawal: newWithdrawal, walletBalance: newWalletBalance, totalWithdrawn: newTotalWithdrawn})
-                      
-                      await updateField(selectedSeller.userId, 'withdrawal', newWithdrawal)
-                      await updateField(selectedSeller.userId, 'walletBalance', newWalletBalance)
-                      await updateField(selectedSeller.userId, 'totalWithdrawn', newTotalWithdrawn)
-                    }}
+                    disabled
+                    className="bg-muted"
                   />
-                  <p className="text-xs text-muted-foreground mt-1">Add withdrawal (decreases wallet)</p>
+                  <p className="text-xs text-muted-foreground mt-1">Use Payment page to deduct amount</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">

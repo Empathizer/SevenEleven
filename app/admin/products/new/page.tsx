@@ -14,10 +14,12 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 export default function AdminAddProductPage() {
   const router = useRouter()
   const [categories, setCategories] = useState<any[]>([])
+  const [virtualSellers, setVirtualSellers] = useState<any[]>([])
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [price, setPrice] = useState("")
   const [categoryId, setCategoryId] = useState("")
+  const [sellerId, setSellerId] = useState("")
   const [stock, setStock] = useState("")
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [imagePreview, setImagePreview] = useState<string[]>([])
@@ -34,6 +36,15 @@ export default function AdminAddProductPage() {
     fetch(`${API_URL}/api/admin/categories`, { credentials: 'include' })
       .then(r => r.json())
       .then(data => setCategories(data.categories || []))
+    
+    fetch(`${API_URL}/api/admin/sellers`, { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          const virtuals = data.data.filter((s: any) => s.userId?.email?.includes('seller') && s.userId?.email?.includes('@'))
+          setVirtualSellers(virtuals)
+        }
+      })
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,7 +80,7 @@ export default function AdminAddProductPage() {
           price: parseFloat(price),
           buyingPrice: 0,
           categoryId,
-          sellerId: null,
+          sellerId: sellerId || null,
           stock: parseInt(stock),
           images: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=600&fit=crop'],
           isCatalogue: true
@@ -102,6 +113,10 @@ export default function AdminAddProductPage() {
           onClick={async () => {
             if (!categories.length) {
               toast.error('Please create a category first')
+              return
+            }
+            if (!sellerId) {
+              toast.error('Please select a virtual seller first')
               return
             }
             setLoading(true)
@@ -144,7 +159,7 @@ export default function AdminAddProductPage() {
                     price: p.price,
                     buyingPrice: 0,
                     categoryId: categories[0]._id,
-                    sellerId: null,
+                    sellerId: sellerId || null,
                     stock: p.stock,
                     images: [p.image]
                   })
@@ -207,6 +222,24 @@ export default function AdminAddProductPage() {
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        <div>
+          <Label>Virtual Seller (Optional)</Label>
+          <Select value={sellerId} onValueChange={setSellerId}>
+            <SelectTrigger className="mt-1">
+              <SelectValue placeholder="Select virtual seller or leave empty" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">No Seller (Catalogue)</SelectItem>
+              {virtualSellers.map((seller) => (
+                <SelectItem key={seller._id} value={seller.userId?._id || seller.userId}>
+                  {seller.storeName || seller.userId?.name} ({seller.userId?.email})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground mt-1">Select a virtual seller to associate this product</p>
         </div>
 
         <div>

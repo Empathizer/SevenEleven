@@ -210,8 +210,8 @@ export default function AdminSellerWalletPage() {
             <div className="flex items-center justify-between">
               <TrendingUp className="h-8 w-8 text-chart-4" />
             </div>
-            <p className="mt-4 text-3xl font-bold text-foreground">${wallet.totalEarnings.toFixed(2)}</p>
-            <p className="text-sm text-muted-foreground">Total Earnings</p>
+            <p className="mt-4 text-3xl font-bold text-foreground">${((seller.totalRecharge || 0) + (seller.recharge || 0)).toFixed(2)}</p>
+            <p className="text-sm text-muted-foreground">Total Recharge</p>
           </CardContent>
         </Card>
 
@@ -220,7 +220,7 @@ export default function AdminSellerWalletPage() {
             <div className="flex items-center justify-between">
               <TrendingDown className="h-8 w-8 text-chart-1" />
             </div>
-            <p className="mt-4 text-3xl font-bold text-foreground">${wallet.totalWithdrawn.toFixed(2)}</p>
+            <p className="mt-4 text-3xl font-bold text-foreground">${((seller.totalWithdrawn || 0) + (seller.withdrawal || 0)).toFixed(2)}</p>
             <p className="text-sm text-muted-foreground">Total Withdrawn</p>
           </CardContent>
         </Card>
