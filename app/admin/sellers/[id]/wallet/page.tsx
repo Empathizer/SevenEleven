@@ -109,14 +109,21 @@ export default function AdminSellerWalletPage() {
         body: JSON.stringify({ amount: amt, note })
       })
 
+      const data = await res.json()
+      
       if (res.ok) {
         toast.success(`$${amt.toFixed(2)} deducted`)
         setAmount("")
         setNote("")
         setDeductOpen(false)
         loadData()
+      } else {
+        toast.error(data.message || 'Failed to deduct amount')
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('Deduct error:', e)
+      toast.error('Failed to deduct amount')
+    }
   }
 
   if (!seller) {

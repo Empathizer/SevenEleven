@@ -23,17 +23,38 @@ function MessagesContent() {
   const [messages, setMessages] = useState<any[]>([])
   const [newMessage, setNewMessage] = useState("")
   const [loading, setLoading] = useState(false)
+  const [sellerInfo, setSellerInfo] = useState<any>(null)
 
   useEffect(() => {
     if (user) loadConversations()
   }, [user])
 
   useEffect(() => {
-    if (sellerId && conversations.length > 0) {
+    if (sellerId && user) {
       const conv = conversations.find(c => c.otherUser._id === sellerId)
-      if (conv) setSelectedConv(conv)
+      if (conv) {
+        setSelectedConv(conv)
+      } else {
+        // Load seller info for new conversation
+        fetch(`${API_URL}/api/sellers/${sellerId}`, { credentials: 'include' })
+          .then(r => r.json())
+          .then(data => {
+            if (data.success) {
+              setSellerInfo(data.seller)
+              setSelectedConv({
+                _id: sellerId,
+                otherUser: {
+                  _id: sellerId,
+                  name: data.seller.name || data.seller.storeName,
+                  email: data.seller.email
+                }
+              })
+            }
+          })
+          .catch(e => console.error('Failed to load seller:', e))
+      }
     }
-  }, [sellerId, conversations])
+  }, [sellerId, conversations, user])
 
   const loadConversations = async () => {
     try {
@@ -72,8 +93,10 @@ function MessagesContent() {
       
       if (res.ok) {
         setNewMessage("")
-        loadMessages(selectedConv._id)
-        loadConversations()
+        await loadConversations()
+        if (selectedConv._id) {
+          loadMessages(selectedConv._id)
+        }
       } else {
         toast.error("Failed to send message")
       }
@@ -84,7 +107,7 @@ function MessagesContent() {
   }
 
   useEffect(() => {
-    if (selectedConv) {
+    if (selectedConv && selectedConv._id && selectedConv._id !== sellerId) {
       loadMessages(selectedConv._id)
       const interval = setInterval(() => loadMessages(selectedConv._id), 3000)
       return () => clearInterval(interval)

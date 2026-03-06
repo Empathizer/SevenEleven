@@ -36,15 +36,20 @@ export default function AdminAddProductPage() {
     fetch(`${API_URL}/api/admin/categories`, { credentials: 'include' })
       .then(r => r.json())
       .then(data => setCategories(data.categories || []))
+      .catch(e => console.error('Failed to load categories:', e))
     
     fetch(`${API_URL}/api/admin/sellers`, { credentials: 'include' })
       .then(r => r.json())
       .then(data => {
-        if (data.success) {
-          const virtuals = data.data.filter((s: any) => s.userId?.email?.includes('seller') && s.userId?.email?.includes('@'))
+        if (data.success && data.data) {
+          const virtuals = data.data.filter((s: any) => {
+            const email = s.userId?.email || s.email || ''
+            return email.includes('seller') && email.includes('@')
+          })
           setVirtualSellers(virtuals)
         }
       })
+      .catch(e => console.error('Failed to load sellers:', e))
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -178,9 +183,9 @@ export default function AdminAddProductPage() {
               } else {
                 toast.error('Failed to add products. Check console for errors.')
               }
-            } catch (e) {
+            } catch (e: any) {
               console.error('Error:', e)
-              toast.error('Failed to add products: ' + e.message)
+              toast.error('Failed to add products: ' + (e?.message || 'Unknown error'))
             }
             setLoading(false)
           }}
@@ -232,11 +237,16 @@ export default function AdminAddProductPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">No Seller (Catalogue)</SelectItem>
-              {virtualSellers.map((seller) => (
-                <SelectItem key={seller._id} value={seller.userId?._id || seller.userId}>
-                  {seller.storeName || seller.userId?.name} ({seller.userId?.email})
-                </SelectItem>
-              ))}
+              {virtualSellers.map((seller) => {
+                const userId = typeof seller.userId === 'string' ? seller.userId : seller.userId?._id
+                const userName = typeof seller.userId === 'string' ? seller.storeName : (seller.storeName || seller.userId?.name)
+                const userEmail = typeof seller.userId === 'string' ? '' : seller.userId?.email
+                return (
+                  <SelectItem key={seller._id} value={userId || ''}>
+                    {userName} {userEmail ? `(${userEmail})` : ''}
+                  </SelectItem>
+                )
+              })}
             </SelectContent>
           </Select>
           <p className="text-xs text-muted-foreground mt-1">Select a virtual seller to associate this product</p>
