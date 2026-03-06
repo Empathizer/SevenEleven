@@ -18,16 +18,10 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
 export default function AdminSellersPage() {
   const router = useRouter()
-  const [sellers, setSellersList] = useState<any[]>([])
+  const [sellers, setSellers] = useState<any[]>([])
   const [selectedSeller, setSelectedSeller] = useState<any>(null)
   const [dialogType, setDialogType] = useState<string>('')
   const [formData, setFormData] = useState<any>({})
-
-  const setSellers = (data: any[]) => {
-    setSellersList(data)
-  }
-
-  const sellers = sellersList
 
   useEffect(() => {
     loadSellers()
