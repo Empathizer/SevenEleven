@@ -1010,11 +1010,18 @@ export default function AdminSellersPage() {
                     type="number"
                     value={selectedSeller.totalRecharge || 0} 
                     onChange={async (e) => {
-                      const newValue = Number(e.target.value)
-                      setSelectedSeller({...selectedSeller, totalRecharge: newValue})
-                      await updateField(selectedSeller.userId, 'totalRecharge', newValue)
+                      const oldRecharge = selectedSeller.totalRecharge || 0
+                      const newRecharge = Number(e.target.value)
+                      const difference = newRecharge - oldRecharge
+                      const newWalletBalance = (selectedSeller.walletBalance || 0) + difference
+                      
+                      setSelectedSeller({...selectedSeller, totalRecharge: newRecharge, walletBalance: newWalletBalance})
+                      
+                      await updateField(selectedSeller.userId, 'totalRecharge', newRecharge)
+                      await updateField(selectedSeller.userId, 'walletBalance', newWalletBalance)
                     }}
                   />
+                  <p className="text-xs text-muted-foreground mt-1">Changing this will update wallet balance</p>
                 </div>
                 <div>
                   <Label>Total Withdrawal</Label>

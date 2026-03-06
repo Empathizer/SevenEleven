@@ -19,6 +19,7 @@ export async function GET(req) {
         walletBalance: userData.walletBalance || sellerData?.walletBalance || 0,
         pendingBalance: userData.pendingBalance || sellerData?.pendingBalance || 0,
         totalEarnings: userData.totalEarnings || 0,
+        totalRecharge: userData.totalRecharge || sellerData?.totalRecharge || 0,
         totalWithdrawn: userData.totalWithdrawn || sellerData?.totalWithdrawn || 0,
         guaranteeMoney: userData.guaranteeMoney || sellerData?.guaranteeMoney || 0,
         creditScore: userData.creditScore || sellerData?.creditScore || 100,

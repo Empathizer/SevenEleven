@@ -123,7 +123,7 @@ export default function SellerWalletPage() {
             <div className="flex items-center justify-between">
               <TrendingDown className="h-8 w-8 text-chart-1" />
             </div>
-            <p className="mt-4 text-3xl font-bold text-foreground">${wallet.totalWithdrawn.toFixed(2)}</p>
+            <p className="mt-4 text-3xl font-bold text-foreground">${(wallet.totalWithdrawn || 0).toFixed(2)}</p>
             <p className="text-sm text-muted-foreground">Total Withdrawn</p>
           </CardContent>
         </Card>

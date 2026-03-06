@@ -5,12 +5,14 @@ import { Trash2, Eye } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([])
+  const [filter, setFilter] = useState<'all' | 'admin' | 'seller'>('admin')
 
   const loadProducts = () => {
     fetch(`${API_URL}/api/admin/products`, { credentials: "include" })
@@ -32,6 +34,12 @@ export default function AdminProductsPage() {
     }
   }
 
+  const filteredProducts = products.filter(p => {
+    if (filter === 'admin') return !p.sellerId
+    if (filter === 'seller') return p.sellerId
+    return true
+  })
+
   return (
     <div>
       <div className="flex justify-between items-center">
@@ -44,6 +52,30 @@ export default function AdminProductsPage() {
         </Link>
       </div>
 
+      <div className="mt-4 flex gap-2">
+        <Button 
+          size="sm" 
+          variant={filter === 'admin' ? 'default' : 'outline'}
+          onClick={() => setFilter('admin')}
+        >
+          Admin Products ({products.filter(p => !p.sellerId).length})
+        </Button>
+        <Button 
+          size="sm" 
+          variant={filter === 'seller' ? 'default' : 'outline'}
+          onClick={() => setFilter('seller')}
+        >
+          Seller Products ({products.filter(p => p.sellerId).length})
+        </Button>
+        <Button 
+          size="sm" 
+          variant={filter === 'all' ? 'default' : 'outline'}
+          onClick={() => setFilter('all')}
+        >
+          All Products ({products.length})
+        </Button>
+      </div>
+
       <div className="mt-6 overflow-hidden rounded-xl border border-border bg-card">
         <Table>
           <TableHeader>
@@ -52,19 +84,20 @@ export default function AdminProductsPage() {
               <TableHead>Category</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Stock</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead>Seller</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products.length === 0 ? (
+            {filteredProducts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                   No products found
                 </TableCell>
               </TableRow>
             ) : (
-              products.map((product) => (
+              filteredProducts.map((product) => (
                 <TableRow key={product._id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
@@ -75,7 +108,14 @@ export default function AdminProductsPage() {
                   <TableCell className="text-muted-foreground">{product.categoryId?.name || 'N/A'}</TableCell>
                   <TableCell className="font-medium text-primary">${product.price?.toFixed(2)}</TableCell>
                   <TableCell className="text-muted-foreground">{product.stock}</TableCell>
-                  <TableCell className="text-muted-foreground">{product.sellerId?.storeName || product.sellerId?.name || 'N/A'}</TableCell>
+                  <TableCell>
+                    {product.sellerId ? (
+                      <Badge variant="secondary">Seller</Badge>
+                    ) : (
+                      <Badge variant="default">Catalogue</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{product.sellerId?.storeName || product.sellerId?.name || 'Admin'}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Link href={`/products/${product._id}`}>
