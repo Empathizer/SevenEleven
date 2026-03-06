@@ -69,7 +69,18 @@ export default function AdminAddProductPage() {
         if (uploadRes.ok) {
           const uploadData = await uploadRes.json()
           imageUrls = uploadData.urls || []
+          console.log('Uploaded images:', imageUrls)
+        } else {
+          const errorData = await uploadRes.json()
+          console.error('Upload failed:', errorData)
+          toast.error('Image upload failed: ' + (errorData.message || 'Unknown error'))
         }
+      }
+
+      if (imageUrls.length === 0) {
+        toast.error('Please upload at least one image')
+        setLoading(false)
+        return
       }
 
       const res = await fetch(`${API_URL}/api/admin/products`, {
@@ -84,8 +95,7 @@ export default function AdminAddProductPage() {
           categoryId,
           sellerId: sellerId && sellerId !== 'none' ? sellerId : null,
           stock: parseInt(stock),
-          images: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=600&fit=crop'],
-          isCatalogue: true
+          images: imageUrls
         })
       })
 

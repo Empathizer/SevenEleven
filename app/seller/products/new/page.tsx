@@ -19,6 +19,7 @@ export default function NewProductPage() {
   const router = useRouter()
   const [products, setProducts] = useState<any[]>([])
   const [filteredProducts, setFilteredProducts] = useState<any[]>([])
+  const [categories, setCategories] = useState<any[]>([])
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
   const [search, setSearch] = useState("")
   const [stock, setStock] = useState("")
@@ -36,6 +37,11 @@ export default function NewProductPage() {
         console.error('Products fetch error:', err)
         toast.error('Failed to load products. Please try again.')
       })
+    
+    fetch(`${API_URL}/api/products/categories`)
+      .then(r => r.json())
+      .then(data => setCategories(data.categories || data.data || []))
+      .catch(err => console.error('Categories fetch error:', err))
     
     fetch(`${API_URL}/api/seller/profile`, { credentials: 'include' })
       .then(r => r.json())
@@ -173,6 +179,25 @@ export default function NewProductPage() {
                       <p className="text-sm text-green-600 mt-1">Your Profit per unit: ${(selectedProduct.price * 0.20).toFixed(2)} (20%)</p>
                     </div>
                   </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label>Category</Label>
+                  <Select 
+                    value={selectedProduct.categoryId?._id || selectedProduct.categoryId || ''} 
+                    onValueChange={(catId) => {
+                      setSelectedProduct({...selectedProduct, categoryId: catId})
+                    }}
+                  >
+                    <SelectTrigger className="bg-muted">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card">
+                      {categories.map(cat => (
+                        <SelectItem key={cat._id} value={cat._id}>{cat.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="flex flex-col gap-2">
