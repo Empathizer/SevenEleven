@@ -59,7 +59,7 @@ export default function AdminAddProductPage() {
         }
       }
 
-      const res = await fetch(`${API_URL}/api/admin/products/catalogue`, {
+      const res = await fetch(`${API_URL}/api/admin/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -67,7 +67,9 @@ export default function AdminAddProductPage() {
           name,
           description,
           price: parseFloat(price),
+          buyingPrice: 0,
           categoryId,
+          sellerId: null,
           stock: parseInt(stock),
           images: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=600&fit=crop'],
           isCatalogue: true
@@ -88,8 +90,59 @@ export default function AdminAddProductPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-foreground">Add Product to Catalogue</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Add a product that sellers can fetch and sell.</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Add Product to Catalogue</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Add a product that sellers can fetch and sell.</p>
+        </div>
+        <Button 
+          type="button"
+          variant="outline"
+          onClick={async () => {
+            if (!categories.length) {
+              toast.error('Please create a category first')
+              return
+            }
+            setLoading(true)
+            try {
+              const virtualProducts = [
+                { name: 'Wireless Headphones', price: 79.99, stock: 100, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600' },
+                { name: 'Smart Watch', price: 199.99, stock: 75, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600' },
+                { name: 'Laptop Backpack', price: 49.99, stock: 150, image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600' },
+                { name: 'Power Bank', price: 34.99, stock: 200, image: 'https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=600' },
+                { name: 'Gaming Mouse', price: 59.99, stock: 120, image: 'https://images.unsplash.com/photo-1527814050087-3793815479db?w=600' }
+              ]
+              
+              let added = 0
+              for (const p of virtualProducts) {
+                const res = await fetch(`${API_URL}/api/admin/products`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({
+                    name: p.name,
+                    description: `High quality ${p.name.toLowerCase()} for everyday use`,
+                    price: p.price,
+                    buyingPrice: 0,
+                    categoryId: categories[0]._id,
+                    sellerId: null,
+                    stock: p.stock,
+                    images: [p.image]
+                  })
+                })
+                if (res.ok) added++
+              }
+              toast.success(`Added ${added} virtual products`)
+              router.push('/admin/products')
+            } catch (e) {
+              toast.error('Failed to add products')
+            }
+            setLoading(false)
+          }}
+        >
+          Add 5 Virtual Products
+        </Button>
+      </div>
 
       <form onSubmit={handleSubmit} className="mt-6 max-w-2xl space-y-4">
         <div>
