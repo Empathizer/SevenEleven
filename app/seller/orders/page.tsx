@@ -15,7 +15,8 @@ export default function SellerOrdersPage() {
   const { user } = useAuth()
   const [orders, setOrders] = useState<any[]>([])
   const [currentPage, setCurrentPage] = useState(1)
-  const [walletBalance, setWalletBalance] = useState(0)
+  const [walletBalance, setWalletBalance] = useState<number | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (user) {
@@ -32,6 +33,7 @@ export default function SellerOrdersPage() {
         setWalletBalance(data.data?.walletBalance || 0)
       }
     } catch (e) {}
+    setLoading(false)
   }
 
   const loadOrders = async () => {
@@ -104,7 +106,7 @@ export default function SellerOrdersPage() {
               const myItems = order.items.filter((i: any) => i.sellerId === user.id)
               const myTotal = myItems.reduce((s: number, i: any) => s + i.price * i.quantity, 0)
               const buyingCost = myItems.reduce((s: number, i: any) => s + (i.buyingPrice || 0) * i.quantity, 0)
-              const canFulfill = walletBalance >= buyingCost
+              const canFulfill = !loading && walletBalance !== null && walletBalance >= buyingCost
               
               return (
                 <TableRow key={order._id}>
@@ -120,19 +122,25 @@ export default function SellerOrdersPage() {
                   <TableCell><Badge className={statusColor(order.status)}>{order.status}</Badge></TableCell>
                   <TableCell className="text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell className="text-right">
-                    {!canFulfill && order.status === 'pending' && (
-                      <p className="text-xs text-destructive mb-1">Need ${buyingCost.toFixed(2)} to fulfill</p>
+                    {loading ? (
+                      <p className="text-xs text-muted-foreground">Loading...</p>
+                    ) : (
+                      <>
+                        {!canFulfill && order.status === 'pending' && (
+                          <p className="text-xs text-destructive mb-1">Need ${buyingCost.toFixed(2)} to fulfill</p>
+                        )}
+                        <Select value={order.status} onValueChange={(v) => updateStatus(order._id, v, buyingCost)} disabled={!canFulfill && order.status === 'pending'}>
+                          <SelectTrigger className="w-32 bg-muted"><SelectValue /></SelectTrigger>
+                          <SelectContent className="bg-card">
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="processing" disabled={!canFulfill}>Processing</SelectItem>
+                            <SelectItem value="shipped" disabled={!canFulfill}>Shipped</SelectItem>
+                            <SelectItem value="delivered" disabled={!canFulfill && order.status === 'pending'}>Delivered</SelectItem>
+                            <SelectItem value="cancelled" disabled={!canFulfill && order.status === 'pending'}>Cancelled</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </>
                     )}
-                    <Select value={order.status} onValueChange={(v) => updateStatus(order._id, v, buyingCost)} disabled={!canFulfill && order.status === 'pending'}>
-                      <SelectTrigger className="w-32 bg-muted"><SelectValue /></SelectTrigger>
-                      <SelectContent className="bg-card">
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="processing" disabled={!canFulfill}>Processing</SelectItem>
-                        <SelectItem value="shipped" disabled={!canFulfill}>Shipped</SelectItem>
-                        <SelectItem value="delivered" disabled={!canFulfill && order.status === 'pending'}>Delivered</SelectItem>
-                        <SelectItem value="cancelled" disabled={!canFulfill && order.status === 'pending'}>Cancelled</SelectItem>
-                      </SelectContent>
-                    </Select>
                   </TableCell>
                 </TableRow>
               )
