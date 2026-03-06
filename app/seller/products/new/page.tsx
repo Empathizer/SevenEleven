@@ -176,7 +176,7 @@ export default function NewProductPage() {
                       <h3 className="font-semibold">{selectedProduct.name}</h3>
                       <p className="text-sm text-muted-foreground mt-1">{selectedProduct.description}</p>
                       <p className="text-sm font-semibold mt-2">Product Price: ${selectedProduct.price}</p>
-                      <p className="text-sm text-green-600 mt-1">Your Profit per unit: ${(selectedProduct.price * 0.20).toFixed(2)} (20%)</p>
+                      <p className="text-sm text-green-600 mt-1">Your Profit per unit: ${(selectedProduct.price * 0.10).toFixed(2)} (10%)</p>
                     </div>
                   </div>
                 </div>
@@ -214,7 +214,7 @@ export default function NewProductPage() {
                   {stock && Number(stock) > 0 && (
                     <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded">
                       <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">Total Cost: ${(selectedProduct.price * Number(stock)).toFixed(2)}</p>
-                      <p className="text-sm text-green-600 dark:text-green-400 mt-1">Total Profit: ${(selectedProduct.price * 0.20 * Number(stock)).toFixed(2)}</p>
+                      <p className="text-sm text-green-600 dark:text-green-400 mt-1">Total Profit: ${(selectedProduct.price * 0.10 * Number(stock)).toFixed(2)}</p>
                     </div>
                   )}
                 </div>

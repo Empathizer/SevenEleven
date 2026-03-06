@@ -1,21 +1,10 @@
 "use client"
 
-import { useState, useEffect, lazy, Suspense } from "react"
+import { useState, useEffect } from "react"
 import { DollarSign, ShoppingCart, Users, Package, Store, Clock } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
-
-const BarChart = lazy(() => import('recharts').then(m => ({ default: m.BarChart })))
-const Bar = lazy(() => import('recharts').then(m => ({ default: m.Bar })))
-const PieChart = lazy(() => import('recharts').then(m => ({ default: m.PieChart })))
-const Pie = lazy(() => import('recharts').then(m => ({ default: m.Pie })))
-const Cell = lazy(() => import('recharts').then(m => ({ default: m.Cell })))
-const XAxis = lazy(() => import('recharts').then(m => ({ default: m.XAxis })))
-const YAxis = lazy(() => import('recharts').then(m => ({ default: m.YAxis })))
-const CartesianGrid = lazy(() => import('recharts').then(m => ({ default: m.CartesianGrid })))
-const Tooltip = lazy(() => import('recharts').then(m => ({ default: m.Tooltip })))
-const ResponsiveContainer = lazy(() => import('recharts').then(m => ({ default: m.ResponsiveContainer })))
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
@@ -119,25 +108,23 @@ export default function AdminDashboard() {
             <CardTitle className="text-foreground">Sales Overview</CardTitle>
           </CardHeader>
           <CardContent>
-            <Suspense fallback={<Skeleton className="h-[250px] w-full" />}>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={[
-                  { name: 'Mon', sales: 120 },
-                  { name: 'Tue', sales: 200 },
-                  { name: 'Wed', sales: 150 },
-                  { name: 'Thu', sales: 180 },
-                  { name: 'Fri', sales: 250 },
-                  { name: 'Sat', sales: 300 },
-                  { name: 'Sun', sales: 220 }
-                ]}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="sales" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
-            </Suspense>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={[
+                { name: 'Mon', sales: 120 },
+                { name: 'Tue', sales: 200 },
+                { name: 'Wed', sales: 150 },
+                { name: 'Thu', sales: 180 },
+                { name: 'Fri', sales: 250 },
+                { name: 'Sat', sales: 300 },
+                { name: 'Sun', sales: 220 }
+              ]}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="sales" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
 
@@ -147,32 +134,30 @@ export default function AdminDashboard() {
             <CardTitle className="text-foreground">Order Status Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            <Suspense fallback={<Skeleton className="h-[250px] w-full" />}>
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: 'Pending', value: recentOrders.filter(o => o.status === 'pending').length || 1 },
-                      { name: 'Processing', value: recentOrders.filter(o => o.status === 'processing').length || 1 },
-                      { name: 'Shipped', value: recentOrders.filter(o => o.status === 'shipped').length || 1 },
-                      { name: 'Delivered', value: recentOrders.filter(o => o.status === 'delivered').length || 1 }
-                    ]}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={(entry) => entry.name}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {COLORS.map((color, index) => (
-                      <Cell key={`cell-${index}`} fill={color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </Suspense>
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Pending', value: recentOrders.filter(o => o.status === 'pending').length || 1 },
+                    { name: 'Processing', value: recentOrders.filter(o => o.status === 'processing').length || 1 },
+                    { name: 'Shipped', value: recentOrders.filter(o => o.status === 'shipped').length || 1 },
+                    { name: 'Delivered', value: recentOrders.filter(o => o.status === 'delivered').length || 1 }
+                  ]}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={(entry) => entry.name}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {COLORS.map((color, index) => (
+                    <Cell key={`cell-${index}`} fill={color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>

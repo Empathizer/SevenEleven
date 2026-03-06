@@ -95,7 +95,10 @@ export default function AdminAddProductPage() {
           categoryId,
           sellerId: sellerId && sellerId !== 'none' ? sellerId : null,
           stock: parseInt(stock),
-          images: imageUrls
+          images: imageUrls,
+          rating: (Math.random() * 2 + 3).toFixed(1),
+          reviewCount: Math.floor(Math.random() * 500) + 50,
+          soldCount: Math.floor(Math.random() * 1000) + 100
         })
       })
 
