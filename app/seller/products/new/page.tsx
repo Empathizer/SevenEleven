@@ -25,7 +25,7 @@ export default function NewProductPage() {
   const [seller, setSeller] = useState<any>(null)
 
   useEffect(() => {
-    fetch(`${API_URL}/api/products`)
+    fetch(`${API_URL}/api/products?adminOnly=true`)
       .then(r => r.json())
       .then(data => {
         console.log('Products loaded:', data)

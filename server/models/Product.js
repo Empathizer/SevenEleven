@@ -17,8 +17,8 @@ const productSchema = new mongoose.Schema({
   },
   buyingPrice: {
     type: Number,
-    required: [true, 'Buying price is required'],
-    min: 0
+    min: 0,
+    default: 0
   },
   originalPrice: {
     type: Number,
@@ -31,8 +31,7 @@ const productSchema = new mongoose.Schema({
   },
   sellerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    ref: 'User'
   },
   images: [{
     type: String

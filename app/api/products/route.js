@@ -18,6 +18,11 @@ export async function GET(req) {
     
     let query = {};
     
+    const adminOnly = searchParams.get('adminOnly');
+    if (adminOnly === 'true') {
+      query.sellerId = null;
+    }
+    
     if (category) {
       const cat = await Category.findOne({ slug: category }).maxTimeMS(5000);
       if (cat) query.categoryId = cat._id;

@@ -14,13 +14,10 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 export default function AdminAddProductPage() {
   const router = useRouter()
   const [categories, setCategories] = useState<any[]>([])
-  const [sellers, setSellers] = useState<any[]>([])
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [price, setPrice] = useState("")
-  const [buyingPrice, setBuyingPrice] = useState("")
   const [categoryId, setCategoryId] = useState("")
-  const [sellerId, setSellerId] = useState("")
   const [stock, setStock] = useState("")
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [imagePreview, setImagePreview] = useState<string[]>([])
@@ -29,8 +26,6 @@ export default function AdminAddProductPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     setImageFiles(files)
-    
-    // Create preview URLs
     const previews = files.map(file => URL.createObjectURL(file))
     setImagePreview(previews)
   }
@@ -39,10 +34,6 @@ export default function AdminAddProductPage() {
     fetch(`${API_URL}/api/admin/categories`, { credentials: 'include' })
       .then(r => r.json())
       .then(data => setCategories(data.categories || []))
-    
-    fetch(`${API_URL}/api/admin/sellers`, { credentials: 'include' })
-      .then(r => r.json())
-      .then(data => setSellers(data.data || []))
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,7 +43,6 @@ export default function AdminAddProductPage() {
     try {
       let imageUrls: string[] = []
       
-      // Upload images if any
       if (imageFiles.length > 0) {
         const formData = new FormData()
         imageFiles.forEach(file => formData.append('images', file))
@@ -69,7 +59,7 @@ export default function AdminAddProductPage() {
         }
       }
 
-      const res = await fetch(`${API_URL}/api/admin/products`, {
+      const res = await fetch(`${API_URL}/api/admin/products/catalogue`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -77,17 +67,15 @@ export default function AdminAddProductPage() {
           name,
           description,
           price: parseFloat(price),
-          buyingPrice: parseFloat(buyingPrice),
-          originalPrice: parseFloat(buyingPrice),
           categoryId,
-          sellerId,
           stock: parseInt(stock),
-          images: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=600&fit=crop']
+          images: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=600&fit=crop'],
+          isCatalogue: true
         })
       })
 
       if (res.ok) {
-        toast.success("Product added successfully")
+        toast.success("Product added to catalogue")
         router.push("/admin/products")
       } else {
         toast.error("Failed to add product")
@@ -100,8 +88,8 @@ export default function AdminAddProductPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-foreground">Add Product</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Add a new product to the platform.</p>
+      <h1 className="text-2xl font-bold text-foreground">Add Product to Catalogue</h1>
+      <p className="mt-1 text-sm text-muted-foreground">Add a product that sellers can fetch and sell.</p>
 
       <form onSubmit={handleSubmit} className="mt-6 max-w-2xl space-y-4">
         <div>
@@ -114,15 +102,9 @@ export default function AdminAddProductPage() {
           <Textarea value={description} onChange={(e) => setDescription(e.target.value)} required rows={4} className="mt-1" />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label>Selling Price</Label>
-            <Input type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} required className="mt-1" />
-          </div>
-          <div>
-            <Label>Buying Price</Label>
-            <Input type="number" step="0.01" value={buyingPrice} onChange={(e) => setBuyingPrice(e.target.value)} required className="mt-1" />
-          </div>
+        <div>
+          <Label>Price</Label>
+          <Input type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} required className="mt-1" />
         </div>
 
         <div>
@@ -139,22 +121,6 @@ export default function AdminAddProductPage() {
             <SelectContent>
               {categories.map((cat) => (
                 <SelectItem key={cat._id} value={cat._id}>{cat.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label>Seller</Label>
-          <Select value={sellerId} onValueChange={setSellerId}>
-            <SelectTrigger className="mt-1">
-              <SelectValue placeholder="Select seller" />
-            </SelectTrigger>
-            <SelectContent>
-              {sellers.map((seller) => (
-                <SelectItem key={seller._id} value={seller.userId?._id || seller.userId}>
-                  {seller.storeName || seller.userId?.name}
-                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -182,7 +148,7 @@ export default function AdminAddProductPage() {
 
         <div className="flex gap-3">
           <Button type="submit" disabled={loading}>
-            {loading ? "Adding..." : "Add Product"}
+            {loading ? "Adding..." : "Add to Catalogue"}
           </Button>
           <Button type="button" variant="outline" onClick={() => router.back()}>
             Cancel
