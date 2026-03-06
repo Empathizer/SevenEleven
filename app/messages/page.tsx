@@ -34,6 +34,7 @@ function MessagesContent() {
       const conv = conversations.find(c => c.otherUser._id === sellerId)
       if (conv) {
         setSelectedConv(conv)
+        loadMessages(conv._id)
       } else {
         // Load seller info for new conversation
         fetch(`${API_URL}/api/sellers/${sellerId}`, { credentials: 'include' })
@@ -41,14 +42,17 @@ function MessagesContent() {
           .then(data => {
             if (data.success) {
               setSellerInfo(data.seller)
-              setSelectedConv({
+              const newConv = {
                 _id: sellerId,
                 otherUser: {
                   _id: sellerId,
                   name: data.seller.name || data.seller.storeName,
                   email: data.seller.email
                 }
-              })
+              }
+              setSelectedConv(newConv)
+              // Try to load existing messages
+              loadMessages(sellerId)
             }
           })
           .catch(e => console.error('Failed to load seller:', e))
@@ -107,7 +111,7 @@ function MessagesContent() {
   }
 
   useEffect(() => {
-    if (selectedConv && selectedConv._id && selectedConv._id !== sellerId) {
+    if (selectedConv && selectedConv._id) {
       loadMessages(selectedConv._id)
       const interval = setInterval(() => loadMessages(selectedConv._id), 3000)
       return () => clearInterval(interval)

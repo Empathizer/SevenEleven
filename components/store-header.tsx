@@ -4,7 +4,7 @@ import React from "react"
 
 import Link from "next/link"
 import { useState } from "react"
-import { Search, ShoppingCart, Heart, User, Menu, X, ChevronDown, Package, LogOut, LayoutDashboard } from "lucide-react"
+import { Search, ShoppingCart, Heart, User, Menu, X, ChevronDown, Package, LogOut, LayoutDashboard, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -89,6 +89,15 @@ export function StoreHeader() {
 
         {/* Actions */}
         <div className="flex items-center gap-1">
+          {isAuthenticated && user?.role === 'customer' && (
+            <Link href="/messages">
+              <Button variant="ghost" size="icon">
+                <MessageCircle className="h-5 w-5" />
+                <span className="sr-only">Messages</span>
+              </Button>
+            </Link>
+          )}
+          
           <Link href="/wishlist">
             <Button variant="ghost" size="icon" className="relative">
               <Heart className="h-5 w-5" />
