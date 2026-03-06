@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Send, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -13,9 +13,7 @@ import { toast } from "sonner"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
-export const dynamic = 'force-dynamic'
-
-export default function MessagesPage() {
+function MessagesContent() {
   const { user } = useAuth()
   const searchParams = useSearchParams()
   const sellerId = searchParams.get('seller')
@@ -106,10 +104,7 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <StoreHeader />
-
-      <main className="flex-1">
+    <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 py-6">
           <h1 className="text-2xl font-bold text-foreground mb-6">Messages</h1>
 
@@ -199,8 +194,17 @@ export default function MessagesPage() {
             </div>
           </div>
         </div>
-      </main>
+    </main>
+  )
+}
 
+export default function MessagesPage() {
+  return (
+    <div className="flex min-h-screen flex-col bg-background">
+      <StoreHeader />
+      <Suspense fallback={<div className="flex-1 flex items-center justify-center">Loading...</div>}>
+        <MessagesContent />
+      </Suspense>
       <StoreFooter />
     </div>
   )
