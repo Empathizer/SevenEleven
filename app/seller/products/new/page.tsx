@@ -78,14 +78,7 @@ export default function NewProductPage() {
     if (!selectedProduct) { toast.error("Please select a product"); return }
     if (!stock || Number(stock) <= 0) { toast.error("Please enter valid stock quantity"); return }
 
-    const productPrice = selectedProduct.price // Use actual product price, not originalPrice
-    const totalCost = productPrice * Number(stock)
-    
-    // Check if seller has enough balance
-    if (seller && seller.walletBalance < totalCost) {
-      toast.error(`Insufficient wallet balance. You need $${totalCost.toFixed(2)} but have $${seller.walletBalance.toFixed(2)}`);
-      return;
-    }
+    const productPrice = selectedProduct.price
 
     const res = await fetch(`${API_URL}/api/seller/products`, {
       method: "POST",
@@ -121,7 +114,6 @@ export default function NewProductPage() {
       {seller && (
         <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
           <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">Your Wallet Balance: ${seller.walletBalance?.toFixed(2) || '0.00'}</p>
-          <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">You can only add products with price ≤ your wallet balance</p>
         </div>
       )}
 
