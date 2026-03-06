@@ -32,7 +32,7 @@ export default function CartPage() {
         if (res.ok) {
           const data = await res.json()
           if (data.success) {
-            const dbProducts = data.products || []
+            const dbProducts = data.products || data.data || []
             const merged = cartProducts.map(cp => {
               if (cp.product) return { ...cp, product: cp.product }
               const dbProd = dbProducts.find((p: any) => p._id === cp.productId)
@@ -59,7 +59,7 @@ export default function CartPage() {
       setLoading(false)
     }
     fetchProducts()
-  }, [])
+  }, [cartProducts])
 
   const totalPrice = products.reduce((sum, item) => {
     return sum + (item.product?.price || 0) * item.quantity

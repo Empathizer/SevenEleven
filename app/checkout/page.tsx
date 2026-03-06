@@ -51,7 +51,7 @@ export default function CheckoutPage() {
         if (res.ok) {
           const data = await res.json()
           if (data.success) {
-            const dbProducts = data.products || []
+            const dbProducts = data.products || data.data || []
             const merged = cartProducts.map(cp => {
               const dbProd = dbProducts.find((p: any) => p._id === cp.productId)
               if (dbProd) {

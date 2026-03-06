@@ -10,11 +10,11 @@ export async function GET(req) {
     const Seller = (await import('@/server/models/Seller')).default;
     const User = (await import('@/server/models/User')).default;
     
-    const userData = await User.findById(user._id).select('-password');
+    const userData = await User.findById(user._id).select('-password').lean();
     let sellerInfo = null;
     
     if (user.role === 'seller') {
-      sellerInfo = await Seller.findOne({ userId: user._id });
+      sellerInfo = await Seller.findOne({ userId: user._id }).lean();
     }
 
     return Response.json({
@@ -39,6 +39,10 @@ export async function GET(req) {
         storeName: userData.storeName || sellerInfo?.storeName || '',
         storeDescription: userData.storeDescription || sellerInfo?.storeDescription || '',
         seller: sellerInfo
+      }
+    }, {
+      headers: {
+        'Cache-Control': 'private, max-age=60'
       }
     });
   } catch (error) {

@@ -70,8 +70,14 @@ export async function POST(req) {
         }
       }
 
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
-      (await cookies()).set('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 });
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+      (await cookies()).set('token', token, { 
+        httpOnly: true, 
+        secure: process.env.NODE_ENV === 'production', 
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 30 * 24 * 60 * 60 
+      });
 
       return Response.json({
         success: true,
@@ -101,8 +107,14 @@ export async function POST(req) {
       }
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
-    (await cookies()).set('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    (await cookies()).set('token', token, { 
+      httpOnly: true, 
+      secure: process.env.NODE_ENV === 'production', 
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 30 * 24 * 60 * 60 
+    });
 
     return Response.json({
       success: true,
