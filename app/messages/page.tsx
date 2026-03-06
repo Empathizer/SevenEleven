@@ -13,6 +13,8 @@ import { toast } from "sonner"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
+export const dynamic = 'force-dynamic'
+
 export default function MessagesPage() {
   const { user } = useAuth()
   const searchParams = useSearchParams()
