@@ -8,8 +8,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Pagination } from "@/components/ui/pagination"
 import { toast } from "sonner"
 
-import { PRODUCT_POOL } from "@/lib/product-data"
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 const ITEMS_PER_PAGE = 20
 
@@ -61,49 +59,9 @@ export default function AdminProductsPage() {
           <h1 className="text-2xl font-bold text-foreground">Admin Products (Virtual)</h1>
           <p className="mt-1 text-sm text-muted-foreground">Catalogue products for sellers. Not shown on home page.</p>
         </div>
-        <Button 
-          onClick={async () => {
-            const categories = await fetch(`${API_URL}/api/admin/categories`, { credentials: 'include' })
-              .then(r => r.json())
-              .then(data => data.categories || [])
-            
-            if (categories.length === 0) {
-              toast.error('Please create a category first')
-              return
-            }
-            
-            try {
-              const randomProduct = PRODUCT_POOL[Math.floor(Math.random() * PRODUCT_POOL.length)]
-              
-              const res = await fetch(`${API_URL}/api/admin/products`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                  name: randomProduct.name,
-                  description: randomProduct.desc,
-                  price: Math.floor(Math.random() * 200) + 20,
-                  buyingPrice: 0,
-                  categoryId: categories[0]._id,
-                  sellerId: null,
-                  stock: Math.floor(Math.random() * 200) + 50,
-                  images: [randomProduct.img]
-                })
-              })
-              if (res.ok) {
-                toast.success('Admin product added')
-                loadProducts()
-              } else {
-                toast.error('Failed to add product')
-              }
-            } catch (e) {
-              toast.error('Failed to add product')
-            }
-          }}
-          className="bg-primary text-primary-foreground hover:bg-primary/90"
-        >
-          Add Unique Admin Product
-        </Button>
+        <Link href="/admin/admin-products/new">
+          <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Add Admin Product</Button>
+        </Link>
       </div>
 
       <div className="mt-6 overflow-hidden rounded-xl border border-border bg-card">

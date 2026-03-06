@@ -9,8 +9,6 @@ import { Badge } from "@/components/ui/badge"
 import { Pagination } from "@/components/ui/pagination"
 import { toast } from "sonner"
 
-import { PRODUCT_POOL } from "@/lib/product-data"
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 const ITEMS_PER_PAGE = 20
 
@@ -120,46 +118,6 @@ export default function AdminProductsPage() {
               Delete {selectedProducts.length} Selected
             </Button>
           )}
-          <Button 
-            variant="outline"
-            onClick={async () => {
-              if (categories.length === 0 || virtualSellers.length === 0) {
-                toast.error('Please create category and virtual seller first')
-                return
-              }
-              try {
-                const randomProduct = PRODUCT_POOL[Math.floor(Math.random() * PRODUCT_POOL.length)]
-                const randomSeller = virtualSellers[Math.floor(Math.random() * virtualSellers.length)]
-                const sellerId = typeof randomSeller.userId === 'string' ? randomSeller.userId : randomSeller.userId?._id
-                
-                const res = await fetch(`${API_URL}/api/admin/products`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  credentials: 'include',
-                  body: JSON.stringify({
-                    name: randomProduct.name,
-                    description: randomProduct.desc,
-                    price: Math.floor(Math.random() * 200) + 20,
-                    buyingPrice: 0,
-                    categoryId: categories[0]._id,
-                    sellerId: sellerId,
-                    stock: Math.floor(Math.random() * 200) + 50,
-                    images: [randomProduct.img]
-                  })
-                })
-                if (res.ok) {
-                  toast.success('Seller product added')
-                  loadProducts()
-                } else {
-                  toast.error('Failed to add product')
-                }
-              } catch (e) {
-                toast.error('Failed to add product')
-              }
-            }}
-          >
-            Add Unique Seller Product
-          </Button>
           <Link href="/admin/products/new">
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Add Product</Button>
           </Link>

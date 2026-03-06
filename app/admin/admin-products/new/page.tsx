@@ -11,19 +11,24 @@ import { toast } from "sonner"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
-export default function AdminAddProductPage() {
+export default function AddAdminProductPage() {
   const router = useRouter()
   const [categories, setCategories] = useState<any[]>([])
-  const [virtualSellers, setVirtualSellers] = useState<any[]>([])
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [price, setPrice] = useState("")
   const [categoryId, setCategoryId] = useState("")
-  const [sellerId, setSellerId] = useState("")
   const [stock, setStock] = useState("")
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [imagePreview, setImagePreview] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/admin/categories`, { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => setCategories(data.categories || []))
+      .catch(e => console.error('Failed to load categories:', e))
+  }, [])
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -31,23 +36,6 @@ export default function AdminAddProductPage() {
     const previews = files.map(file => URL.createObjectURL(file))
     setImagePreview(previews)
   }
-
-  useEffect(() => {
-    fetch(`${API_URL}/api/admin/categories`, { credentials: 'include' })
-      .then(r => r.json())
-      .then(data => setCategories(data.categories || []))
-      .catch(e => console.error('Failed to load categories:', e))
-    
-    fetch(`${API_URL}/api/admin/sellers`, { credentials: 'include' })
-      .then(r => r.json())
-      .then(data => {
-        if (data.success && data.data) {
-          const virtuals = data.data.filter((s: any) => s.userId?.isVirtual === true)
-          setVirtualSellers(virtuals)
-        }
-      })
-      .catch(e => console.error('Failed to load sellers:', e))
-  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -82,16 +70,15 @@ export default function AdminAddProductPage() {
           price: parseFloat(price),
           buyingPrice: 0,
           categoryId,
-          sellerId: sellerId && sellerId !== 'none' ? sellerId : null,
+          sellerId: null,
           stock: parseInt(stock),
-          images: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=600&fit=crop'],
-          isCatalogue: true
+          images: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=600&fit=crop']
         })
       })
 
       if (res.ok) {
-        toast.success("Product added to catalogue")
-        router.push("/admin/products")
+        toast.success("Admin product added")
+        router.push("/admin/admin-products")
       } else {
         toast.error("Failed to add product")
       }
@@ -103,19 +90,8 @@ export default function AdminAddProductPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Add Seller Product</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Add a product with virtual seller that will show on home page.</p>
-        </div>
-        <Button 
-          type="button"
-          variant="outline"
-          onClick={() => router.back()}
-        >
-          Cancel
-        </Button>
-      </div>
+      <h1 className="text-2xl font-bold text-foreground">Add Admin Product</h1>
+      <p className="mt-1 text-sm text-muted-foreground">Add catalogue product for sellers. Not shown on home page.</p>
 
       <form onSubmit={handleSubmit} className="mt-6 max-w-2xl space-y-4">
         <div>
@@ -140,7 +116,7 @@ export default function AdminAddProductPage() {
 
         <div>
           <Label>Category</Label>
-          <Select value={categoryId} onValueChange={setCategoryId}>
+          <Select value={categoryId} onValueChange={setCategoryId} required>
             <SelectTrigger className="mt-1">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
@@ -150,28 +126,6 @@ export default function AdminAddProductPage() {
               ))}
             </SelectContent>
           </Select>
-        </div>
-
-        <div>
-          <Label>Virtual Seller (Required)</Label>
-          <Select value={sellerId} onValueChange={setSellerId} required>
-            <SelectTrigger className="mt-1">
-              <SelectValue placeholder="Select virtual seller" />
-            </SelectTrigger>
-            <SelectContent>
-              {virtualSellers.map((seller) => {
-                const userId = typeof seller.userId === 'string' ? seller.userId : seller.userId?._id
-                const userName = typeof seller.userId === 'string' ? seller.storeName : (seller.storeName || seller.userId?.name)
-                const userEmail = typeof seller.userId === 'string' ? '' : seller.userId?.email
-                return (
-                  <SelectItem key={seller._id} value={userId || ''}>
-                    {userName} {userEmail ? `(${userEmail})` : ''}
-                  </SelectItem>
-                )
-              })}
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground mt-1">Required: Product will show on home page with this seller</p>
         </div>
 
         <div>
@@ -195,8 +149,8 @@ export default function AdminAddProductPage() {
         </div>
 
         <div className="flex gap-3">
-          <Button type="submit" disabled={loading || !sellerId || sellerId === 'none'}>
-            {loading ? "Adding..." : "Add Seller Product"}
+          <Button type="submit" disabled={loading}>
+            {loading ? "Adding..." : "Add Admin Product"}
           </Button>
           <Button type="button" variant="outline" onClick={() => router.back()}>
             Cancel
