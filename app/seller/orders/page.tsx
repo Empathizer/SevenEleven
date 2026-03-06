@@ -26,7 +26,7 @@ export default function SellerOrdersPage() {
 
   const loadWallet = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/seller/profile`, { credentials: 'include' })
+      const res = await fetch(`${API_URL}/api/seller/wallet`, { credentials: 'include' })
       if (res.ok) {
         const data = await res.json()
         setWalletBalance(data.data?.walletBalance || 0)

@@ -300,8 +300,8 @@ export default function AdminSellersPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-center">{getProductCount(seller)}</TableCell>
-                  <TableCell className="text-sm">${(seller.pendingBalance || 0).toFixed(2)}</TableCell>
-                  <TableCell className="font-semibold">${(seller.walletBalance || 0).toFixed(2)}</TableCell>
+                  <TableCell className="text-sm">${(user.pendingBalance || 0).toFixed(2)}</TableCell>
+                  <TableCell className="font-semibold">${(user.walletBalance || 0).toFixed(2)}</TableCell>
                   <TableCell className="text-sm">${(user.guaranteeMoney || 0).toFixed(2)}</TableCell>
                   <TableCell className="text-sm whitespace-nowrap">{user.viewsBase || 0}/{user.viewsInc || 0}</TableCell>
                   <TableCell className="text-center">{user.creditScore || 100}</TableCell>
