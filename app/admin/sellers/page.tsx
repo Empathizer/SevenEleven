@@ -349,6 +349,30 @@ export default function AdminSellersPage() {
                         <DropdownMenuItem onClick={() => banSeller(seller._id, user._id)} className="text-orange-600">
                           <Ban className="h-4 w-4 mr-2" /> Ban Seller
                         </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={async () => {
+                            if (confirm('PERMANENTLY DELETE this seller and ALL their data (products, orders, transactions)? This cannot be undone!')) {
+                              try {
+                                const res = await fetch(`${API_URL}/api/admin/sellers/${seller._id}/delete`, {
+                                  method: 'DELETE',
+                                  credentials: 'include'
+                                })
+                                if (res.ok) {
+                                  toast.success('Seller and all data deleted')
+                                  loadSellers()
+                                } else {
+                                  const data = await res.json()
+                                  toast.error(data.message || 'Failed to delete seller')
+                                }
+                              } catch (e) {
+                                toast.error('Failed to delete seller')
+                              }
+                            }
+                          }}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" /> Delete Seller Permanently
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => openDialog(seller, 'message')}>
                           <MessageSquare className="h-4 w-4 mr-2" /> Message Seller
                         </DropdownMenuItem>

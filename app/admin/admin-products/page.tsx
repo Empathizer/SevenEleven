@@ -8,6 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Pagination } from "@/components/ui/pagination"
 import { toast } from "sonner"
 
+import { PRODUCT_POOL } from "@/lib/product-data"
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 const ITEMS_PER_PAGE = 20
 
@@ -71,19 +73,21 @@ export default function AdminProductsPage() {
             }
             
             try {
+              const randomProduct = PRODUCT_POOL[Math.floor(Math.random() * PRODUCT_POOL.length)]
+              
               const res = await fetch(`${API_URL}/api/admin/products`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify({
-                  name: `Admin Product ${Date.now()}`,
-                  description: `Unique admin product created at ${new Date().toISOString()}`,
+                  name: randomProduct.name,
+                  description: randomProduct.desc,
                   price: Math.floor(Math.random() * 200) + 20,
                   buyingPrice: 0,
                   categoryId: categories[0]._id,
                   sellerId: null,
                   stock: Math.floor(Math.random() * 200) + 50,
-                  images: ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=600&fit=crop']
+                  images: [randomProduct.img]
                 })
               })
               if (res.ok) {
