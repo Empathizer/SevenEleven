@@ -98,6 +98,7 @@ export default function AdminAddProductPage() {
         <Button 
           type="button"
           variant="outline"
+          disabled={loading}
           onClick={async () => {
             if (!categories.length) {
               toast.error('Please create a category first')
@@ -105,16 +106,34 @@ export default function AdminAddProductPage() {
             }
             setLoading(true)
             try {
-              const virtualProducts = [
-                { name: 'Wireless Headphones', price: 79.99, stock: 100, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600' },
-                { name: 'Smart Watch', price: 199.99, stock: 75, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600' },
+              const allProducts = [
+                { name: 'Wireless Bluetooth Headphones', price: 79.99, stock: 100, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600' },
+                { name: 'Smart Watch Pro', price: 199.99, stock: 75, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600' },
                 { name: 'Laptop Backpack', price: 49.99, stock: 150, image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600' },
-                { name: 'Power Bank', price: 34.99, stock: 200, image: 'https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=600' },
-                { name: 'Gaming Mouse', price: 59.99, stock: 120, image: 'https://images.unsplash.com/photo-1527814050087-3793815479db?w=600' }
+                { name: 'Power Bank 20000mAh', price: 34.99, stock: 200, image: 'https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=600' },
+                { name: 'Gaming Mouse RGB', price: 59.99, stock: 120, image: 'https://images.unsplash.com/photo-1527814050087-3793815479db?w=600' },
+                { name: 'USB-C Hub Adapter', price: 39.99, stock: 180, image: 'https://images.unsplash.com/photo-1625948515291-69613efd103f?w=600' },
+                { name: 'Mechanical Keyboard', price: 89.99, stock: 90, image: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600' },
+                { name: 'Webcam HD 1080p', price: 69.99, stock: 110, image: 'https://images.unsplash.com/photo-1585792180666-f7347c490ee2?w=600' },
+                { name: 'Phone Stand Adjustable', price: 24.99, stock: 250, image: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600' },
+                { name: 'LED Desk Lamp', price: 44.99, stock: 140, image: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600' },
+                { name: 'Bluetooth Speaker', price: 54.99, stock: 160, image: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=600' },
+                { name: 'Wireless Charger Pad', price: 29.99, stock: 220, image: 'https://images.unsplash.com/photo-1591290619762-c588f0e8e23f?w=600' },
+                { name: 'Cable Organizer Set', price: 19.99, stock: 300, image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600' },
+                { name: 'Screen Protector Glass', price: 14.99, stock: 350, image: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600' },
+                { name: 'Laptop Cooling Pad', price: 39.99, stock: 130, image: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=600' },
+                { name: 'Portable SSD 1TB', price: 129.99, stock: 60, image: 'https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=600' },
+                { name: 'Noise Cancelling Earbuds', price: 149.99, stock: 85, image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600' },
+                { name: 'Fitness Tracker Band', price: 79.99, stock: 95, image: 'https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=600' },
+                { name: 'Tablet Stand Holder', price: 34.99, stock: 175, image: 'https://images.unsplash.com/photo-1585790050230-5dd28404f1e9?w=600' },
+                { name: 'Ring Light for Video', price: 64.99, stock: 105, image: 'https://images.unsplash.com/photo-1598986646512-9330bcc4c0dc?w=600' }
               ]
               
+              const shuffled = allProducts.sort(() => 0.5 - Math.random())
+              const selected = shuffled.slice(0, 5)
+              
               let added = 0
-              for (const p of virtualProducts) {
+              for (const p of selected) {
                 const res = await fetch(`${API_URL}/api/admin/products`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
@@ -130,17 +149,28 @@ export default function AdminAddProductPage() {
                     images: [p.image]
                   })
                 })
-                if (res.ok) added++
+                if (res.ok) {
+                  added++
+                  console.log(`✅ Added: ${p.name}`)
+                } else {
+                  const err = await res.json()
+                  console.error(`❌ Failed: ${p.name}`, err)
+                }
               }
-              toast.success(`Added ${added} virtual products`)
-              router.push('/admin/products')
+              if (added > 0) {
+                toast.success(`Added ${added} virtual products to database`)
+                setTimeout(() => router.push('/admin/products'), 1000)
+              } else {
+                toast.error('Failed to add products. Check console for errors.')
+              }
             } catch (e) {
-              toast.error('Failed to add products')
+              console.error('Error:', e)
+              toast.error('Failed to add products: ' + e.message)
             }
             setLoading(false)
           }}
         >
-          Add 5 Virtual Products
+          {loading ? 'Adding...' : 'Add 5 Random Products'}
         </Button>
       </div>
 

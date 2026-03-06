@@ -7,8 +7,9 @@ export async function DELETE(req, { params }) {
   if (error) return error;
 
   try {
+    const { id } = await params;
     const Product = (await import('@/server/models/Product')).default;
-    await Product.findByIdAndDelete(params.id);
+    await Product.findByIdAndDelete(id);
     return Response.json({ success: true, message: 'Product deleted' });
   } catch (error) {
     return Response.json({ success: false, message: error.message }, { status: 500 });

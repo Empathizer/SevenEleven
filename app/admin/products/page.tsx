@@ -24,13 +24,24 @@ export default function AdminProductsPage() {
   useEffect(() => { loadProducts() }, [])
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(`${API_URL}/api/admin/products/${id}`, {
-      method: "DELETE",
-      credentials: "include"
-    })
-    if (res.ok) {
-      toast.success("Product deleted")
-      loadProducts()
+    if (!confirm('Are you sure you want to delete this product?')) return
+    
+    try {
+      const res = await fetch(`${API_URL}/api/admin/products/${id}`, {
+        method: "DELETE",
+        credentials: "include"
+      })
+      
+      if (res.ok) {
+        toast.success("Product deleted")
+        loadProducts()
+      } else {
+        const data = await res.json()
+        toast.error(data.message || "Failed to delete product")
+      }
+    } catch (e) {
+      toast.error("Failed to delete product")
+      console.error('Delete error:', e)
     }
   }
 
