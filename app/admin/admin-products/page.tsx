@@ -74,13 +74,14 @@ export default function AdminProductsPage() {
               <TableHead>Selling Price</TableHead>
               <TableHead>Profit (10%)</TableHead>
               <TableHead>Stock</TableHead>
+              <TableHead>Featured</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedProducts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                   No virtual products found
                 </TableCell>
               </TableRow>
@@ -98,6 +99,29 @@ export default function AdminProductsPage() {
                   <TableCell className="font-medium text-primary">${product.price?.toFixed(2)}</TableCell>
                   <TableCell className="font-medium text-chart-4">${((product.price || 0) - (product.buyingPrice || 0)).toFixed(2)}</TableCell>
                   <TableCell className="text-muted-foreground">{product.stock}</TableCell>
+                  <TableCell>
+                    <input 
+                      type="checkbox" 
+                      checked={product.featured || false}
+                      onChange={async (e) => {
+                        try {
+                          const res = await fetch(`${API_URL}/api/admin/products/${product._id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify({ featured: e.target.checked })
+                          })
+                          if (res.ok) {
+                            toast.success(e.target.checked ? 'Product featured' : 'Product unfeatured')
+                            loadProducts()
+                          }
+                        } catch (err) {
+                          toast.error('Failed to update')
+                        }
+                      }}
+                      className="cursor-pointer"
+                    />
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Link href={`/products/${product._id}`}>

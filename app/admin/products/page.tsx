@@ -174,13 +174,14 @@ export default function AdminProductsPage() {
               <TableHead>Stock</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Seller</TableHead>
+              <TableHead>Featured</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedProducts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
                   No products found
                 </TableCell>
               </TableRow>
@@ -220,6 +221,29 @@ export default function AdminProductsPage() {
                     )}
                   </TableCell>
                   <TableCell className="text-muted-foreground">{product.sellerId?.storeName || product.sellerId?.name || 'Admin'}</TableCell>
+                  <TableCell>
+                    <input 
+                      type="checkbox" 
+                      checked={product.featured || false}
+                      onChange={async (e) => {
+                        try {
+                          const res = await fetch(`${API_URL}/api/admin/products/${product._id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify({ featured: e.target.checked })
+                          })
+                          if (res.ok) {
+                            toast.success(e.target.checked ? 'Product featured' : 'Product unfeatured')
+                            loadProducts()
+                          }
+                        } catch (err) {
+                          toast.error('Failed to update')
+                        }
+                      }}
+                      className="cursor-pointer"
+                    />
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Link href={`/products/${product._id}`}>
