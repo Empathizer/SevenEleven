@@ -29,15 +29,11 @@ export default function NewProductPage() {
       .then(r => r.json())
       .then(data => {
         console.log('Products loaded:', data)
-        if (data.success) {
-          console.log('Products array:', data.data)
-          console.log('Products count:', data.data?.length)
-          setProducts(data.data || [])
-          setFilteredProducts(data.data || [])
-        } else {
-          console.error('API error:', data.message)
-          toast.error('Failed to load products: ' + data.message)
-        }
+        const productList = data.data || data.products || []
+        console.log('Products array:', productList)
+        console.log('Products count:', productList.length)
+        setProducts(productList)
+        setFilteredProducts(productList)
       })
       .catch(err => {
         console.error('Products fetch error:', err)

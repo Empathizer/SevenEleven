@@ -7,7 +7,6 @@ export async function GET(req) {
   try {
     const Product = (await import('@/server/models/Product')).default;
     const Category = (await import('@/server/models/Category')).default;
-    // Ensure User model is registered so populate('sellerId') works
     const User = (await import('@/server/models/User')).default;
     
     const category = searchParams.get('category');
@@ -15,10 +14,10 @@ export async function GET(req) {
     const featured = searchParams.get('featured');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
+    const adminOnly = searchParams.get('adminOnly');
     
     let query = {};
     
-    const adminOnly = searchParams.get('adminOnly');
     if (adminOnly === 'true') {
       query.sellerId = null;
     }
@@ -39,20 +38,20 @@ export async function GET(req) {
       query.featured = true;
     }
 
-    console.log('Fetching products with query:', query);
     const products = await Product.find(query)
       .populate('categoryId', 'name slug')
       .populate('sellerId', 'name')
       .limit(limit)
       .skip((page - 1) * limit)
       .sort('-createdAt')
-      .maxTimeMS(30000);
+      .maxTimeMS(30000)
+      .lean();
 
-    console.log('Products found:', products.length);
     const count = await Product.countDocuments(query).maxTimeMS(30000);
 
     return Response.json({
       success: true,
+      data: products,
       products: products,
       totalPages: Math.ceil(count / limit),
       currentPage: page
