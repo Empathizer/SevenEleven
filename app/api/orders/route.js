@@ -55,7 +55,7 @@ export async function POST(req) {
     }
 
     const order = await Order.create({
-      userId: user.id,
+      userId: user._id,
       items: orderItems,
       totalAmount,
       profit: orderItems.reduce((sum, item) => sum + item.profit, 0),
@@ -78,8 +78,8 @@ export async function GET(req) {
   try {
     const Order = (await import('@/server/models/Order')).default;
     let query = {};
-    if (user.role === 'customer') query.userId = user.id;
-    else if (user.role === 'seller') query['items.sellerId'] = user.id;
+    if (user.role === 'customer') query.userId = user._id;
+    else if (user.role === 'seller') query['items.sellerId'] = user._id;
     
     const orders = await Order.find(query).populate('userId', 'name email').sort('-createdAt');
     return Response.json({ success: true, orders });
