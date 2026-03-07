@@ -158,7 +158,7 @@ function ProductsContent() {
                       <h2 className="text-lg font-semibold mb-3">Stores</h2>
                       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                         {stores.map(store => (
-                          <a key={store._id} href={`/store/${store._id}`} className="rounded-xl border border-border bg-card p-4 hover:shadow-md transition-shadow">
+                          <a key={store._id} href={`/store/${store.userId?._id || store.userId}`} className="rounded-xl border border-border bg-card p-4 hover:shadow-md transition-shadow">
                             <div className="text-center">
                               <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-primary/10 flex items-center justify-center">
                                 <span className="text-2xl font-bold text-primary">{store.storeName?.charAt(0) || 'S'}</span>
