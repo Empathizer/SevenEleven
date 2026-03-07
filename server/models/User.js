@@ -133,6 +133,13 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Performance indexes
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ role: 1 });
+userSchema.index({ status: 1 });
+userSchema.index({ isVirtual: 1 });
+userSchema.index({ role: 1, status: 1 });
+
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 12);

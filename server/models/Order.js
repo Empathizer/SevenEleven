@@ -91,4 +91,11 @@ const orderSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Performance indexes
+orderSchema.index({ userId: 1, createdAt: -1 });
+orderSchema.index({ 'items.sellerId': 1 });
+orderSchema.index({ status: 1 });
+orderSchema.index({ paymentStatus: 1 });
+orderSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.models.Order || mongoose.model('Order', orderSchema);
