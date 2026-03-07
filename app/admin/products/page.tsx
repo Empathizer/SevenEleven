@@ -113,6 +113,28 @@ export default function AdminProductsPage() {
           <p className="mt-1 text-sm text-muted-foreground">Seller products that show on home page.</p>
         </div>
         <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={async () => {
+              try {
+                const res = await fetch(`${API_URL}/api/admin/fix-products`, {
+                  method: 'POST',
+                  credentials: 'include'
+                })
+                const data = await res.json()
+                if (res.ok) {
+                  toast.success(data.message)
+                  loadProducts()
+                } else {
+                  toast.error(data.message)
+                }
+              } catch (e) {
+                toast.error('Failed to fix products')
+              }
+            }}
+          >
+            Fix Buying Prices
+          </Button>
           {selectedProducts.length > 0 && (
             <Button variant="destructive" onClick={handleBulkDelete}>
               Delete {selectedProducts.length} Selected
