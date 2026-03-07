@@ -79,8 +79,34 @@ export default function AdminOrdersPage() {
   return (
     <div className="h-full flex flex-col">
       <div className="flex-shrink-0">
-        <h1 className="text-2xl font-bold text-foreground">Manage Orders</h1>
-        <p className="mt-1 text-sm text-muted-foreground">View and update order statuses across the platform.</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Manage Orders</h1>
+            <p className="mt-1 text-sm text-muted-foreground">View and update order statuses across the platform.</p>
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={async () => {
+              try {
+                const res = await fetch(`${API_URL}/api/admin/fix-orders`, {
+                  method: 'POST',
+                  credentials: 'include'
+                })
+                const data = await res.json()
+                if (res.ok) {
+                  toast.success(data.message)
+                  loadOrders()
+                } else {
+                  toast.error(data.message)
+                }
+              } catch (e) {
+                toast.error('Failed to fix orders')
+              }
+            }}
+          >
+            Fix Order Profits
+          </Button>
+        </div>
       </div>
 
       <div className="mt-6 rounded-xl border border-border bg-card flex-1 overflow-hidden flex flex-col">

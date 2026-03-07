@@ -16,15 +16,18 @@ export async function POST(req) {
         { buyingPrice: 0 },
         { buyingPrice: { $exists: false } }
       ]
-    }).limit(100);
+    }).limit(200);
 
     let updated = 0;
     for (const product of sellerProducts) {
-      // Set buyingPrice to 80% of selling price (assumes 20% profit margin)
-      const estimatedBuyingPrice = product.price * 0.8;
+      // Calculate buyingPrice: selling price - (10-25% profit)
+      // Random profit margin between 10-25%
+      const profitMargin = 0.10 + (Math.random() * 0.15);
+      const buyingPrice = product.price * (1 - profitMargin);
       
       await Product.findByIdAndUpdate(product._id, {
-        buyingPrice: estimatedBuyingPrice
+        buyingPrice,
+        profitMargin
       });
       
       updated++;
@@ -32,7 +35,7 @@ export async function POST(req) {
 
     return Response.json({ 
       success: true, 
-      message: `Updated ${updated} products with estimated buyingPrice`,
+      message: `Updated ${updated} products with correct buyingPrice (10-25% profit)`,
       updated 
     });
   } catch (error) {
