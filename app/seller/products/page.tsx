@@ -70,6 +70,7 @@ export default function SellerProductsPage() {
               <TableHead>Stock</TableHead>
               <TableHead>Sold</TableHead>
               <TableHead>Rating</TableHead>
+              <TableHead>Reviews</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -95,6 +96,7 @@ export default function SellerProductsPage() {
                 </TableCell>
                 <TableCell className="text-muted-foreground">{product.sold}</TableCell>
                 <TableCell className="text-muted-foreground">{product.rating}/5</TableCell>
+                <TableCell className="text-muted-foreground">{product.reviewCount || 0}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Link href={`/products/${product._id}`}>
@@ -109,7 +111,7 @@ export default function SellerProductsPage() {
             ))}
             {products.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={9} className="py-8 text-center text-muted-foreground">
                   No products yet. <Link href="/seller/products/new" className="text-primary hover:underline">Add your first product</Link>
                 </TableCell>
               </TableRow>

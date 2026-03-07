@@ -5,29 +5,63 @@ import Link from "next/link"
 import { Star, ShoppingCart, Heart, Minus, Plus, Truck, ShieldCheck, ArrowLeft, Store } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Textarea } from "@/components/ui/textarea"
 import { StoreHeader } from "@/components/store-header"
 import { StoreFooter } from "@/components/store-footer"
 import { ProductCard } from "@/components/product-card"
 import { useCart } from "@/lib/cart-context"
+import { useAuth } from "@/lib/auth-context"
 import { toast } from "sonner"
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const [product, setProduct] = useState<any>(null)
   const [relatedProducts, setRelatedProducts] = useState<any[]>([])
+  const [reviews, setReviews] = useState<any[]>([])
+  const [rating, setRating] = useState(5)
+  const [comment, setComment] = useState("")
   const { addItem, toggleWishlist, isInWishlist } = useCart()
+  const { user, isAuthenticated } = useAuth()
   const [quantity, setQuantity] = useState(1)
 
   useEffect(() => {
-    fetch(`/api/products/${id}`).then(r => r.json()).then(data => {
-      setProduct(data.product)
-      setRelatedProducts((data.relatedProducts || []).map((p: any) => ({
+    Promise.all([
+      fetch(`/api/products/${id}`).then(r => r.json()),
+      fetch(`/api/reviews?productId=${id}`).then(r => r.json())
+    ]).then(([productData, reviewData]) => {
+      setProduct(productData.product)
+      setRelatedProducts((productData.relatedProducts || []).map((p: any) => ({
         ...p,
         id: p._id,
-        categoryId: data.product.categoryId
+        categoryId: productData.product.categoryId
       })))
+      setReviews(reviewData.reviews || [])
     })
   }, [id])
+
+  const handleReviewSubmit = async () => {
+    if (!comment.trim()) {
+      toast.error('Please write a comment')
+      return
+    }
+    
+    const res = await fetch('/api/reviews', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ productId: id, rating, comment })
+    })
+    
+    const data = await res.json()
+    if (res.ok) {
+      toast.success('Review submitted')
+      setComment('')
+      setRating(5)
+      fetch(`/api/reviews?productId=${id}`).then(r => r.json()).then(d => setReviews(d.reviews || []))
+    } else {
+      toast.error(data.message || 'Failed to submit review')
+    }
+  }
 
   if (!product) {
     return (
@@ -187,6 +221,56 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               </div>
             </section>
           )}
+
+          {/* Reviews */}
+          <section className="mt-12">
+            <h2 className="mb-4 text-xl font-bold text-foreground">Customer Reviews ({reviews.length})</h2>
+            
+            {isAuthenticated && user?.role === 'customer' && (
+              <div className="mb-6 rounded-xl border border-border bg-card p-4">
+                <h3 className="font-semibold mb-3">Write a Review</h3>
+                <div className="flex gap-1 mb-3">
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <Star
+                      key={star}
+                      className={`h-6 w-6 cursor-pointer ${star <= rating ? 'fill-chart-3 text-chart-3' : 'text-border'}`}
+                      onClick={() => setRating(star)}
+                    />
+                  ))}
+                </div>
+                <Textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Share your experience with this product..."
+                  rows={3}
+                  className="mb-3"
+                />
+                <Button onClick={handleReviewSubmit}>Submit Review</Button>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              {reviews.map(review => (
+                <div key={review._id} className="rounded-xl border border-border bg-card p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">{review.userId?.name}</span>
+                      <div className="flex gap-0.5">
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <Star key={star} className={`h-4 w-4 ${star <= review.rating ? 'fill-chart-3 text-chart-3' : 'text-border'}`} />
+                        ))}
+                      </div>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{new Date(review.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{review.comment}</p>
+                </div>
+              ))}
+              {reviews.length === 0 && (
+                <p className="text-center text-muted-foreground py-8">No reviews yet. Be the first to review!</p>
+              )}
+            </div>
+          </section>
         </div>
       </main>
 
