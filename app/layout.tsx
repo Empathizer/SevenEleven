@@ -15,11 +15,6 @@ export const metadata: Metadata = {
   title: "EsellerStore - Your Multi-Vendor Marketplace",
   description: "Shop millions of products from trusted sellers. Fashion, beauty, electronics, and more at amazing prices.",
   metadataBase: new URL('https://www.esellerstore.shop'),
-  icons: {
-    icon: '/favicon.ico',
-    apple: '/favicon.ico',
-    shortcut: '/favicon.ico',
-  },
   openGraph: {
     title: "EsellerStore - Your Multi-Vendor Marketplace",
     description: "Shop millions of products from trusted sellers. Fashion, beauty, electronics, and more at amazing prices.",

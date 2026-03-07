@@ -21,7 +21,7 @@ export async function PUT(req, { params }) {
     }
 
     // When seller picks order, deduct buying cost from wallet and add selling amount to pending
-    if ((status === 'processing' || status === 'shipped') && user.role === 'seller' && order.status === 'pending') {
+    if ((status === 'processing' || status === 'shipped' || status === 'delivered') && user.role === 'seller' && order.status === 'pending') {
       const seller = await User.findById(user.id);
       
       const sellerItems = order.items.filter(item => item.sellerId?.toString() === user.id);
