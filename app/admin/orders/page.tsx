@@ -50,7 +50,11 @@ export default function AdminOrdersPage() {
   }
 
   const calculateProfit = (order: any) => {
-    return (order.profit || 0).toFixed(2)
+    const profit = order.items.reduce((sum: number, item: any) => {
+      const itemProfit = (item.price - (item.buyingPrice || 0)) * item.quantity
+      return sum + itemProfit
+    }, 0)
+    return profit.toFixed(2)
   }
 
   const deleteOrder = async (orderId: string) => {
