@@ -21,8 +21,11 @@ export default function AdminBannersPage() {
   const [title, setTitle] = useState("")
   const [subtitle, setSubtitle] = useState("")
   const [image, setImage] = useState("")
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState("")
   const [link, setLink] = useState("/products")
   const [currentPage, setCurrentPage] = useState(1)
+  const [uploading, setUploading] = useState(false)
 
   const loadBanners = () => {
     fetch(`${API_URL}/api/admin/banners`, { credentials: "include" })
@@ -34,18 +37,61 @@ export default function AdminBannersPage() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
-    const res = await fetch(`${API_URL}/api/admin/banners`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ title, subtitle, image, link, isActive: true })
-    })
-    if (res.ok) {
-      setTitle(""); setSubtitle(""); setImage(""); setLink("/products")
-      setOpen(false)
-      loadBanners()
-      toast.success("Banner added")
+    
+    if (!imageFile) {
+      toast.error('Please select an image')
+      return
     }
+    
+    setUploading(true)
+    
+    try {
+      const formData = new FormData()
+      formData.append('images', imageFile)
+      
+      const uploadRes = await fetch(`${API_URL}/api/upload`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      })
+      
+      if (!uploadRes.ok) {
+        const errorData = await uploadRes.json()
+        toast.error(errorData.message || 'Failed to upload image')
+        setUploading(false)
+        return
+      }
+      
+      const uploadData = await uploadRes.json()
+      const imageUrl = uploadData.urls?.[0]
+      
+      if (!imageUrl) {
+        toast.error('No image URL returned')
+        setUploading(false)
+        return
+      }
+      
+      const res = await fetch(`${API_URL}/api/admin/banners`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ title, subtitle, image: imageUrl, link, isActive: true })
+      })
+      
+      if (res.ok) {
+        setTitle(""); setSubtitle(""); setImage(""); setImageFile(null); setImagePreview(""); setLink("/products")
+        setOpen(false)
+        loadBanners()
+        toast.success("Banner added")
+      } else {
+        const errorData = await res.json()
+        toast.error(errorData.message || 'Failed to add banner')
+      }
+    } catch (error: any) {
+      console.error('Error:', error)
+      toast.error(error.message || 'An error occurred')
+    }
+    setUploading(false)
   }
 
   const toggleActive = async (id: string, active: boolean) => {
@@ -88,9 +134,28 @@ export default function AdminBannersPage() {
             <form onSubmit={handleAdd} className="flex flex-col gap-4">
               <div className="flex flex-col gap-2"><Label>Title</Label><Input value={title} onChange={e => setTitle(e.target.value)} required className="bg-muted" /></div>
               <div className="flex flex-col gap-2"><Label>Subtitle</Label><Input value={subtitle} onChange={e => setSubtitle(e.target.value)} className="bg-muted" /></div>
-              <div className="flex flex-col gap-2"><Label>Image URL</Label><Input value={image} onChange={e => setImage(e.target.value)} required className="bg-muted" /></div>
+              <div className="flex flex-col gap-2">
+                <Label>Banner Image</Label>
+                <Input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      setImageFile(file)
+                      setImagePreview(URL.createObjectURL(file))
+                    }
+                  }} 
+                  className="bg-muted" 
+                />
+                {imagePreview && (
+                  <img src={imagePreview} alt="Preview" className="w-full h-32 object-cover rounded-lg mt-2" />
+                )}
+              </div>
               <div className="flex flex-col gap-2"><Label>Link</Label><Input value={link} onChange={e => setLink(e.target.value)} className="bg-muted" /></div>
-              <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">Add Banner</Button>
+              <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={uploading}>
+                {uploading ? "Uploading..." : "Add Banner"}
+              </Button>
             </form>
           </DialogContent>
         </Dialog>

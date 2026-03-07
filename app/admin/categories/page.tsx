@@ -20,8 +20,11 @@ export default function AdminCategoriesPage() {
   const [name, setName] = useState("")
   const [slug, setSlug] = useState("")
   const [image, setImage] = useState("")
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState("")
   const [open, setOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [uploading, setUploading] = useState(false)
 
   const loadCategories = () => {
     fetch(`${API_URL}/api/admin/categories`, { credentials: "include" })
@@ -33,18 +36,61 @@ export default function AdminCategoriesPage() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
-    const res = await fetch(`${API_URL}/api/admin/categories`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ name, slug: slug || name.toLowerCase().replace(/\s+/g, "-"), image: image || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop" })
-    })
-    if (res.ok) {
-      setName(""); setSlug(""); setImage("")
-      setOpen(false)
-      loadCategories()
-      toast.success("Category added")
+    
+    if (!imageFile) {
+      toast.error('Please select an image')
+      return
     }
+    
+    setUploading(true)
+    
+    try {
+      const formData = new FormData()
+      formData.append('images', imageFile)
+      
+      const uploadRes = await fetch(`${API_URL}/api/upload`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      })
+      
+      if (!uploadRes.ok) {
+        const errorData = await uploadRes.json()
+        toast.error(errorData.message || 'Failed to upload image')
+        setUploading(false)
+        return
+      }
+      
+      const uploadData = await uploadRes.json()
+      const imageUrl = uploadData.urls?.[0]
+      
+      if (!imageUrl) {
+        toast.error('No image URL returned')
+        setUploading(false)
+        return
+      }
+      
+      const res = await fetch(`${API_URL}/api/admin/categories`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ name, slug: slug || name.toLowerCase().replace(/\s+/g, "-"), image: imageUrl })
+      })
+      
+      if (res.ok) {
+        setName(""); setSlug(""); setImage(""); setImageFile(null); setImagePreview("")
+        setOpen(false)
+        loadCategories()
+        toast.success("Category added")
+      } else {
+        const errorData = await res.json()
+        toast.error(errorData.message || 'Failed to add category')
+      }
+    } catch (error: any) {
+      console.error('Error:', error)
+      toast.error(error.message || 'An error occurred')
+    }
+    setUploading(false)
   }
 
   const handleDelete = async (id: string) => {
@@ -74,8 +120,27 @@ export default function AdminCategoriesPage() {
             <form onSubmit={handleAdd} className="flex flex-col gap-4">
               <div className="flex flex-col gap-2"><Label>Name</Label><Input value={name} onChange={e => setName(e.target.value)} placeholder="Category name" required className="bg-muted" /></div>
               <div className="flex flex-col gap-2"><Label>Slug</Label><Input value={slug} onChange={e => setSlug(e.target.value)} placeholder="category-slug" className="bg-muted" /></div>
-              <div className="flex flex-col gap-2"><Label>Image URL</Label><Input value={image} onChange={e => setImage(e.target.value)} placeholder="https://..." className="bg-muted" /></div>
-              <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">Add Category</Button>
+              <div className="flex flex-col gap-2">
+                <Label>Category Image</Label>
+                <Input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      setImageFile(file)
+                      setImagePreview(URL.createObjectURL(file))
+                    }
+                  }} 
+                  className="bg-muted" 
+                />
+                {imagePreview && (
+                  <img src={imagePreview} alt="Preview" className="w-24 h-24 object-cover rounded-lg mt-2" />
+                )}
+              </div>
+              <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={uploading}>
+                {uploading ? "Uploading..." : "Add Category"}
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
