@@ -131,23 +131,23 @@ export default function AdminSellersPage() {
     setDialogType(type)
     
     if (!seller && type === 'virtualOrder') {
-      // Load all products and customers for global virtual order
+      // Load sellers and customers for global virtual order
       try {
-        const [pRes, cRes] = await Promise.all([
-          fetch(`${API_URL}/api/admin/products`, { credentials: 'include' }),
+        const [sRes, cRes] = await Promise.all([
+          fetch(`${API_URL}/api/admin/sellers`, { credentials: 'include' }),
           fetch(`${API_URL}/api/admin/virtual-customers`, { credentials: 'include' })
         ])
-        let products = []
+        let sellers = []
         let customers = []
-        if (pRes.ok) {
-          const pData = await pRes.json()
-          products = pData.data || []
+        if (sRes.ok) {
+          const sData = await sRes.json()
+          sellers = sData.data || []
         }
         if (cRes.ok) {
           const cData = await cRes.json()
           customers = cData.data || []
         }
-        setFormData({ products, customers })
+        setFormData({ sellers, customers, products: [] })
       } catch (e) {
         console.error('Load error:', e)
       }
@@ -701,12 +701,46 @@ export default function AdminSellersPage() {
             <DialogTitle>Add Virtual Order{selectedSeller ? ` - ${selectedSeller.storeName}` : ''}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {!selectedSeller && (
+              <div>
+                <Label>Select Seller</Label>
+                <Select value={formData.selectedSellerId || ''} onValueChange={async (val) => {
+                  // Load seller's products
+                  try {
+                    const res = await fetch(`${API_URL}/api/admin/products?sellerId=${val}`, { credentials: 'include' })
+                    if (res.ok) {
+                      const data = await res.json()
+                      setFormData({...formData, selectedSellerId: val, productId: '', products: data.data || [], selectedProduct: null})
+                    }
+                  } catch (e) {
+                    console.error('Load products error:', e)
+                    toast.error('Failed to load products')
+                  }
+                }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a seller" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(formData.sellers || []).map((s: any) => {
+                      const userId = s.userId?._id || s.userId
+                      return (
+                        <SelectItem key={s._id} value={userId}>{s.storeName}</SelectItem>
+                      )
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div>
               <Label>Select Product</Label>
-              <Select value={formData.productId || ''} onValueChange={(val) => {
-                const product = formData.products?.find((p: any) => p._id === val)
-                setFormData({...formData, productId: val, selectedProduct: product})
-              }}>
+              <Select 
+                value={formData.productId || ''} 
+                onValueChange={(val) => {
+                  const product = formData.products?.find((p: any) => p._id === val)
+                  setFormData({...formData, productId: val, selectedProduct: product})
+                }}
+                disabled={!selectedSeller && !formData.selectedSellerId}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Choose a product" />
                 </SelectTrigger>
@@ -751,10 +785,10 @@ export default function AdminSellersPage() {
                 const product = formData.selectedProduct
                 const customer = formData.selectedCustomer
                 const quantity = parseInt(formData.quantity) || 1
-                const sellerId = product.sellerId || (selectedSeller?.userId)
+                const sellerId = product.sellerId || formData.selectedSellerId || (selectedSeller?.userId)
                 
                 if (!sellerId) {
-                  toast.error('Product has no seller')
+                  toast.error('Please select a seller')
                   return
                 }
                 

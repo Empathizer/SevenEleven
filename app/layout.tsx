@@ -16,8 +16,9 @@ export const metadata: Metadata = {
   description: "Shop millions of products from trusted sellers. Fashion, beauty, electronics, and more at amazing prices.",
   metadataBase: new URL('https://www.esellerstore.shop'),
   icons: {
-    icon: '/icon.svg',
+    icon: ['/favicon.ico', '/icon.svg'],
     apple: '/icon.svg',
+    shortcut: '/favicon.ico',
   },
 }
 
