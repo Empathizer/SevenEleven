@@ -705,7 +705,7 @@ export default function AdminSellersPage() {
               <div>
                 <Label>Select Seller</Label>
                 <Select value={formData.selectedSellerId || ''} onValueChange={async (val) => {
-                  // Load seller's products
+                  console.log('Selected seller ID:', val)
                   try {
                     const res = await fetch(`${API_URL}/api/admin/products?sellerId=${val}`, { credentials: 'include' })
                     if (res.ok) {
@@ -723,9 +723,11 @@ export default function AdminSellersPage() {
                   <SelectContent>
                     {(formData.sellers || []).map((s: any) => {
                       const user = s.userId || {}
-                      const userId = typeof user === 'string' ? user : user._id
+                      const userId = typeof user === 'string' ? user : (user._id || '')
+                      console.log('Seller:', s.storeName, 'userId:', userId)
+                      if (!userId) return null
                       return (
-                        <SelectItem key={s._id} value={userId || ''}>{s.storeName}</SelectItem>
+                        <SelectItem key={s._id} value={userId}>{s.storeName}</SelectItem>
                       )
                     })}
                   </SelectContent>

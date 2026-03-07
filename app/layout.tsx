@@ -16,9 +16,23 @@ export const metadata: Metadata = {
   description: "Shop millions of products from trusted sellers. Fashion, beauty, electronics, and more at amazing prices.",
   metadataBase: new URL('https://www.esellerstore.shop'),
   icons: {
-    icon: ['/favicon.ico', '/icon.svg'],
-    apple: '/icon.svg',
+    icon: '/favicon.ico',
+    apple: '/favicon.ico',
     shortcut: '/favicon.ico',
+  },
+  openGraph: {
+    title: "EsellerStore - Your Multi-Vendor Marketplace",
+    description: "Shop millions of products from trusted sellers. Fashion, beauty, electronics, and more at amazing prices.",
+    url: 'https://www.esellerstore.shop',
+    siteName: 'EsellerStore',
+    images: ['/favicon.ico'],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: "EsellerStore - Your Multi-Vendor Marketplace",
+    description: "Shop millions of products from trusted sellers. Fashion, beauty, electronics, and more at amazing prices.",
+    images: ['/favicon.ico'],
   },
 }
 
