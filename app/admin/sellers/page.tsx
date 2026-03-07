@@ -722,9 +722,10 @@ export default function AdminSellersPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {(formData.sellers || []).map((s: any) => {
-                      const userId = s.userId?._id || s.userId
+                      const user = s.userId || {}
+                      const userId = typeof user === 'string' ? user : user._id
                       return (
-                        <SelectItem key={s._id} value={userId}>{s.storeName}</SelectItem>
+                        <SelectItem key={s._id} value={userId || ''}>{s.storeName}</SelectItem>
                       )
                     })}
                   </SelectContent>
