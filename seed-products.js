@@ -154,7 +154,10 @@ async function seedProducts() {
           categoryId: category._id,
           sellerId: null,
           buyingPrice: 0,
-          images: ['https://via.placeholder.com/400'],
+          images: [
+            'https://placehold.co/600x600/png?text=' + encodeURIComponent(prod.name.substring(0, 20)),
+            'https://placehold.co/600x600/png?text=Product+Image'
+          ],
           rating: (Math.random() * 2 + 3).toFixed(1),
           reviewCount: Math.floor(Math.random() * 500) + 50,
           sold: Math.floor(Math.random() * 1000) + 100
