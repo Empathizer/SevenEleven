@@ -211,7 +211,7 @@ export default function AdminOrdersPage() {
                 <span>${selectedOrder.totalAmount.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm">Profit (10%):</span>
+                <span className="text-sm">Seller Profit:</span>
                 <span className="text-sm font-semibold text-green-600">${calculateProfit(selectedOrder)}</span>
               </div>
             </div>
