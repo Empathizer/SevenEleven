@@ -63,10 +63,6 @@ export default function AdminSellerWalletPage() {
       toast.error("Invalid amount")
       return
     }
-    if (!note.trim()) {
-      toast.error("Note is required")
-      return
-    }
 
     try {
       const res = await fetch(`${API_URL}/api/admin/sellers/${sellerId}/wallet/deposit`, {
@@ -94,10 +90,6 @@ export default function AdminSellerWalletPage() {
     }
     if (amt > wallet.walletBalance) {
       toast.error("Insufficient balance")
-      return
-    }
-    if (!note.trim()) {
-      toast.error("Note is required")
       return
     }
 
@@ -168,7 +160,7 @@ export default function AdminSellerWalletPage() {
                 <Input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" className="bg-muted" />
               </div>
               <div className="flex flex-col gap-2">
-                <Label>Note</Label>
+                <Label>Note (Optional)</Label>
                 <Textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Reason for deposit" className="bg-muted" rows={3} />
               </div>
               <Button onClick={handleDeposit} className="bg-chart-4 text-primary-foreground hover:bg-chart-4/90">Confirm Deposit</Button>
@@ -192,7 +184,7 @@ export default function AdminSellerWalletPage() {
                 <Input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" className="bg-muted" />
               </div>
               <div className="flex flex-col gap-2">
-                <Label>Note</Label>
+                <Label>Note (Optional)</Label>
                 <Textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Reason for deduction" className="bg-muted" rows={3} />
               </div>
               <Button onClick={handleDeduct} variant="destructive">Confirm Deduction</Button>

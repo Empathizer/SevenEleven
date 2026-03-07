@@ -319,7 +319,7 @@ export default function AdminSellersPage() {
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuContent align="end" className="w-32 text-xs">
                         <DropdownMenuItem onClick={() => openDialog(seller, 'profile')}>
                           <User className="h-4 w-4 mr-2" /> Profile
                         </DropdownMenuItem>
