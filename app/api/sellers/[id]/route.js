@@ -4,10 +4,11 @@ export async function GET(req, { params }) {
   await connectDB();
 
   try {
+    const { id } = await params;
     const Seller = (await import('@/server/models/Seller')).default;
     const User = (await import('@/server/models/User')).default;
     
-    const seller = await Seller.findOne({ userId: params.id, status: 'approved' }).populate('userId').lean();
+    const seller = await Seller.findOne({ userId: id, status: 'approved' }).populate('userId').lean();
     
     if (!seller) {
       return Response.json({ success: false, message: 'Seller not found' }, { status: 404 });
