@@ -11,7 +11,7 @@ export async function GET(req) {
     const categories = await Category.find().lean().limit(100);
     return Response.json({ success: true, categories }, {
       headers: {
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'
+        'Cache-Control': 'no-store, no-cache, must-revalidate'
       }
     });
   } catch (error) {

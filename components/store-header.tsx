@@ -75,7 +75,7 @@ export function StoreHeader() {
         <form onSubmit={handleSearch} className="flex flex-1 items-center">
           <div className="relative flex w-full max-w-2xl">
             <Input
-              placeholder="Search products, brands and more..."
+              placeholder="Search products, stores, brands and more..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="rounded-r-none border-r-0 bg-muted pr-10"

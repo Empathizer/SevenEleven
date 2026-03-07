@@ -27,9 +27,19 @@ export default function AdminCategoriesPage() {
   const [uploading, setUploading] = useState(false)
 
   const loadCategories = () => {
-    fetch(`${API_URL}/api/admin/categories`, { credentials: "include" })
-      .then(r => r.json())
+    fetch(`${API_URL}/api/admin/categories?t=${Date.now()}`, { 
+      credentials: "include",
+      cache: 'no-store'
+    })
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        return r.json()
+      })
       .then(data => setCategories(data.categories || []))
+      .catch(err => {
+        console.error('Load categories error:', err)
+        toast.error('Failed to load categories')
+      })
   }
 
   useEffect(() => { loadCategories() }, [])
@@ -94,13 +104,26 @@ export default function AdminCategoriesPage() {
   }
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(`${API_URL}/api/admin/categories/${id}`, {
-      method: "DELETE",
-      credentials: "include"
-    })
-    if (res.ok) {
-      loadCategories()
-      toast.success("Category deleted")
+    if (!confirm('Are you sure you want to delete this category?')) return
+    
+    try {
+      const res = await fetch(`${API_URL}/api/admin/categories/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+        cache: 'no-store'
+      })
+      
+      if (res.ok) {
+        // Immediately update local state
+        setCategories(prev => prev.filter(cat => cat._id !== id))
+        toast.success("Category deleted")
+      } else {
+        const data = await res.json()
+        toast.error(data.message || 'Failed to delete category')
+      }
+    } catch (error: any) {
+      console.error('Delete error:', error)
+      toast.error('Failed to delete category')
     }
   }
 

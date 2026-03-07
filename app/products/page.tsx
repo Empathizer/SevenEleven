@@ -21,6 +21,7 @@ function ProductsContent() {
 
   const [categories, setCategories] = useState<any[]>([])
   const [allProducts, setAllProducts] = useState<any[]>([])
+  const [stores, setStores] = useState<any[]>([])
   const [sort, setSort] = useState("popular")
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500])
   const [currentPage, setCurrentPage] = useState(1)
@@ -28,10 +29,12 @@ function ProductsContent() {
   useEffect(() => {
     Promise.all([
       fetch(`${API_URL}/api/products/categories`).then(r => r.json()),
-      fetch(`${API_URL}/api/products?category=${categorySlug}&search=${searchQuery}`).then(r => r.json())
-    ]).then(([cats, prods]) => {
+      fetch(`${API_URL}/api/products?category=${categorySlug}&search=${searchQuery}`).then(r => r.json()),
+      searchQuery ? fetch(`${API_URL}/api/sellers?search=${searchQuery}`).then(r => r.json()) : Promise.resolve({ data: [] })
+    ]).then(([cats, prods, sellers]) => {
       setCategories(cats.categories || cats.data || [])
       setAllProducts(prods.data || prods.products || [])
+      setStores(sellers.data || [])
     })
   }, [categorySlug, searchQuery])
 
@@ -148,19 +151,43 @@ function ProductsContent() {
                 </Select>
               </div>
 
-              {paginatedProducts.length > 0 ? (
+              {paginatedProducts.length > 0 || stores.length > 0 ? (
                 <>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                    {paginatedProducts.map(product => (
-                      <ProductCard key={product._id} product={{...product, id: product._id, categorySlug: product.categoryId?.slug}} />
-                    ))}
-                  </div>
+                  {stores.length > 0 && searchQuery && (
+                    <div className="mb-6">
+                      <h2 className="text-lg font-semibold mb-3">Stores</h2>
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                        {stores.map(store => (
+                          <a key={store._id} href={`/store/${store._id}`} className="rounded-xl border border-border bg-card p-4 hover:shadow-md transition-shadow">
+                            <div className="text-center">
+                              <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-primary/10 flex items-center justify-center">
+                                <span className="text-2xl font-bold text-primary">{store.storeName?.charAt(0) || 'S'}</span>
+                              </div>
+                              <h3 className="font-medium text-sm">{store.storeName}</h3>
+                              <p className="text-xs text-muted-foreground mt-1">{store.productCount || 0} products</p>
+                            </div>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   
-                  <Pagination 
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                  />
+                  {paginatedProducts.length > 0 && (
+                    <>
+                      {searchQuery && stores.length > 0 && <h2 className="text-lg font-semibold mb-3">Products</h2>}
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                        {paginatedProducts.map(product => (
+                          <ProductCard key={product._id} product={{...product, id: product._id, categorySlug: product.categoryId?.slug}} />
+                        ))}
+                      </div>
+                      
+                      <Pagination 
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                      />
+                    </>
+                  )}
                 </>
               ) : (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
