@@ -24,6 +24,8 @@ export default function NewProductPage() {
   const [search, setSearch] = useState("")
   const [stock, setStock] = useState("")
   const [seller, setSeller] = useState<any>(null)
+  const [calculatedProfit, setCalculatedProfit] = useState<number>(0)
+  const [profitMargin, setProfitMargin] = useState<number>(0)
 
   useEffect(() => {
     fetch(`${API_URL}/api/products?adminOnly=true`)
@@ -85,6 +87,7 @@ export default function NewProductPage() {
     if (!stock || Number(stock) <= 0) { toast.error("Please enter valid stock quantity"); return }
 
     const productPrice = selectedProduct.price
+    const sellingPrice = productPrice * (1 + profitMargin)
 
     const res = await fetch(`${API_URL}/api/seller/products`, {
       method: "POST",
@@ -93,7 +96,7 @@ export default function NewProductPage() {
       body: JSON.stringify({
         name: selectedProduct.name,
         description: selectedProduct.description,
-        price: selectedProduct.price,
+        price: sellingPrice,
         buyingPrice: productPrice,
         originalPrice: selectedProduct.originalPrice,
         images: selectedProduct.images,
@@ -151,6 +154,10 @@ export default function NewProductPage() {
                 const product = products.find(p => p._id === id)
                 console.log('Selected product:', product)
                 setSelectedProduct(product)
+                // Calculate random profit margin when product is selected
+                const margin = 0.10 + (Math.random() * 0.15) // Random between 10-25%
+                setProfitMargin(margin)
+                setCalculatedProfit(product ? product.price * margin : 0)
               }}>
                 <SelectTrigger className="bg-muted">
                   <SelectValue placeholder="Choose a product" />
@@ -176,7 +183,7 @@ export default function NewProductPage() {
                       <h3 className="font-semibold">{selectedProduct.name}</h3>
                       <p className="text-sm text-muted-foreground mt-1">{selectedProduct.description}</p>
                       <p className="text-sm font-semibold mt-2">Product Price: ${selectedProduct.price}</p>
-                      <p className="text-sm text-green-600 mt-1">Your Profit per unit: ${(selectedProduct.price * 0.10).toFixed(2)} (10%)</p>
+                      <p className="text-sm text-green-600 mt-1">Your Profit: ${calculatedProfit.toFixed(2)} ({(profitMargin * 100).toFixed(1)}%)</p>
                     </div>
                   </div>
                 </div>
@@ -214,7 +221,7 @@ export default function NewProductPage() {
                   {stock && Number(stock) > 0 && (
                     <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded">
                       <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">Total Cost: ${(selectedProduct.price * Number(stock)).toFixed(2)}</p>
-                      <p className="text-sm text-green-600 dark:text-green-400 mt-1">Total Profit: ${(selectedProduct.price * 0.10 * Number(stock)).toFixed(2)}</p>
+                      <p className="text-sm text-green-600 dark:text-green-400 mt-1">Total Profit: ${(calculatedProfit * Number(stock)).toFixed(2)}</p>
                     </div>
                   )}
                 </div>

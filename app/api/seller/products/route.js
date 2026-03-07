@@ -34,16 +34,18 @@ export async function POST(req) {
       return Response.json({ success: false, message: 'Your account is blocked. Cannot add products.' }, { status: 403 });
     }
     
-    // Calculate selling price with 10% profit margin
+    // Calculate selling price with random profit margin between 10-25%
     const buyingPrice = body.buyingPrice || 0;
-    const sellingPrice = buyingPrice * 1.1; // 10% profit
+    const profitMargin = 0.10 + (Math.random() * 0.15); // Random between 0.10 and 0.25
+    const sellingPrice = buyingPrice * (1 + profitMargin);
 
     // Create product with calculated selling price
     const product = await Product.create({ 
       ...body, 
       sellerId: user.id,
       price: sellingPrice,
-      buyingPrice
+      buyingPrice,
+      profitMargin // Store the profit margin for reference
     });
 
     return Response.json({ 
