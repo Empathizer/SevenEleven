@@ -20,13 +20,19 @@ export async function PUT(req, { params }) {
       return Response.json({ success: false, message: 'Order not found' }, { status: 404 });
     }
 
-    // When seller picks order, deduct buying cost from wallet and add selling amount to pending
-    if ((status === 'processing' || status === 'shipped' || status === 'delivered') && user.role === 'seller' && order.status === 'pending') {
+    // When seller picks order, deduct buying cost from wallet and update seller status
+    if (status === 'processing' && user.role === 'seller') {
       const seller = await User.findById(user._id);
       
       const sellerItems = order.items.filter(item => item.sellerId?.toString() === user._id.toString());
       const totalBuyingCost = sellerItems.reduce((sum, item) => sum + (item.buyingPrice * item.quantity), 0);
       const totalSellingAmount = sellerItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      
+      // Check if any item is already picked
+      const alreadyPicked = sellerItems.some(item => item.sellerStatus !== 'pending');
+      if (alreadyPicked) {
+        return Response.json({ success: false, message: 'Order already picked' }, { status: 400 });
+      }
       
       if ((seller.walletBalance || 0) < totalBuyingCost) {
         return Response.json({ 
@@ -38,6 +44,13 @@ export async function PUT(req, { params }) {
       seller.walletBalance = (seller.walletBalance || 0) - totalBuyingCost;
       seller.pendingBalance = (seller.pendingBalance || 0) + totalSellingAmount;
       await seller.save();
+      
+      // Update seller status for seller's items
+      order.items.forEach(item => {
+        if (item.sellerId?.toString() === user._id.toString()) {
+          item.sellerStatus = 'processing';
+        }
+      });
       
       await Seller.findOneAndUpdate(
         { userId: user._id },
