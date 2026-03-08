@@ -104,9 +104,18 @@ export default function SellerOrdersPage() {
           </TableHeader>
           <TableBody>
             {orders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((order) => {
-              const myItems = order.items.filter((i: any) => i.sellerId?.toString() === user._id?.toString())
-              const myTotal = myItems.reduce((s: number, i: any) => s + i.price * i.quantity, 0)
-              const buyingCost = myItems.reduce((s: number, i: any) => s + (i.buyingPrice || 0) * i.quantity, 0)
+              console.log('Order:', order._id, 'Items:', order.items?.length)
+              const myItems = order.items.filter((i: any) => {
+                const itemSellerId = i.sellerId?._id?.toString() || i.sellerId?.toString()
+                const currentUserId = user._id?.toString()
+                console.log('Comparing:', itemSellerId, '===', currentUserId)
+                return itemSellerId === currentUserId
+              })
+              
+              console.log('My items found:', myItems.length)
+              
+              const myTotal = myItems.reduce((s: number, i: any) => s + (i.price || 0) * (i.quantity || 0), 0)
+              const buyingCost = myItems.reduce((s: number, i: any) => s + (i.buyingPrice || 0) * (i.quantity || 0), 0)
               const hasBalance = !loading && walletBalance !== null && walletBalance >= buyingCost
               
               return (
@@ -114,14 +123,18 @@ export default function SellerOrdersPage() {
                   <TableCell className="font-medium text-foreground">{order._id}</TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-1">
-                      {myItems.map((item, idx) => (
+                      {myItems.length > 0 ? myItems.map((item, idx) => (
                         <div key={idx} className="flex items-center gap-2">
                           {item.productImage && (
-                            <img src={item.productImage} alt={item.productName} className="h-8 w-8 rounded object-cover" />
+                            <img src={item.productImage} alt={item.productName || 'Product'} className="h-8 w-8 rounded object-cover" />
                           )}
-                          <span className="text-xs text-muted-foreground">{item.productName} x{item.quantity}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {item.productName || 'Unknown Product'} x{item.quantity || 0}
+                          </span>
                         </div>
-                      ))}
+                      )) : (
+                        <span className="text-xs text-muted-foreground">No items</span>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell className="font-medium text-primary">${myTotal.toFixed(2)}</TableCell>
