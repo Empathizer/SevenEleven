@@ -89,7 +89,6 @@ export default function AdminSellerWalletPage() {
       toast.error('Failed to deposit')
     }
   }
-  }
 
   const handleDeduct = async () => {
     const amt = parseFloat(amount)
