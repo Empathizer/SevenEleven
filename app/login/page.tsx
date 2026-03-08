@@ -27,23 +27,22 @@ export default function LoginPage() {
     const result = await login(email, password)
     if (result.success) {
       toast.success("Login successful!")
-      // Fetch user data to determine role
       const res = await fetch('/api/auth/me', { credentials: 'include' })
       if (res.ok) {
         const data = await res.json()
         if (data.success && data.data) {
           const userRole = data.data.role
           if (userRole === "admin") {
-            router.push("/admin")
+            window.location.href = "/admin"
           } else if (userRole === "seller") {
-            router.push("/seller")
+            window.location.href = "/seller"
           } else {
-            router.push("/")
+            window.location.href = "/"
           }
           return
         }
       }
-      router.push("/")
+      window.location.href = "/"
     } else {
       setError(result.error || "Login failed")
     }
@@ -61,16 +60,16 @@ export default function LoginPage() {
         if (data.success && data.data) {
           const userRole = data.data.role
           if (userRole === "admin") {
-            router.push("/admin")
+            window.location.href = "/admin"
           } else if (userRole === "seller") {
-            router.push("/seller")
+            window.location.href = "/seller"
           } else {
-            router.push("/")
+            window.location.href = "/"
           }
           return
         }
       }
-      router.push("/")
+      window.location.href = "/"
     }
   }
 
