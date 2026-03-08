@@ -106,7 +106,7 @@ export default function SellerOrdersPage() {
             {orders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((order) => {
               const myItems = order.items?.filter((i: any) => {
                 const itemSellerId = i.sellerId?._id?.toString() || i.sellerId?.toString()
-                const currentUserId = user._id?.toString()
+                const currentUserId = user.id?.toString() || user._id?.toString()
                 return itemSellerId === currentUserId
               }) || []
               
