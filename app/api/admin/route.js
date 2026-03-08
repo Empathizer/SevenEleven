@@ -217,15 +217,23 @@ export async function POST(req) {
       
       const { customerId, sellerId, items, totalAmount, shippingAddress } = body;
       
-      const order = await Order.create({
-        userId: customerId,
-        items: items.map(item => ({
+      // Fetch product details for each item
+      const enrichedItems = await Promise.all(items.map(async (item) => {
+        const product = await Product.findById(item.productId);
+        return {
           ...item,
+          productName: product?.name || item.productName || 'Unknown Product',
+          productImage: product?.images?.[0] || item.productImage || '',
           sellerId,
           profit: (item.price - (item.buyingPrice || 0)) * item.quantity
-        })),
+        };
+      }));
+      
+      const order = await Order.create({
+        userId: customerId,
+        items: enrichedItems,
         totalAmount,
-        profit: items.reduce((sum, item) => sum + (item.price - (item.buyingPrice || 0)) * item.quantity, 0),
+        profit: enrichedItems.reduce((sum, item) => sum + item.profit, 0),
         shippingAddress,
         paymentMethod: 'COD',
         paymentStatus: 'paid',
