@@ -44,7 +44,9 @@ export default function SellerStorePage({ params }: { params: Promise<{ id: stri
       <div className="flex min-h-screen flex-col bg-background">
         <StoreHeader />
         <div className="flex flex-1 flex-col items-center justify-center">
-          <p className="text-lg font-medium text-foreground">Store not found</p>
+          <Store className="h-16 w-16 text-muted-foreground/50 mb-4" />
+          <p className="text-lg font-medium text-foreground">Store not found or not verified</p>
+          <p className="text-sm text-muted-foreground mt-2">This seller may be pending approval</p>
           <Link href="/products" className="mt-4">
             <Button variant="outline">Browse Products</Button>
           </Link>

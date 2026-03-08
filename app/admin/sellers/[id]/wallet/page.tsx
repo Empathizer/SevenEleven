@@ -72,14 +72,23 @@ export default function AdminSellerWalletPage() {
         body: JSON.stringify({ amount: amt, note })
       })
 
-      if (res.ok) {
+      const data = await res.json()
+      console.log('Deposit response:', data)
+
+      if (res.ok && data.success) {
         toast.success(`$${amt.toFixed(2)} deposited`)
         setAmount("")
         setNote("")
         setDepositOpen(false)
         loadData()
+      } else {
+        toast.error(data.message || 'Failed to deposit')
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('Deposit error:', e)
+      toast.error('Failed to deposit')
+    }
+  }
   }
 
   const handleDeduct = async () => {

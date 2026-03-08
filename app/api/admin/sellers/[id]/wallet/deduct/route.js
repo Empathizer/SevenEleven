@@ -46,12 +46,20 @@ export async function POST(req, { params }) {
       { upsert: true }
     );
 
+    console.log('Creating transaction with:', {
+      sellerId: seller._id,
+      type: 'withdrawal',
+      amount: -body.amount,
+      note: body.note || 'Deduction',
+      createdBy: user._id ? user._id.toString() : 'admin'
+    });
+
     const transaction = await WalletTransaction.create({
       sellerId: seller._id,
       type: 'withdrawal',
       amount: -body.amount,
       note: body.note || 'Deduction',
-      createdBy: user.id
+      createdBy: user._id ? user._id.toString() : 'admin'
     });
 
     return Response.json({ 

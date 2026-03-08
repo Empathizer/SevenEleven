@@ -8,10 +8,15 @@ export async function GET(req, { params }) {
     const Seller = (await import('@/server/models/Seller')).default;
     const User = (await import('@/server/models/User')).default;
     
-    const seller = await Seller.findOne({ userId: id, status: 'approved' }).populate('userId').lean();
+    const seller = await Seller.findOne({ userId: id }).populate('userId').lean();
     
     if (!seller) {
       return Response.json({ success: false, message: 'Seller not found' }, { status: 404 });
+    }
+    
+    // Check if seller is approved
+    if (seller.status !== 'approved') {
+      return Response.json({ success: false, message: 'Seller not verified' }, { status: 403 });
     }
     
     const user = seller.userId;

@@ -78,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
     } catch (e) {}
     setUser(null)
+    window.location.href = '/login'
   }, [])
 
   return (

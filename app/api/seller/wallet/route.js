@@ -10,8 +10,8 @@ export async function GET(req) {
     const User = (await import('@/server/models/User')).default;
     const Seller = (await import('@/server/models/Seller')).default;
     
-    const userData = await User.findById(user.id);
-    const sellerData = await Seller.findOne({ userId: user.id });
+    const userData = await User.findById(user._id);
+    const sellerData = await Seller.findOne({ userId: user._id });
     
     return Response.json({
       success: true,

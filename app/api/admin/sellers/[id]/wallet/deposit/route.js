@@ -47,7 +47,7 @@ export async function POST(req, { params }) {
       type: 'deposit',
       amount: body.amount,
       note: body.note || 'Deposit',
-      createdBy: user.id
+      createdBy: user._id ? user._id.toString() : 'admin'
     });
 
     return Response.json({ 
