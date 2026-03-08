@@ -104,15 +104,11 @@ export default function SellerOrdersPage() {
           </TableHeader>
           <TableBody>
             {orders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((order) => {
-              console.log('Order:', order._id, 'Items:', order.items?.length)
-              const myItems = order.items.filter((i: any) => {
+              const myItems = order.items?.filter((i: any) => {
                 const itemSellerId = i.sellerId?._id?.toString() || i.sellerId?.toString()
                 const currentUserId = user._id?.toString()
-                console.log('Comparing:', itemSellerId, '===', currentUserId)
                 return itemSellerId === currentUserId
-              })
-              
-              console.log('My items found:', myItems.length)
+              }) || []
               
               const myTotal = myItems.reduce((s: number, i: any) => s + (i.price || 0) * (i.quantity || 0), 0)
               const buyingCost = myItems.reduce((s: number, i: any) => s + (i.buyingPrice || 0) * (i.quantity || 0), 0)
