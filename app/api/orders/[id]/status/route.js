@@ -52,6 +52,8 @@ export async function PUT(req, { params }) {
         }
       });
       
+      order.pickupStatus = 'Picked Up';
+      
       await Seller.findOneAndUpdate(
         { userId: user._id },
         { 
@@ -65,7 +67,7 @@ export async function PUT(req, { params }) {
     // When order delivered, move selling amount from pending to wallet
     if (status === 'delivered' || status === 'completed') {
       for (const item of order.items) {
-        if (item.sellerId) {
+        if (item.sellerId && item.sellerStatus === 'processing') {
           const sellingAmount = item.price * item.quantity;
           
           const seller = await User.findByIdAndUpdate(
@@ -89,6 +91,8 @@ export async function PUT(req, { params }) {
               { upsert: true }
             );
           }
+          
+          item.sellerStatus = 'delivered';
         }
       }
     }
