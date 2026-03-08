@@ -8,7 +8,7 @@ export async function GET(req) {
 
   try {
     const Product = (await import('@/server/models/Product')).default;
-    const products = await Product.find({ sellerId: user.id }).populate('categoryId');
+    const products = await Product.find({ sellerId: user._id }).populate('categoryId');
     return Response.json({ success: true, data: products });
   } catch (error) {
     return Response.json({ success: false, message: error.message }, { status: 500 });
@@ -25,7 +25,7 @@ export async function POST(req) {
     const Product = (await import('@/server/models/Product')).default;
     const User = (await import('@/server/models/User')).default;
     
-    const seller = await User.findById(user.id);
+    const seller = await User.findById(user._id);
     if (!seller) {
       return Response.json({ success: false, message: 'Seller not found' }, { status: 404 });
     }
@@ -44,7 +44,7 @@ export async function POST(req) {
     // Create product with admin price as selling price and calculated buying price
     const product = await Product.create({ 
       ...body, 
-      sellerId: user.id,
+      sellerId: user._id,
       price: adminPrice, // Selling price (same as admin price)
       buyingPrice: sellerBuyingPrice, // What seller pays
       profitMargin // Store the profit margin for reference

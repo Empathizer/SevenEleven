@@ -8,7 +8,7 @@ export async function GET(req) {
 
   try {
     const Withdrawal = (await import('@/server/models/Withdrawal')).default;
-    const withdrawals = await Withdrawal.find({ sellerId: user.id }).sort({ createdAt: -1 });
+    const withdrawals = await Withdrawal.find({ sellerId: user._id }).sort({ createdAt: -1 });
     return Response.json({ success: true, withdrawals });
   } catch (error) {
     return Response.json({ success: false, message: error.message }, { status: 500 });
@@ -29,7 +29,7 @@ export async function POST(req) {
 
   try {
     const Seller = (await import('@/server/models/Seller')).default;
-    const seller = await Seller.findOne({ userId: user.id }).populate('userId');
+    const seller = await Seller.findOne({ userId: user._id }).populate('userId');
     
     if (!seller) {
       return Response.json({ success: false, message: 'Seller not found' }, { status: 404 });
@@ -41,7 +41,7 @@ export async function POST(req) {
 
     const Withdrawal = (await import('@/server/models/Withdrawal')).default;
     await Withdrawal.create({
-      sellerId: user.id,
+      sellerId: user._id,
       sellerName: seller.storeName || seller.userId.name,
       amount,
       status: 'pending'

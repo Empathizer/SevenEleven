@@ -8,7 +8,7 @@ export async function GET(req) {
 
   try {
     const WalletTransaction = (await import('@/server/models/WalletTransaction')).default;
-    const transactions = await WalletTransaction.find({ sellerId: user.id }).sort('-createdAt');
+    const transactions = await WalletTransaction.find({ sellerId: user._id }).sort('-createdAt');
     return Response.json({ success: true, transactions });
   } catch (error) {
     return Response.json({ success: false, message: error.message }, { status: 500 });

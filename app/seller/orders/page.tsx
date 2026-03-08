@@ -103,7 +103,7 @@ export default function SellerOrdersPage() {
           </TableHeader>
           <TableBody>
             {orders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((order) => {
-              const myItems = order.items.filter((i: any) => i.sellerId === user.id)
+              const myItems = order.items.filter((i: any) => i.sellerId === user._id)
               const myTotal = myItems.reduce((s: number, i: any) => s + i.price * i.quantity, 0)
               const buyingCost = myItems.reduce((s: number, i: any) => s + (i.buyingPrice || 0) * i.quantity, 0)
               const canFulfill = !loading && walletBalance !== null && walletBalance >= buyingCost

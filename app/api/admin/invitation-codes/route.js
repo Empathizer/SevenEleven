@@ -13,7 +13,7 @@ export async function POST(req) {
     
     await InvitationCode.create({
       code,
-      createdBy: user.id
+      createdBy: user._id
     });
 
     return Response.json({ success: true, code });

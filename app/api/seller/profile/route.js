@@ -10,13 +10,13 @@ export async function GET(req) {
     const Seller = (await import('@/server/models/Seller')).default;
     const User = (await import('@/server/models/User')).default;
     
-    const seller = await Seller.findOne({ userId: user.id });
+    const seller = await Seller.findOne({ userId: user._id });
     if (!seller) {
       return Response.json({ success: false, message: 'Seller not found' }, { status: 404 });
     }
     
     // Merge data from both User and Seller models
-    const userData = await User.findById(user.id);
+    const userData = await User.findById(user._id);
     const sellerData = seller.toObject();
     
     // Prioritize User model for financial and account data
@@ -52,20 +52,29 @@ export async function PUT(req) {
     const Seller = (await import('@/server/models/Seller')).default;
     const User = (await import('@/server/models/User')).default;
     
+    if (!body.storeName || !body.storeDescription) {
+      return Response.json({ success: false, message: 'Store name and description are required' }, { status: 400 });
+    }
+    
     // Update Seller model
     const seller = await Seller.findOneAndUpdate(
-      { userId: user.id },
+      { userId: user._id },
       { storeName: body.storeName, storeDescription: body.storeDescription },
       { new: true }
     );
     
-    // Sync storeName to User model if provided
-    if (body.storeName) {
-      await User.findByIdAndUpdate(user.id, { name: body.storeName });
+    if (!seller) {
+      return Response.json({ success: false, message: 'Seller not found' }, { status: 404 });
     }
     
-    return Response.json({ success: true, data: seller });
+    // Sync storeName to User model if provided
+    if (body.storeName) {
+      await User.findByIdAndUpdate(user._id, { name: body.storeName });
+    }
+    
+    return Response.json({ success: true, data: seller, message: 'Store profile updated successfully' });
   } catch (error) {
+    console.error('Update seller profile error:', error);
     return Response.json({ success: false, message: error.message }, { status: 500 });
   }
 }

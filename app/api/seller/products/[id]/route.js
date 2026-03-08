@@ -10,7 +10,7 @@ export async function PUT(req, { params }) {
     const body = await req.json();
     const Product = (await import('@/server/models/Product')).default;
     const product = await Product.findOneAndUpdate(
-      { _id: params.id, sellerId: user.id },
+      { _id: params.id, sellerId: user._id },
       body,
       { new: true }
     );
@@ -30,7 +30,7 @@ export async function DELETE(req, { params }) {
 
   try {
     const Product = (await import('@/server/models/Product')).default;
-    const product = await Product.findOneAndDelete({ _id: params.id, sellerId: user.id });
+    const product = await Product.findOneAndDelete({ _id: params.id, sellerId: user._id });
     if (!product) {
       return Response.json({ success: false, message: 'Product not found' }, { status: 404 });
     }

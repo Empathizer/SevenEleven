@@ -126,7 +126,7 @@ export async function POST(req) {
       case 'messages':
         const Message = require('../../models/Message');
         const message = await Message.create({
-          senderId: req.user.id,
+          senderId: req.user._id,
           receiverId: body.receiverId,
           message: body.message
         });

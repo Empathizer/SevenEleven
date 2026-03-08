@@ -8,7 +8,7 @@ export async function GET(req, { params }) {
 
   try {
     const Order = (await import('@/server/models/Order')).default;
-    const order = await Order.findOne({ _id: params.id, userId: user.id })
+    const order = await Order.findOne({ _id: params.id, userId: user._id })
       .populate('items.productId', 'name images');
     
     if (!order) {

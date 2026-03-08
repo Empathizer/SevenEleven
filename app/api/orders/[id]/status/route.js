@@ -22,9 +22,9 @@ export async function PUT(req, { params }) {
 
     // When seller picks order, deduct buying cost from wallet and add selling amount to pending
     if ((status === 'processing' || status === 'shipped' || status === 'delivered') && user.role === 'seller' && order.status === 'pending') {
-      const seller = await User.findById(user.id);
+      const seller = await User.findById(user._id);
       
-      const sellerItems = order.items.filter(item => item.sellerId?.toString() === user.id);
+      const sellerItems = order.items.filter(item => item.sellerId?.toString() === user._id.toString());
       const totalBuyingCost = sellerItems.reduce((sum, item) => sum + (item.buyingPrice * item.quantity), 0);
       const totalSellingAmount = sellerItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
       
@@ -40,7 +40,7 @@ export async function PUT(req, { params }) {
       await seller.save();
       
       await Seller.findOneAndUpdate(
-        { userId: user.id },
+        { userId: user._id },
         { 
           walletBalance: seller.walletBalance,
           pendingBalance: seller.pendingBalance

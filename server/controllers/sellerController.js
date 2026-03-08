@@ -2,7 +2,7 @@ const Product = require('../models/Product');
 
 const createProduct = async (req, res) => {
   try {
-    const product = await Product.create({ ...req.body, sellerId: req.user.id });
+    const product = await Product.create({ ...req.body, sellerId: req.user._id });
     res.json({ success: true, product });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

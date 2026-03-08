@@ -8,7 +8,7 @@ export async function GET(req) {
 
   try {
     const SupportMessage = (await import('@/server/models/SupportMessage')).default;
-    const messages = await SupportMessage.find({ userId: user.id }).sort({ createdAt: -1 });
+    const messages = await SupportMessage.find({ userId: user._id }).sort({ createdAt: -1 });
     return Response.json({ success: true, messages });
   } catch (error) {
     return Response.json({ success: false, message: error.message }, { status: 500 });
@@ -31,7 +31,7 @@ export async function POST(req) {
     const SupportMessage = (await import('@/server/models/SupportMessage')).default;
     
     await SupportMessage.create({
-      userId: user.id,
+      userId: user._id,
       userName: user.name,
       userEmail: user.email,
       userRole: user.role,

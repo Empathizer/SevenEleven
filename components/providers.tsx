@@ -13,7 +13,7 @@ function SupportChatWrapper() {
   
   if (!user || user.role === 'admin') return null
   
-  return <SupportChat userId={user.id} />
+  return <SupportChat userId={user._id} />
 }
 
 export function Providers({ children }: { children: ReactNode }) {

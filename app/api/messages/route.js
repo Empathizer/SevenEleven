@@ -12,14 +12,14 @@ export async function GET(req) {
     
     // Get all messages where user is sender or receiver
     const messages = await Message.find({
-      $or: [{ senderId: user.id }, { receiverId: user.id }]
+      $or: [{ senderId: user._id }, { receiverId: user._id }]
     }).sort('-createdAt').lean();
 
     // Group by conversation partner
     const conversationMap = new Map();
     
     for (const msg of messages) {
-      const otherIdStr = msg.senderId.toString() === user.id ? msg.receiverId.toString() : msg.senderId.toString();
+      const otherIdStr = msg.senderId.toString() === user._id.toString() ? msg.receiverId.toString() : msg.senderId.toString();
       
       if (!conversationMap.has(otherIdStr)) {
         const otherUser = await User.findById(otherIdStr).select('name email storeName role').lean();
@@ -64,13 +64,13 @@ export async function POST(req) {
     }
     
     const message = await Message.create({
-      senderId: user.id,
+      senderId: user._id,
       receiverId: body.receiverId,
       message: body.message.trim(),
       read: false
     });
 
-    console.log('Message created:', { from: user.id, to: body.receiverId, msg: body.message });
+    console.log('Message created:', { from: user._id, to: body.receiverId, msg: body.message });
     return Response.json({ success: true, message }, { status: 201 });
   } catch (error) {
     console.error('Message POST error:', error);

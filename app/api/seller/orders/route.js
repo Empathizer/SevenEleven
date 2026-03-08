@@ -8,7 +8,7 @@ export async function GET(req) {
 
   try {
     const Order = (await import('@/server/models/Order')).default;
-    const orders = await Order.find({ 'items.sellerId': user.id })
+    const orders = await Order.find({ 'items.sellerId': user._id })
       .populate('userId', 'name email')
       .sort('-createdAt');
     return Response.json({ success: true, data: orders });

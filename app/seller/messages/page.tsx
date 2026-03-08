@@ -120,11 +120,11 @@ export default function SellerMessagesPage() {
                 {messages.map(msg => (
                   <div
                     key={msg._id}
-                    className={`flex ${msg.senderId === user.id ? 'justify-end' : 'justify-start'}`}
+                    className={`flex ${msg.senderId === user._id ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
                       className={`max-w-[70%] rounded-lg p-3 ${
-                        msg.senderId === user.id
+                        msg.senderId === user._id
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-muted text-foreground'
                       }`}

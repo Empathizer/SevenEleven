@@ -37,14 +37,21 @@ export default function SellerStorePage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/seller/profile`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ storeName, storeDescription })
-    })
-    if (res.ok) {
-      toast("Store profile updated!")
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/seller/profile`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ storeName, storeDescription })
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        toast.success("Store profile updated!")
+      } else {
+        toast.error(data.message || "Failed to update profile")
+      }
+    } catch (error) {
+      toast.error("Failed to update profile")
     }
   }
 

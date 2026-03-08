@@ -13,18 +13,18 @@ export async function GET(req, { params }) {
     // Get all messages between current user and the other user
     const messages = await Message.find({
       $or: [
-        { senderId: user.id, receiverId: id },
-        { senderId: id, receiverId: user.id }
+        { senderId: user._id, receiverId: id },
+        { senderId: id, receiverId: user._id }
       ]
     }).sort('createdAt').lean();
 
     // Mark messages as read where current user is receiver
     await Message.updateMany(
-      { senderId: id, receiverId: user.id, read: false },
+      { senderId: id, receiverId: user._id, read: false },
       { read: true }
     );
 
-    console.log(`Loaded ${messages.length} messages between ${user.id} and ${id}`);
+    console.log(`Loaded ${messages.length} messages between ${user._id} and ${id}`);
     return Response.json({ success: true, messages });
   } catch (error) {
     console.error('Messages [id] GET error:', error);

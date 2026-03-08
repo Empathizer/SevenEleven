@@ -183,7 +183,7 @@ export async function POST(req) {
     if (action === 'message') {
       const Message = (await import('@/server/models/Message')).default;
       const message = await Message.create({
-        senderId: user.id,
+        senderId: user._id,
         receiverId: body.receiverId,
         message: body.message
       });

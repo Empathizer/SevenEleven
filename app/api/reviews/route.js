@@ -31,14 +31,14 @@ export async function POST(req) {
     const Review = (await import('@/server/models/Review')).default;
     const Product = (await import('@/server/models/Product')).default;
     
-    const existing = await Review.findOne({ productId: body.productId, userId: user.id });
+    const existing = await Review.findOne({ productId: body.productId, userId: user._id });
     if (existing) {
       return Response.json({ success: false, message: 'You already reviewed this product' }, { status: 400 });
     }
     
     const review = await Review.create({
       ...body,
-      userId: user.id
+      userId: user._id
     });
     
     const reviews = await Review.find({ productId: body.productId });
