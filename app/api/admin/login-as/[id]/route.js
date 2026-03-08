@@ -4,8 +4,11 @@ import { cookies } from 'next/headers';
 
 export async function POST(req, { params }) {
   await connectDB();
-  const { error } = await requireAuth(req, 'admin');
-  if (error) return error;
+  const { error, user: adminUser } = await requireAuth(req, 'admin');
+  if (error) {
+    console.error('Login-as auth failed:', error);
+    return error;
+  }
 
   try {
     const { id } = await params;
@@ -18,6 +21,8 @@ export async function POST(req, { params }) {
       return Response.json({ success: false, message: 'User not found' }, { status: 404 });
     }
     
+    console.log('Admin logging in as:', user.email, 'Role:', user.role);
+    
     const token = jwt.sign({ id: user._id.toString() }, process.env.JWT_SECRET, { 
       expiresIn: process.env.JWT_EXPIRE || '7d'
     });
@@ -25,13 +30,14 @@ export async function POST(req, { params }) {
     (await cookies()).set('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
       path: '/',
       sameSite: 'lax'
     });
     
     return Response.json({ success: true, user, token });
   } catch (error) {
+    console.error('Login-as error:', error);
     return Response.json({ success: false, message: error.message }, { status: 500 });
   }
 }
