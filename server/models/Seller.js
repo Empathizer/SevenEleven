@@ -29,7 +29,6 @@ const sellerSchema = new mongoose.Schema({
   },
   address: {
     type: String,
-    required: [true, 'Address is required'],
     trim: true
   },
   invitationCode: {
