@@ -117,28 +117,6 @@ export default function AdminProductsPage() {
             variant="outline" 
             onClick={async () => {
               try {
-                const res = await fetch(`${API_URL}/api/admin/assign-virtual-seller`, {
-                  method: 'POST',
-                  credentials: 'include'
-                })
-                const data = await res.json()
-                if (data.success) {
-                  toast.success(data.message)
-                  loadProducts()
-                } else {
-                  toast.error(data.message)
-                }
-              } catch (e) {
-                toast.error('Failed to assign virtual seller')
-              }
-            }}
-          >
-            Show Admin Products on Homepage
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={async () => {
-              try {
                 const res = await fetch(`${API_URL}/api/admin/fix-products`, {
                   method: 'POST',
                   credentials: 'include'

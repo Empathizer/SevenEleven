@@ -56,14 +56,20 @@ export async function GET(req) {
       .maxTimeMS(30000)
       .lean();
 
-    const count = await Product.countDocuments(query).maxTimeMS(30000);
+    // Deduplicate by name - show only one product per unique name
+    const seen = new Set();
+    const uniqueProducts = products.filter(p => {
+      if (seen.has(p.name)) return false;
+      seen.add(p.name);
+      return true;
+    });
 
-    console.log(`Products query:`, query, `Found: ${products.length}`);
+    const count = await Product.countDocuments(query).maxTimeMS(30000);
 
     return Response.json({
       success: true,
-      data: products,
-      products: products,
+      data: uniqueProducts,
+      products: uniqueProducts,
       totalPages: Math.ceil(count / limit),
       currentPage: page
     });
