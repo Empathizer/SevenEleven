@@ -44,26 +44,38 @@ export async function POST(req) {
       virtualSellers.push(existing);
     }
 
-    // Get all catalogue products (sellerId=null) OR already assigned to virtual sellers
-    const virtualSellerIds = virtualSellers.map(s => s._id);
-    const products = await Product.find({
-      $or: [
-        { sellerId: null },
-        { sellerId: { $in: virtualSellerIds } }
-      ]
-    });
+    // Get all admin catalogue products (sellerId=null)
+    const catalogueProducts = await Product.find({ sellerId: null }).lean();
 
-    console.log('Total products to distribute:', products.length);
+    console.log('Catalogue products found:', catalogueProducts.length);
 
-    // Distribute products evenly among 3 virtual sellers
-    for (let i = 0; i < products.length; i++) {
+    let cloned = 0;
+
+    for (let i = 0; i < catalogueProducts.length; i++) {
       const seller = virtualSellers[i % 3];
-      await Product.findByIdAndUpdate(products[i]._id, { sellerId: seller._id });
+      const original = catalogueProducts[i];
+
+      // Check if this product is already cloned for this seller
+      const exists = await Product.findOne({
+        name: original.name,
+        sellerId: seller._id
+      });
+
+      if (!exists) {
+        const { _id, createdAt, updatedAt, ...rest } = original;
+        await Product.create({
+          ...rest,
+          sellerId: seller._id,
+          buyingPrice: original.price,
+          price: parseFloat((original.price * 1.1).toFixed(2))
+        });
+        cloned++;
+      }
     }
 
     return Response.json({
       success: true,
-      message: `${products.length} products distributed among 3 virtual sellers`,
+      message: `${cloned} products cloned to 3 virtual sellers. Admin catalogue unchanged.`,
       sellers: virtualSellers.map(s => ({ id: s._id, name: s.name }))
     });
   } catch (error) {
