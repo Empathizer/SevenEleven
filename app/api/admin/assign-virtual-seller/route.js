@@ -11,38 +11,52 @@ export async function POST(req) {
     const Seller = (await import('@/server/models/Seller')).default;
     const Product = (await import('@/server/models/Product')).default;
 
-    // Find or create virtual seller
-    let virtualSeller = await User.findOne({ isVirtual: true, role: 'seller' });
+    const storeNames = [
+      { name: 'Alex Carter', store: 'Carter Deals' },
+      { name: 'Maria Lopez', store: 'Lopez Mart' },
+      { name: 'James Wilson', store: 'Wilson Shop' }
+    ];
 
-    if (!virtualSeller) {
-      virtualSeller = await User.create({
-        name: 'SevenEleven Store',
-        email: 'virtual-seller@seveneleven.com',
-        password: 'VirtualSeller@123',
-        role: 'seller',
-        status: 'active',
-        isVirtual: true,
-        walletBalance: 0
-      });
+    const virtualSellers = [];
 
-      await Seller.create({
-        userId: virtualSeller._id,
-        storeName: 'SevenEleven Store',
-        storeDescription: 'Official SevenEleven Store',
-        status: 'approved'
-      });
+    for (const s of storeNames) {
+      let existing = await User.findOne({ email: `${s.store.toLowerCase().replace(/ /g, '.')}@store.com`, isVirtual: true, role: 'seller' });
+      
+      if (!existing) {
+        existing = await User.create({
+          name: s.name,
+          email: `${s.store.toLowerCase().replace(/ /g, '.')}@store.com`,
+          password: 'Virtual@123',
+          role: 'seller',
+          status: 'active',
+          isVirtual: true,
+          walletBalance: 0
+        });
+
+        await Seller.create({
+          userId: existing._id,
+          storeName: s.store,
+          storeDescription: `Welcome to ${s.store}`,
+          status: 'approved'
+        });
+      }
+
+      virtualSellers.push(existing);
     }
 
-    // Assign all catalogue products (sellerId=null) to virtual seller
-    const result = await Product.updateMany(
-      { sellerId: null },
-      { $set: { sellerId: virtualSeller._id } }
-    );
+    // Get all catalogue products (sellerId=null)
+    const products = await Product.find({ sellerId: null });
+
+    // Distribute products evenly among 3 virtual sellers
+    for (let i = 0; i < products.length; i++) {
+      const seller = virtualSellers[i % 3];
+      await Product.findByIdAndUpdate(products[i]._id, { sellerId: seller._id });
+    }
 
     return Response.json({
       success: true,
-      message: `${result.modifiedCount} products assigned to virtual seller`,
-      virtualSellerId: virtualSeller._id
+      message: `${products.length} products distributed among 3 virtual sellers`,
+      sellers: virtualSellers.map(s => ({ id: s._id, name: s.name }))
     });
   } catch (error) {
     return Response.json({ success: false, message: error.message }, { status: 500 });
