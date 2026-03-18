@@ -117,6 +117,28 @@ export default function AdminProductsPage() {
             variant="outline" 
             onClick={async () => {
               try {
+                const res = await fetch(`${API_URL}/api/admin/fix-images`, {
+                  method: 'POST',
+                  credentials: 'include'
+                })
+                const data = await res.json()
+                if (data.success) {
+                  toast.success(data.message)
+                  loadProducts()
+                } else {
+                  toast.error(data.message)
+                }
+              } catch (e) {
+                toast.error('Failed to fix images')
+              }
+            }}
+          >
+            Fix Product Images
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={async () => {
+              try {
                 const res = await fetch(`${API_URL}/api/admin/fix-products`, {
                   method: 'POST',
                   credentials: 'include'
