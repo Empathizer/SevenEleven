@@ -44,8 +44,16 @@ export async function POST(req) {
       virtualSellers.push(existing);
     }
 
-    // Get all catalogue products (sellerId=null)
-    const products = await Product.find({ sellerId: null });
+    // Get all catalogue products (sellerId=null) OR already assigned to virtual sellers
+    const virtualSellerIds = virtualSellers.map(s => s._id);
+    const products = await Product.find({
+      $or: [
+        { sellerId: null },
+        { sellerId: { $in: virtualSellerIds } }
+      ]
+    });
+
+    console.log('Total products to distribute:', products.length);
 
     // Distribute products evenly among 3 virtual sellers
     for (let i = 0; i < products.length; i++) {
