@@ -17,8 +17,8 @@ export default function HomePage() {
   useEffect(() => {
     Promise.all([
       fetch("/api/products/categories").then(r => r.json()),
-      fetch("/api/products?featured=true").then(r => r.json()),
-      fetch("/api/products").then(r => r.json())
+      fetch("/api/products?featured=true&limit=100").then(r => r.json()),
+      fetch("/api/products?limit=200").then(r => r.json())
     ]).then(([cats, featured, all]) => {
       setCategories(cats.categories || cats.data || [])
       setFeaturedProducts(featured.data || featured.products || [])
@@ -120,7 +120,7 @@ export default function HomePage() {
               </Link>
             </div>
             <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-              {featuredProducts.slice(0, 10).map((product) => (
+              {featuredProducts.slice(0, 20).map((product) => (
                 <ProductCard key={product._id} product={{...product, id: product._id, sellerName: product.sellerId?.name || 'Unknown'}} />
               ))}
             </div>
@@ -153,7 +153,7 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-            {allProducts.slice(0, 10).map((product) => (
+            {allProducts.map((product) => (
               <ProductCard key={product._id} product={{...product, id: product._id, sellerName: product.sellerId?.name || 'Unknown'}} />
             ))}
           </div>
