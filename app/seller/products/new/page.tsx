@@ -28,7 +28,7 @@ export default function NewProductPage() {
   const [profitMargin, setProfitMargin] = useState<number>(0)
 
   useEffect(() => {
-    fetch(`${API_URL}/api/products?adminOnly=true`)
+    fetch(`${API_URL}/api/products?adminOnly=true&limit=500`)
       .then(r => r.json())
       .then(data => {
         const productList = (data.data || data.products || []).filter((p: any) => !p.sellerId)
